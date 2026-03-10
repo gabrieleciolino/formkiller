@@ -1,6 +1,6 @@
 "use server";
 
-import { createFormSchema } from "@/app/dashboard/forms/__components/schema";
+import { createFormSchema } from "@/app/dashboard/__components/schema";
 import { authenticatedActionClient } from "@/lib/actions";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";

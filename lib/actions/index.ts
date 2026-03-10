@@ -13,7 +13,7 @@ class ActionAccessError extends Error {
   }
 }
 
-export const publicActionClient = createSafeActionClient({
+const baseActionClient = createSafeActionClient({
   handleServerError(error) {
     if (error instanceof ActionAccessError) {
       return error.message;
@@ -26,11 +26,18 @@ export const publicActionClient = createSafeActionClient({
 
     return DEFAULT_SERVER_ERROR_MESSAGE;
   },
+  defaultValidationErrorsShape: "flattened",
+});
+
+export const publicActionClient = baseActionClient.use(async ({ next }) => {
+  const supabase = await createClient();
+
+  return next({ ctx: { supabase } });
 });
 
 export const authenticatedActionClient = publicActionClient.use(
-  async ({ next }) => {
-    const supabase = await createClient();
+  async ({ next, ctx }) => {
+    const { supabase } = ctx;
     const { data, error } = await supabase.auth.getClaims();
 
     if (error) {
@@ -43,6 +50,6 @@ export const authenticatedActionClient = publicActionClient.use(
       throw new ActionAccessError("Unauthorized");
     }
 
-    return next({ ctx: { userId, supabase } });
+    return next({ ctx: { ...ctx, userId } });
   },
 );

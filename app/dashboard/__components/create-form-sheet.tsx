@@ -3,7 +3,7 @@
 import {
   CreateForm,
   createFormSchema,
-} from "@/app/dashboard/forms/__components/schema";
+} from "@/app/dashboard/__components/schema";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
-import { createFormAction } from "@/app/dashboard/forms/__components/actions";
+import { createFormAction } from "@/app/dashboard/__components/actions";
 import { toast } from "sonner";
 
 export default function CreateFormSheet() {
@@ -43,12 +43,8 @@ export default function CreateFormSheet() {
         const { data, serverError, validationErrors } =
           await createFormAction(values);
 
-        if (serverError) {
-          console.log(serverError);
-        }
-
-        // TODO: imposta errori singoli campi
-        if (validationErrors) {
+        if (serverError || validationErrors) {
+          throw new Error();
         }
 
         toast("Form successfully created.");

@@ -41,7 +41,7 @@ export default function DashboardSidebar() {
               {items.map((project) => (
                 <SidebarMenuItem key={project.label}>
                   <SidebarMenuButton size="lg" asChild>
-                    <Link href={project.url}>
+                    <Link href={project.url} className="text-lg font-bold">
                       <project.icon />
                       <span>{project.label}</span>
                     </Link>
