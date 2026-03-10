@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "ui:add": "pnpm dlx shadcn@latest add",
-    "db:generate": "dotenv -f .env.local run -- drizzle-kit generate",
-    "db:migrate": "dotenv -f .env.local run -- drizzle-kit migrate && supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts",
+    "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
+    "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate && supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts",
     "db:types": "supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts"
   },
   "dependencies": {

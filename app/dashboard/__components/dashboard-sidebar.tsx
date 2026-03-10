@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { urls } from "@/lib/urls";
 import { Form } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const items = [
@@ -24,14 +25,22 @@ const items = [
 export default function DashboardSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader />
+      <SidebarHeader className="hidden md:block">
+        <Image
+          src="/logo.png"
+          width={150}
+          height={150}
+          alt="FormKiller Logo"
+          className="w-full max-w-[200px]"
+        />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((project) => (
                 <SidebarMenuItem key={project.label}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton size="lg" asChild>
                     <Link href={project.url}>
                       <project.icon />
                       <span>{project.label}</span>
