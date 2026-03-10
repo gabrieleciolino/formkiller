@@ -11,7 +11,10 @@ export default function DashboardLayout({
     <SidebarProvider>
       <DashboardSidebar />
       <main>
-        <SidebarTrigger />
+        <div className="p-2 flex items-center gap-4">
+          <SidebarTrigger />
+          <span>FormKiller</span>
+        </div>
         {children}
       </main>
     </SidebarProvider>
