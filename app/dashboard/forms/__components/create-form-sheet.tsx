@@ -23,6 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
+import { createFormAction } from "@/app/dashboard/forms/__components/actions";
+import { toast } from "sonner";
 
 export default function CreateFormSheet() {
   const [isPending, startTransition] = useTransition();
@@ -36,7 +38,26 @@ export default function CreateFormSheet() {
   });
 
   const onSubmit = (values: CreateForm) => {
-    startTransition(async () => {});
+    startTransition(async () => {
+      try {
+        const { data, serverError, validationErrors } =
+          await createFormAction(values);
+
+        if (serverError) {
+          console.log(serverError);
+        }
+
+        // TODO: imposta errori singoli campi
+        if (validationErrors) {
+        }
+
+        toast("Form successfully created.");
+      } catch (error) {
+        console.log(error);
+
+        toast("Form creation failed.");
+      }
+    });
   };
 
   return (

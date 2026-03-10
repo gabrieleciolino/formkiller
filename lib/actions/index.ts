@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
@@ -12,23 +12,6 @@ class ActionAccessError extends Error {
     this.name = "ActionAccessError";
   }
 }
-
-const getAuthenticatedUserId = async () => {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.getClaims();
-
-  if (error) {
-    console.log("[safe_action_get_claims_error]", { message: error.message });
-    throw new ActionAccessError("Unauthorized");
-  }
-
-  const userId = data?.claims?.sub;
-  if (typeof userId !== "string" || userId.length === 0) {
-    throw new ActionAccessError("Unauthorized");
-  }
-
-  return userId;
-};
 
 export const publicActionClient = createSafeActionClient({
   handleServerError(error) {
@@ -47,8 +30,19 @@ export const publicActionClient = createSafeActionClient({
 
 export const authenticatedActionClient = publicActionClient.use(
   async ({ next }) => {
-    const userId = await getAuthenticatedUserId();
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getClaims();
 
-    return next({ ctx: { userId } });
+    if (error) {
+      console.log("[safe_action_get_claims_error]", { message: error.message });
+      throw new ActionAccessError("Unauthorized");
+    }
+
+    const userId = data?.claims?.sub;
+    if (typeof userId !== "string" || userId.length === 0) {
+      throw new ActionAccessError("Unauthorized");
+    }
+
+    return next({ ctx: { userId, supabase } });
   },
 );
