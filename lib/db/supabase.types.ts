@@ -39,6 +39,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      answer: {
+        Row: {
+          created_at: string | null
+          file_generated_at: string | null
+          file_key: string | null
+          form_id: string
+          form_session_id: string
+          id: string
+          question_id: string
+          stt: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_generated_at?: string | null
+          file_key?: string | null
+          form_id: string
+          form_session_id: string
+          id?: string
+          question_id: string
+          stt?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_generated_at?: string | null
+          file_key?: string | null
+          form_id?: string
+          form_session_id?: string
+          id?: string
+          question_id?: string
+          stt?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answer_form_id_form_id_fk"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answer_form_session_id_form_session_id_fk"
+            columns: ["form_session_id"]
+            isOneToOne: false
+            referencedRelation: "form_session"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answer_question_id_question_id_fk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "question"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form: {
         Row: {
           created_at: string | null
@@ -65,6 +126,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      form_session: {
+        Row: {
+          created_at: string | null
+          current_question_index: number
+          form_id: string
+          id: string
+          status: Database["public"]["Enums"]["form_session_status"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_question_index?: number
+          form_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["form_session_status"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_question_index?: number
+          form_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["form_session_status"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_session_form_id_form_id_fk"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead: {
         Row: {
@@ -162,7 +261,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      form_session_status: "pending" | "in_progress" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -292,6 +391,8 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      form_session_status: ["pending", "in_progress", "completed"],
+    },
   },
 } as const
