@@ -30,18 +30,22 @@ import { toast } from "sonner";
 import {
   createFormSchema,
   CreateFormType,
-  FORM_LANGUAGE_LABELS,
   FormLanguage,
-  FORM_TYPE_LABELS,
+  formLanguageSchema,
   FormType,
+  formTypeSchema,
 } from "@/features/forms/schema";
 import { createFormAction } from "@/features/forms/actions";
 import { useRouter } from "next/navigation";
 import { urls } from "@/lib/urls";
+import { useTranslations } from "next-intl";
 
 export default function CreateFormSheet() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const t = useTranslations("forms.create");
+  const tTypes = useTranslations("forms.types");
+  const tLangs = useTranslations("forms.languages");
 
   const form = useForm<CreateFormType>({
     resolver: zodResolver(createFormSchema),
@@ -66,12 +70,12 @@ export default function CreateFormSheet() {
           throw new Error();
         }
 
-        toast("Form successfully created.");
+        toast(t("success"));
         router.push(urls.dashboard.forms.detail(form.id));
       } catch (error) {
         console.log(error);
 
-        toast("Form creation failed.");
+        toast(t("error"));
       }
     });
   };
@@ -79,11 +83,11 @@ export default function CreateFormSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="lg">Create form</Button>
+        <Button size="lg">{t("trigger")}</Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="text-xl font-black">Create form</SheetTitle>
+          <SheetTitle className="text-xl font-black">{t("title")}</SheetTitle>
         </SheetHeader>
         <div className="m-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,12 +96,12 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>{t("name")}</FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder="Name"
+                    placeholder={t("namePlaceholder")}
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -111,12 +115,12 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Instructions</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>{t("instructions")}</FieldLabel>
                   <Textarea
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder="Instructions"
+                    placeholder={t("instructionsPlaceholder")}
                     autoComplete="off"
                     className="min-h-[150px]"
                   />
@@ -131,15 +135,15 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>Type</FieldLabel>
+                  <FieldLabel>{t("type")}</FieldLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(Object.keys(FORM_TYPE_LABELS) as FormType[]).map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {FORM_TYPE_LABELS[t]}
+                      {(formTypeSchema.options as FormType[]).map((typeKey) => (
+                        <SelectItem key={typeKey} value={typeKey}>
+                          {tTypes(typeKey as Parameters<typeof tTypes>[0])}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -152,15 +156,15 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>Language</FieldLabel>
+                  <FieldLabel>{t("language")}</FieldLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(Object.keys(FORM_LANGUAGE_LABELS) as FormLanguage[]).map((l) => (
-                        <SelectItem key={l} value={l}>
-                          {FORM_LANGUAGE_LABELS[l]}
+                      {(formLanguageSchema.options as FormLanguage[]).map((langKey) => (
+                        <SelectItem key={langKey} value={langKey}>
+                          {tLangs(langKey as Parameters<typeof tLangs>[0])}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -169,7 +173,7 @@ export default function CreateFormSheet() {
               )}
             />
             <Button type="submit" className="mt-2 w-full">
-              Create form
+              {t("submit")}
             </Button>
           </form>
         </div>

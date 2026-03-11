@@ -11,11 +11,13 @@ import { loginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
 import { loginAction } from "@/app/auth/__components/actions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { urls } from "@/lib/urls";
+import { useTranslations } from "next-intl";
 
 export default function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("auth.login");
 
   const redirectTo = searchParams.get("redirect_to");
 
@@ -39,11 +41,11 @@ export default function LoginForm() {
         }
 
         router.push(redirectTo ? redirectTo : urls.dashboard.index);
-        toast("Logged in.");
+        toast(t("success"));
       } catch (error) {
         console.log(error);
 
-        toast("Login failed.");
+        toast(t("error"));
       }
     });
   };
@@ -55,12 +57,12 @@ export default function LoginForm() {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+            <FieldLabel htmlFor={field.name}>{t("email")}</FieldLabel>
             <Input
               {...field}
               id={field.name}
               aria-invalid={fieldState.invalid}
-              placeholder="Email"
+              placeholder={t("email")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -72,12 +74,12 @@ export default function LoginForm() {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+            <FieldLabel htmlFor={field.name}>{t("password")}</FieldLabel>
             <Input
               {...field}
               id={field.name}
               aria-invalid={fieldState.invalid}
-              placeholder="Password"
+              placeholder={t("password")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -85,7 +87,7 @@ export default function LoginForm() {
         )}
       />
       <Button type="submit" className="mt-2 w-full">
-        Login
+        {t("submit")}
       </Button>
     </form>
   );

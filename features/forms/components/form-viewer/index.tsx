@@ -13,6 +13,7 @@ import {
   MicIcon,
   StopCircleIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -71,6 +72,7 @@ function LeadForm({
   onCompleted: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("viewer.leadForm");
   const { register, handleSubmit, formState: { errors } } = useForm<CreateLeadType>({
     resolver: zodResolver(createLeadSchema),
     defaultValues: { sessionId, formId, userId },
@@ -83,16 +85,16 @@ function LeadForm({
         if (serverError || !data) throw new Error();
         onCompleted();
       } catch {
-        toast("Errore durante il salvataggio dei dati.");
+        toast(t("error"));
       }
     });
   };
 
   const fields = [
-    { key: "name" as const, label: "Nome", type: "text" },
-    { key: "email" as const, label: "Email", type: "email" },
-    { key: "phone" as const, label: "Telefono", type: "tel" },
-    { key: "notes" as const, label: "Note", type: "text" },
+    { key: "name" as const, label: t("name"), type: "text" },
+    { key: "email" as const, label: t("email"), type: "email" },
+    { key: "phone" as const, label: t("phone"), type: "tel" },
+    { key: "notes" as const, label: t("notes"), type: "text" },
   ];
 
   return (
@@ -100,10 +102,8 @@ function LeadForm({
       <div className="flex flex-1 flex-col justify-center px-6 py-10">
         <div className="mx-auto w-full max-w-md space-y-6">
           <div className="space-y-1">
-            <h2 className="text-2xl font-black">Quasi fatto!</h2>
-            <p className="text-sm text-white/40">
-              Inserisci i tuoi dati per completare il questionario.
-            </p>
+            <h2 className="text-2xl font-black">{t("title")}</h2>
+            <p className="text-sm text-white/40">{t("subtitle")}</p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             {fields.map(({ key, label, type }) => (
@@ -130,7 +130,7 @@ function LeadForm({
               disabled={isPending}
               className="mt-2 w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity disabled:opacity-40 hover:opacity-90"
             >
-              {isPending ? "..." : "Invia"}
+              {isPending ? t("loading") : t("submit")}
             </button>
           </form>
         </div>
@@ -156,6 +156,10 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
   const [isPending, startTransition] = useTransition();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const tWelcome = useTranslations("viewer.welcome");
+  const tQuestion = useTranslations("viewer.question");
+  const tCompleted = useTranslations("viewer.completed");
+  const tErrors = useTranslations("viewer.errors");
 
   const questions = form.questions;
   const currentQuestion = questions[currentIndex];
@@ -191,7 +195,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         setSessionId(data.id);
         setPhase("question");
       } catch {
-        toast("Impossibile avviare il questionario.");
+        toast(tErrors("cannotStart"));
       }
     });
   };
@@ -217,7 +221,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
       setRecordState("recording");
       setAnswer(null);
     } catch {
-      toast("Impossibile accedere al microfono.");
+      toast(tErrors("micAccess"));
     }
   };
 
@@ -274,7 +278,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           setRecordState("idle");
         }
       } catch {
-        toast("Errore durante il salvataggio della risposta.");
+        toast(tErrors("saveAnswer"));
       }
     });
   };
@@ -286,18 +290,20 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           <p className="text-xs tracking-widest text-white/30 uppercase">
             {form.name}
           </p>
-          <h1 className="text-5xl font-black tracking-tight">Benvenuto</h1>
+          <h1 className="text-5xl font-black tracking-tight">
+            {tWelcome("title")}
+          </h1>
           <p className="text-sm leading-relaxed text-white/40">
-            Ti verranno poste {questions.length} domande.
+            {tWelcome("questionsCount", { count: questions.length })}
             <br />
-            Rispondi scegliendo una risposta o registrando la tua voce.
+            {tWelcome("instructions")}
           </p>
           <button
             onClick={handleStart}
             disabled={isPending}
             className="mt-2 flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-opacity hover:opacity-80 disabled:opacity-40"
           >
-            {isPending ? "Caricamento..." : "Comincia"}
+            {isPending ? tWelcome("loading") : tWelcome("start")}
             {!isPending && <ChevronRightIcon className="size-4" />}
           </button>
         </div>
@@ -323,10 +329,8 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           <div className="flex size-20 items-center justify-center rounded-full bg-white/10">
             <CheckCircleIcon className="size-10 text-white" />
           </div>
-          <h1 className="text-4xl font-black">Grazie!</h1>
-          <p className="text-sm text-white/40">
-            Le tue risposte sono state registrate correttamente.
-          </p>
+          <h1 className="text-4xl font-black">{tCompleted("title")}</h1>
+          <p className="text-sm text-white/40">{tCompleted("message")}</p>
         </div>
       </div>
     );
@@ -394,7 +398,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
               className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/50 transition-all hover:border-white/20 hover:text-white/80 active:scale-95"
             >
               <MicIcon className="size-4" />
-              Registra risposta
+              {tQuestion("record")}
             </button>
           )}
           {recordState === "recording" && (
@@ -403,20 +407,20 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
               className="flex animate-pulse items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2.5 text-sm text-red-400"
             >
               <StopCircleIcon className="size-4" />
-              Stop registrazione
+              {tQuestion("stopRecording")}
             </button>
           )}
           {recordState === "done" && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
                 <CheckCircleIcon className="size-4" />
-                Risposta registrata
+                {tQuestion("recorded")}
               </div>
               <button
                 onClick={resetRecording}
                 className="text-xs text-white/25 underline hover:text-white/50"
               >
-                Re-registra
+                {tQuestion("reRecord")}
               </button>
             </div>
           )}
@@ -428,7 +432,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           disabled={!answer || isPending}
           className="w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-all active:scale-95 disabled:opacity-20 hover:opacity-90"
         >
-          {isPending ? "..." : isLast ? "Concludi" : "Avanti →"}
+          {isPending ? "..." : isLast ? tQuestion("finish") : tQuestion("next")}
         </button>
       </div>
     </div>

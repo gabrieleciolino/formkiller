@@ -1,6 +1,5 @@
 "use server";
 
-import { getFormByIdQuery } from "@/features/forms/queries";
 import { createLeadSchema } from "@/features/leads/schema";
 import { publicActionClient } from "@/lib/actions";
 import { urls } from "@/lib/urls";
@@ -10,12 +9,7 @@ export const createLeadAction = publicActionClient
   .inputSchema(createLeadSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
-    const { name, email, phone, formId } = parsedInput;
-
-    const form = await getFormByIdQuery({
-      formId,
-      supabase,
-    });
+    const { name, email, phone, notes, formId, sessionId, userId } = parsedInput;
 
     const { data, error } = await supabase
       .from("lead")
@@ -23,8 +17,10 @@ export const createLeadAction = publicActionClient
         name,
         email,
         phone,
-        form_id: form.id,
-        user_id: form.user_id,
+        notes: notes ?? null,
+        form_id: formId,
+        user_id: userId,
+        form_session_id: sessionId,
       })
       .select()
       .single();

@@ -11,23 +11,30 @@ import {
 } from "@/components/ui/sidebar";
 import { urls } from "@/lib/urls";
 import { Form, PersonStanding } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
+import LocaleSwitcher from "./locale-switcher";
 
-const items = [
-  {
-    label: "Forms",
-    icon: Form,
-    url: urls.dashboard.forms.index,
-  },
-  {
-    label: "Leads",
-    icon: PersonStanding,
-    url: urls.dashboard.leads.index,
-  },
-];
+export default async function DashboardSidebar() {
+  const [t, currentLocale] = await Promise.all([
+    getTranslations("dashboard.sidebar"),
+    getLocale(),
+  ]);
 
-export default function DashboardSidebar() {
+  const items = [
+    {
+      label: t("forms"),
+      icon: Form,
+      url: urls.dashboard.forms.index,
+    },
+    {
+      label: t("leads"),
+      icon: PersonStanding,
+      url: urls.dashboard.leads.index,
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarHeader className="hidden md:block">
@@ -58,7 +65,9 @@ export default function DashboardSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter className="p-3">
+        <LocaleSwitcher currentLocale={currentLocale} />
+      </SidebarFooter>
     </Sidebar>
   );
 }

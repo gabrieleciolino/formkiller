@@ -1,0 +1,134 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "success": "Sesión iniciada.",
+      "error": "Error al iniciar sesión."
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "forms": "Formularios",
+      "leads": "Contactos"
+    },
+    "forms": {
+      "title": "Formularios",
+      "columns": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "language": "Idioma",
+        "createdAt": "Creado el",
+        "actions": "Acciones",
+        "view": "Ver",
+        "open": "Abrir"
+      },
+      "detail": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "language": "Idioma",
+        "instructions": "Instrucciones"
+      }
+    },
+    "leads": {
+      "title": "Contactos",
+      "columns": {
+        "name": "Nombre",
+        "email": "Email",
+        "phone": "Teléfono",
+        "notes": "Notas",
+        "form": "Formulario",
+        "createdAt": "Creado el"
+      }
+    }
+  },
+  "forms": {
+    "create": {
+      "trigger": "Crear formulario",
+      "title": "Crear formulario",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre",
+      "instructions": "Instrucciones",
+      "instructionsPlaceholder": "Instrucciones",
+      "type": "Tipo",
+      "language": "Idioma",
+      "submit": "Crear formulario",
+      "success": "Formulario creado con éxito.",
+      "error": "Error al crear el formulario."
+    },
+    "edit": {
+      "trigger": "Editar formulario",
+      "title": "Editar formulario",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre",
+      "instructions": "Instrucciones",
+      "instructionsPlaceholder": "Instrucciones",
+      "type": "Tipo",
+      "submit": "Actualizar formulario",
+      "success": "Formulario actualizado con éxito.",
+      "error": "Error al actualizar el formulario."
+    },
+    "questions": {
+      "defaultAnswers": "Respuestas predeterminadas",
+      "answerPlaceholder": "Respuesta {index}",
+      "questionLabel": "Pregunta {index}",
+      "play": "Reproducir",
+      "generateTts": "Generar TTS",
+      "generating": "Generando...",
+      "submit": "Actualizar",
+      "ttsSuccess": "TTS generado.",
+      "ttsError": "Error al generar TTS.",
+      "success": "Preguntas actualizadas con éxito.",
+      "error": "Error al actualizar las preguntas."
+    },
+    "types": {
+      "mixed": "Voz + botones",
+      "default-only": "Solo botones",
+      "voice-only": "Solo voz"
+    },
+    "languages": {
+      "en": "English",
+      "it": "Italiano",
+      "es": "Español"
+    }
+  },
+  "viewer": {
+    "welcome": {
+      "title": "Bienvenido",
+      "questionsCount": "Se te harán {count} preguntas.",
+      "instructions": "Responde eligiendo una opción o grabando tu voz.",
+      "start": "Empezar",
+      "loading": "Cargando..."
+    },
+    "question": {
+      "record": "Grabar respuesta",
+      "stopRecording": "Detener grabación",
+      "recorded": "Respuesta grabada",
+      "reRecord": "Volver a grabar",
+      "next": "Siguiente →",
+      "finish": "Finalizar"
+    },
+    "leadForm": {
+      "title": "¡Casi listo!",
+      "subtitle": "Introduce tus datos para completar el cuestionario.",
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "notes": "Notas",
+      "submit": "Enviar",
+      "loading": "...",
+      "error": "Error al guardar los datos."
+    },
+    "completed": {
+      "title": "¡Gracias!",
+      "message": "Tus respuestas han sido registradas correctamente."
+    },
+    "errors": {
+      "cannotStart": "No se puede iniciar el cuestionario.",
+      "micAccess": "No se puede acceder al micrófono.",
+      "saveAnswer": "Error al guardar la respuesta."
+    }
+  }
+}

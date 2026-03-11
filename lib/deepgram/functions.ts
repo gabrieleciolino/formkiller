@@ -11,8 +11,8 @@ export const generateSTT = async ({
     model: "nova-3",
     smart_format: true,
     language: "it",
-    mimetype: mimeType,
-  });
+  } as never);
 
-  return result?.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (result as any)?.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? "";
 };

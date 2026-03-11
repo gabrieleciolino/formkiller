@@ -23,6 +23,7 @@ import { PlayIcon, WandSparklesIcon } from "lucide-react";
 import { startTransition, useRef, useState, useTransition } from "react";
 import { Control, Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 function DefaultAnswersFields({
   control,
@@ -31,6 +32,7 @@ function DefaultAnswersFields({
   control: Control<EditQuestionsType>;
   qIndex: number;
 }) {
+  const t = useTranslations("forms.questions");
   const { fields } = useFieldArray({
     control,
     name: `questions.${qIndex}.default_answers`,
@@ -39,7 +41,7 @@ function DefaultAnswersFields({
   return (
     <Accordion type="single" collapsible>
       <AccordionItem value="default-answers">
-        <AccordionTrigger>Default answers</AccordionTrigger>
+        <AccordionTrigger>{t("defaultAnswers")}</AccordionTrigger>
         <AccordionContent className="space-y-2">
           {fields.map((answerField, aIndex) => (
             <Controller
@@ -52,7 +54,7 @@ function DefaultAnswersFields({
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder={`Answer ${aIndex + 1}`}
+                    placeholder={t("answerPlaceholder", { index: aIndex + 1 })}
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -79,6 +81,7 @@ function QuestionTTSControls({
   language: string;
   initialFileUrl: string | null;
 }) {
+  const t = useTranslations("forms.questions");
   const [fileUrl, setFileUrl] = useState<string | null>(initialFileUrl);
   const [isPending, startTTSTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -95,9 +98,9 @@ function QuestionTTSControls({
         if (serverError || !data) throw new Error();
 
         setFileUrl(data.url);
-        toast("TTS generated.");
+        toast(t("ttsSuccess"));
       } catch {
-        toast("TTS generation failed.");
+        toast(t("ttsError"));
       }
     });
   };
@@ -114,7 +117,7 @@ function QuestionTTSControls({
     return (
       <Button type="button" variant="outline" size="sm" onClick={handlePlay}>
         <PlayIcon />
-        Play
+        {t("play")}
       </Button>
     );
   }
@@ -128,7 +131,7 @@ function QuestionTTSControls({
       disabled={isPending}
     >
       <WandSparklesIcon />
-      {isPending ? "Generating..." : "Generate TTS"}
+      {isPending ? t("generating") : t("generateTts")}
     </Button>
   );
 }
@@ -144,6 +147,8 @@ export default function EditQuestionsForm({
   language: FormLanguage;
   initialFileUrls: Record<string, string | null>;
 }) {
+  const t = useTranslations("forms.questions");
+
   const form = useForm<EditQuestionsType>({
     resolver: zodResolver(editQuestionsSchema),
     values: { questions: questionsData, formId, language },
@@ -164,9 +169,9 @@ export default function EditQuestionsForm({
           throw new Error();
         }
 
-        toast("Questions successfully updated.");
+        toast(t("success"));
       } catch {
-        toast("Questions update failed.");
+        toast(t("error"));
       }
     });
   };
@@ -185,7 +190,7 @@ export default function EditQuestionsForm({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>
-                    Question {qIndex + 1}
+                    {t("questionLabel", { index: qIndex + 1 })}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -210,7 +215,7 @@ export default function EditQuestionsForm({
         ))}
       </div>
       <Button type="submit" className="mt-2 w-full md:w-auto">
-        Update
+        {t("submit")}
       </Button>
     </form>
   );

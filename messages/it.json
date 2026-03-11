@@ -1,0 +1,134 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Accedi",
+      "success": "Accesso effettuato.",
+      "error": "Accesso fallito."
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "forms": "Form",
+      "leads": "Lead"
+    },
+    "forms": {
+      "title": "Form",
+      "columns": {
+        "name": "Nome",
+        "type": "Tipo",
+        "language": "Lingua",
+        "createdAt": "Creato il",
+        "actions": "Azioni",
+        "view": "Visualizza",
+        "open": "Apri"
+      },
+      "detail": {
+        "name": "Nome",
+        "type": "Tipo",
+        "language": "Lingua",
+        "instructions": "Istruzioni"
+      }
+    },
+    "leads": {
+      "title": "Lead",
+      "columns": {
+        "name": "Nome",
+        "email": "Email",
+        "phone": "Telefono",
+        "notes": "Note",
+        "form": "Form",
+        "createdAt": "Creato il"
+      }
+    }
+  },
+  "forms": {
+    "create": {
+      "trigger": "Crea form",
+      "title": "Crea form",
+      "name": "Nome",
+      "namePlaceholder": "Nome",
+      "instructions": "Istruzioni",
+      "instructionsPlaceholder": "Istruzioni",
+      "type": "Tipo",
+      "language": "Lingua",
+      "submit": "Crea form",
+      "success": "Form creato con successo.",
+      "error": "Creazione form fallita."
+    },
+    "edit": {
+      "trigger": "Modifica Form",
+      "title": "Modifica Form",
+      "name": "Nome",
+      "namePlaceholder": "Nome",
+      "instructions": "Istruzioni",
+      "instructionsPlaceholder": "Istruzioni",
+      "type": "Tipo",
+      "submit": "Aggiorna form",
+      "success": "Form aggiornato con successo.",
+      "error": "Aggiornamento form fallito."
+    },
+    "questions": {
+      "defaultAnswers": "Risposte predefinite",
+      "answerPlaceholder": "Risposta {index}",
+      "questionLabel": "Domanda {index}",
+      "play": "Riproduci",
+      "generateTts": "Genera TTS",
+      "generating": "Generando...",
+      "submit": "Aggiorna",
+      "ttsSuccess": "TTS generato.",
+      "ttsError": "Generazione TTS fallita.",
+      "success": "Domande aggiornate con successo.",
+      "error": "Aggiornamento domande fallito."
+    },
+    "types": {
+      "mixed": "Voce + pulsanti",
+      "default-only": "Solo pulsanti",
+      "voice-only": "Solo voce"
+    },
+    "languages": {
+      "en": "English",
+      "it": "Italiano",
+      "es": "Español"
+    }
+  },
+  "viewer": {
+    "welcome": {
+      "title": "Benvenuto",
+      "questionsCount": "Ti verranno poste {count} domande.",
+      "instructions": "Rispondi scegliendo una risposta o registrando la tua voce.",
+      "start": "Comincia",
+      "loading": "Caricamento..."
+    },
+    "question": {
+      "record": "Registra risposta",
+      "stopRecording": "Stop registrazione",
+      "recorded": "Risposta registrata",
+      "reRecord": "Re-registra",
+      "next": "Avanti →",
+      "finish": "Concludi"
+    },
+    "leadForm": {
+      "title": "Quasi fatto!",
+      "subtitle": "Inserisci i tuoi dati per completare il questionario.",
+      "name": "Nome",
+      "email": "Email",
+      "phone": "Telefono",
+      "notes": "Note",
+      "submit": "Invia",
+      "loading": "...",
+      "error": "Errore durante il salvataggio dei dati."
+    },
+    "completed": {
+      "title": "Grazie!",
+      "message": "Le tue risposte sono state registrate correttamente."
+    },
+    "errors": {
+      "cannotStart": "Impossibile avviare il questionario.",
+      "micAccess": "Impossibile accedere al microfono.",
+      "saveAnswer": "Errore durante il salvataggio della risposta."
+    }
+  }
+}

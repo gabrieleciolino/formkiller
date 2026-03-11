@@ -3,13 +3,10 @@ import { Separator } from "@/components/ui/separator";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 import { getFormByIdQuery } from "@/features/forms/queries";
-import {
-  EditQuestionsType,
-  FORM_LANGUAGE_LABELS,
-  FORM_TYPE_LABELS,
-} from "@/features/forms/schema";
+import { EditQuestionsType } from "@/features/forms/schema";
 import { authenticatedQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 export default async function FormsDetailPage({
@@ -19,11 +16,16 @@ export default async function FormsDetailPage({
 }) {
   const { formId } = await params;
 
-  const form = await authenticatedQuery(async ({ supabase }) =>
-    getFormByIdQuery({ formId, supabase }),
-  );
+  const [form, t] = await Promise.all([
+    authenticatedQuery(async ({ supabase }) =>
+      getFormByIdQuery({ formId, supabase }),
+    ),
+    getTranslations("dashboard.forms.detail"),
+  ]);
 
   if (!form) notFound();
+
+  const tForms = await getTranslations("forms");
 
   type QuestionRaw = EditQuestionsType["questions"][0] & {
     file_key?: string | null;
@@ -40,31 +42,23 @@ export default async function FormsDetailPage({
     >
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Name</p>
+          <p className="text-sm font-medium">{t("name")}</p>
           <p className="text-sm text-muted-foreground">{form.name}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium">Type</p>
+          <p className="text-sm font-medium">{t("type")}</p>
           <p className="text-sm text-muted-foreground">
-            {
-              FORM_TYPE_LABELS[
-                (form.type ?? "mixed") as keyof typeof FORM_TYPE_LABELS
-              ]
-            }
+            {tForms(`types.${form.type ?? "mixed"}` as Parameters<typeof tForms>[0])}
           </p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium">Language</p>
+          <p className="text-sm font-medium">{t("language")}</p>
           <p className="text-sm text-muted-foreground">
-            {
-              FORM_LANGUAGE_LABELS[
-                (form.language ?? "it") as keyof typeof FORM_LANGUAGE_LABELS
-              ]
-            }
+            {tForms(`languages.${form.language ?? "it"}` as Parameters<typeof tForms>[0])}
           </p>
         </div>
         <div className="col-span-2 space-y-1 md:col-span-4">
-          <p className="text-sm font-medium">Instructions</p>
+          <p className="text-sm font-medium">{t("instructions")}</p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {form.instructions}
           </p>

@@ -1,0 +1,134 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "success": "Logged in.",
+      "error": "Login failed."
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "forms": "Forms",
+      "leads": "Leads"
+    },
+    "forms": {
+      "title": "Forms",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "language": "Language",
+        "createdAt": "Created at",
+        "actions": "Actions",
+        "view": "View",
+        "open": "Open"
+      },
+      "detail": {
+        "name": "Name",
+        "type": "Type",
+        "language": "Language",
+        "instructions": "Instructions"
+      }
+    },
+    "leads": {
+      "title": "Leads",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "notes": "Notes",
+        "form": "Form",
+        "createdAt": "Created at"
+      }
+    }
+  },
+  "forms": {
+    "create": {
+      "trigger": "Create form",
+      "title": "Create form",
+      "name": "Name",
+      "namePlaceholder": "Name",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Instructions",
+      "type": "Type",
+      "language": "Language",
+      "submit": "Create form",
+      "success": "Form successfully created.",
+      "error": "Form creation failed."
+    },
+    "edit": {
+      "trigger": "Edit Form",
+      "title": "Edit Form",
+      "name": "Name",
+      "namePlaceholder": "Name",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Instructions",
+      "type": "Type",
+      "submit": "Update form",
+      "success": "Form successfully updated.",
+      "error": "Form update failed."
+    },
+    "questions": {
+      "defaultAnswers": "Default answers",
+      "answerPlaceholder": "Answer {index}",
+      "questionLabel": "Question {index}",
+      "play": "Play",
+      "generateTts": "Generate TTS",
+      "generating": "Generating...",
+      "submit": "Update",
+      "ttsSuccess": "TTS generated.",
+      "ttsError": "TTS generation failed.",
+      "success": "Questions successfully updated.",
+      "error": "Questions update failed."
+    },
+    "types": {
+      "mixed": "Voice + buttons",
+      "default-only": "Only buttons",
+      "voice-only": "Only voice"
+    },
+    "languages": {
+      "en": "English",
+      "it": "Italiano",
+      "es": "Español"
+    }
+  },
+  "viewer": {
+    "welcome": {
+      "title": "Welcome",
+      "questionsCount": "You will be asked {count} questions.",
+      "instructions": "Answer by choosing an option or recording your voice.",
+      "start": "Start",
+      "loading": "Loading..."
+    },
+    "question": {
+      "record": "Record answer",
+      "stopRecording": "Stop recording",
+      "recorded": "Answer recorded",
+      "reRecord": "Re-record",
+      "next": "Next →",
+      "finish": "Finish"
+    },
+    "leadForm": {
+      "title": "Almost done!",
+      "subtitle": "Enter your details to complete the questionnaire.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "notes": "Notes",
+      "submit": "Submit",
+      "loading": "...",
+      "error": "Error saving data."
+    },
+    "completed": {
+      "title": "Thank you!",
+      "message": "Your answers have been recorded correctly."
+    },
+    "errors": {
+      "cannotStart": "Unable to start the questionnaire.",
+      "micAccess": "Unable to access microphone.",
+      "saveAnswer": "Error saving answer."
+    }
+  }
+}

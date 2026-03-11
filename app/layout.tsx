@@ -3,6 +3,7 @@ import { Open_Sans, Roboto } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { NextIntlClientProvider } from "next-intl";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -27,8 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} ${openSans.variable}`}>
       <body className="antialiased">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        <NextIntlClientProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
