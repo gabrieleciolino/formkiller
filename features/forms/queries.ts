@@ -30,6 +30,7 @@ export const getFormByIdQuery = async ({
     .select("*, questions:question(*)")
     .eq("id", formId)
     .order("created_at", { ascending: false })
+    .order("order", { referencedTable: "question", ascending: true })
     .single()
     .throwOnError();
 

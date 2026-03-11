@@ -16,6 +16,7 @@ export const editFormSchema = z.object({
 export type EditFormType = z.infer<typeof editFormSchema>;
 
 export const editQuestionsSchema = z.object({
+  formId: z.string(),
   questions: z.array(
     z.object({
       id: z.string(),
@@ -32,3 +33,10 @@ export const editQuestionsSchema = z.object({
 });
 
 export type EditQuestionsType = z.infer<typeof editQuestionsSchema>;
+
+export const generateQuestionTTSSchema = z.object({
+  questionId: z.string(),
+  formId: z.string(),
+});
+
+export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;

@@ -5,6 +5,7 @@ import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 import { getFormByIdQuery } from "@/features/forms/queries";
 import { EditQuestionsType } from "@/features/forms/schema";
 import { authenticatedQuery } from "@/lib/queries";
+import { getFileUrl } from "@/lib/r2/functions";
 import { notFound } from "next/navigation";
 
 export default async function FormsDetailPage({
@@ -19,6 +20,14 @@ export default async function FormsDetailPage({
   );
 
   if (!form) notFound();
+
+  type QuestionRaw = EditQuestionsType["questions"][0] & {
+    file_key?: string | null;
+  };
+  const questionsRaw = form.questions as unknown as QuestionRaw[];
+  const initialFileUrls: Record<string, string | null> = Object.fromEntries(
+    questionsRaw.map((q) => [q.id, q.file_key ? getFileUrl(q.file_key) : null]),
+  );
 
   return (
     <DashboardWrapper
@@ -39,9 +48,9 @@ export default async function FormsDetailPage({
       </div>
       <Separator />
       <EditQuestionsForm
-        questionsData={
-          form.questions as unknown as EditQuestionsType["questions"]
-        }
+        questionsData={questionsRaw as unknown as EditQuestionsType["questions"]}
+        formId={formId}
+        initialFileUrls={initialFileUrls}
       />
     </DashboardWrapper>
   );

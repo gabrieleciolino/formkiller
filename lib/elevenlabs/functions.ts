@@ -12,7 +12,8 @@ export const generateTTS = async ({
 }) => {
   const audio = await elevenlabs.textToSpeech.convert(VOICE_ID, {
     text,
-    modelId: "eleven_turbo_v2_5",
+    modelId: "eleven_multilingual_v2",
+    languageCode: "it",
   });
 
   const buffer = Buffer.from(await new Response(audio).arrayBuffer());

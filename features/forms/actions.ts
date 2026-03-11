@@ -4,6 +4,7 @@ import {
   createFormSchema,
   editFormSchema,
   editQuestionsSchema,
+  generateQuestionTTSSchema,
 } from "@/features/forms/schema";
 import { authenticatedActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
@@ -98,6 +99,8 @@ export const editFormAction = authenticatedActionClient
       throw error;
     }
 
+    revalidatePath(urls.dashboard.forms.detail(formId));
+
     return form;
   });
 
@@ -105,7 +108,7 @@ export const editQuestionsAction = authenticatedActionClient
   .inputSchema(editQuestionsSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { questions } = parsedInput;
+    const { questions, formId } = parsedInput;
 
     const ids = questions.map((q) => q.id);
 
@@ -160,5 +163,37 @@ export const editQuestionsAction = authenticatedActionClient
       );
     }
 
+    revalidatePath(urls.dashboard.forms.detail(formId));
+
     return questions;
+  });
+
+export const generateQuestionTTSAction = authenticatedActionClient
+  .inputSchema(generateQuestionTTSSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { questionId, formId } = parsedInput;
+
+    const { data: question } = await supabase
+      .from("question")
+      .select("question")
+      .eq("id", questionId)
+      .eq("user_id", userId)
+      .single()
+      .throwOnError();
+
+    if (!question) throw new Error("Question not found.");
+
+    const { url, key } = await generateTTS({ text: question.question, formId });
+
+    await supabase
+      .from("question")
+      .update({
+        file_key: key,
+        file_generated_at: new Date().toUTCString(),
+      } as never)
+      .eq("id", questionId)
+      .throwOnError();
+
+    return { url };
   });

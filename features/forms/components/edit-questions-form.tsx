@@ -9,13 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { editQuestionsAction } from "@/features/forms/actions";
+import {
+  editQuestionsAction,
+  generateQuestionTTSAction,
+} from "@/features/forms/actions";
 import {
   editQuestionsSchema,
   EditQuestionsType,
 } from "@/features/forms/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition } from "react";
+import { PlayIcon, WandSparklesIcon } from "lucide-react";
+import { startTransition, useRef, useState, useTransition } from "react";
 import { Control, Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -63,14 +67,80 @@ function DefaultAnswersFields({
   );
 }
 
+function QuestionTTSControls({
+  questionId,
+  formId,
+  initialFileUrl,
+}: {
+  questionId: string;
+  formId: string;
+  initialFileUrl: string | null;
+}) {
+  const [fileUrl, setFileUrl] = useState<string | null>(initialFileUrl);
+  const [isPending, startTTSTransition] = useTransition();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleGenerate = () => {
+    startTTSTransition(async () => {
+      try {
+        const { data, serverError } = await generateQuestionTTSAction({
+          questionId,
+          formId,
+        });
+
+        if (serverError || !data) throw new Error();
+
+        setFileUrl(data.url);
+        toast("TTS generated.");
+      } catch {
+        toast("TTS generation failed.");
+      }
+    });
+  };
+
+  const handlePlay = () => {
+    if (!fileUrl) return;
+    if (!audioRef.current) {
+      audioRef.current = new Audio(fileUrl);
+    }
+    audioRef.current.play();
+  };
+
+  if (fileUrl) {
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={handlePlay}>
+        <PlayIcon />
+        Play
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={handleGenerate}
+      disabled={isPending}
+    >
+      <WandSparklesIcon />
+      {isPending ? "Generating..." : "Generate TTS"}
+    </Button>
+  );
+}
+
 export default function EditQuestionsForm({
   questionsData,
+  formId,
+  initialFileUrls,
 }: {
   questionsData: EditQuestionsType["questions"];
+  formId: string;
+  initialFileUrls: Record<string, string | null>;
 }) {
   const form = useForm<EditQuestionsType>({
     resolver: zodResolver(editQuestionsSchema),
-    values: { questions: questionsData },
+    values: { questions: questionsData, formId },
   });
 
   const { fields: questionFields } = useFieldArray({
@@ -98,31 +168,39 @@ export default function EditQuestionsForm({
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {questionFields.map((questionField, qIndex) => (
-        <div key={questionField.id} className="space-y-3 rounded-md border p-4">
-          <Controller
-            name={`questions.${qIndex}.question`}
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>
-                  Question {qIndex + 1}
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  autoComplete="off"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          <DefaultAnswersFields control={form.control} qIndex={qIndex} />
-        </div>
-      ))}
+        {questionFields.map((questionField, qIndex) => (
+          <div
+            key={questionField.id}
+            className="space-y-3 rounded-md border p-4"
+          >
+            <Controller
+              name={`questions.${qIndex}.question`}
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>
+                    Question {qIndex + 1}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <DefaultAnswersFields control={form.control} qIndex={qIndex} />
+            <QuestionTTSControls
+              questionId={questionsData[qIndex].id}
+              formId={formId}
+              initialFileUrl={initialFileUrls[questionsData[qIndex].id] ?? null}
+            />
+          </div>
+        ))}
       </div>
       <Button type="submit" className="mt-2 w-full md:w-auto">
         Update
