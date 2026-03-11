@@ -103,6 +103,13 @@
       "success": "Formulario creado con éxito.",
       "error": "Error al crear el formulario."
     },
+    "libraryPicker": {
+      "backgroundImage": "Imagen de fondo",
+      "backgroundMusic": "Música de fondo",
+      "select": "Seleccionar de la biblioteca",
+      "none": "Ningún archivo seleccionado",
+      "empty": "No hay archivos en la biblioteca."
+    },
     "edit": {
       "trigger": "Editar formulario",
       "title": "Editar formulario",
@@ -111,6 +118,11 @@
       "instructions": "Instrucciones",
       "instructionsPlaceholder": "Instrucciones",
       "type": "Tipo",
+      "theme": "Tema",
+      "themes": {
+        "dark": "Oscuro",
+        "light": "Claro"
+      },
       "submit": "Actualizar formulario",
       "success": "Formulario actualizado con éxito.",
       "error": "Error al actualizar el formulario."

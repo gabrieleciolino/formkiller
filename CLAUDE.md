@@ -212,6 +212,10 @@ listFiles(prefix?)
 
 File key format: `{type}/{formId}/{...}/{timestamp}.{ext}`
 
+**CRITICAL: `getFileUrl` is SERVER-ONLY.**
+`R2_PUBLIC_URL` has no `NEXT_PUBLIC_` prefix → it is `undefined` in the browser.
+Never call `getFileUrl` inside client components. Always resolve URLs in server components, server actions, or API routes and pass them down as props/data.
+
 ---
 
 ## AI Form Generation

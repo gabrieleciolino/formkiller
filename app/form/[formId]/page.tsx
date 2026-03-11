@@ -39,6 +39,7 @@ export default async function FormViewerPage({
     name: form.name,
     userId: form.user_id,
     type: (form.type ?? "mixed") as ViewerFormData["type"],
+    theme: (form.theme ?? "dark") as ViewerFormData["theme"],
     language,
     questions: rawQuestions.map((q): ViewerQuestion => ({
       id: q.id,
@@ -46,6 +47,12 @@ export default async function FormViewerPage({
       audioUrl: q.file_key ? getFileUrl(q.file_key) : null,
       defaultAnswers: q.default_answers,
     })),
+    backgroundImageUrl: form.background_image_key
+      ? getFileUrl(form.background_image_key)
+      : null,
+    backgroundMusicUrl: form.background_music_key
+      ? getFileUrl(form.background_music_key)
+      : null,
   };
 
   return (

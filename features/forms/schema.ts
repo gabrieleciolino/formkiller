@@ -27,11 +27,17 @@ export const createFormSchema = z.object({
 
 export type CreateFormType = z.infer<typeof createFormSchema>;
 
+export const formThemeSchema = z.enum(["light", "dark"]);
+export type FormTheme = z.infer<typeof formThemeSchema>;
+
 export const editFormSchema = z.object({
   formId: z.string(),
   name: z.string(),
   instructions: z.string(),
   type: formTypeSchema,
+  theme: formThemeSchema,
+  backgroundImageKey: z.string().nullable().optional(),
+  backgroundMusicKey: z.string().nullable().optional(),
 });
 
 export type EditFormType = z.infer<typeof editFormSchema>;

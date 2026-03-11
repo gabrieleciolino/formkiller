@@ -2,7 +2,6 @@
 
 import { deleteAssetAction } from "@/features/library/actions";
 import { Asset } from "@/features/library/types";
-import { getFileUrl } from "@/lib/r2/functions";
 import { format, parseISO } from "date-fns";
 import { Music, Trash2, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -14,10 +13,10 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function AssetCard({ asset }: { asset: Asset }) {
+function AssetCard({ asset }: { asset: Asset & { url: string } }) {
   const t = useTranslations("dashboard.library");
   const [isPending, startTransition] = useTransition();
-  const url = getFileUrl(asset.file_key);
+  const { url } = asset;
 
   const handleDelete = () => {
     if (!confirm(t("confirmDelete"))) return;
@@ -101,7 +100,7 @@ function AssetCard({ asset }: { asset: Asset }) {
   );
 }
 
-export default function AssetGrid({ assets }: { assets: Asset[] }) {
+export default function AssetGrid({ assets }: { assets: (Asset & { url: string })[] }) {
   const t = useTranslations("dashboard.library");
 
   if (assets.length === 0) {

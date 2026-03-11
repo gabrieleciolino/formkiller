@@ -13,6 +13,8 @@ import {
   ChevronRightIcon,
   MicIcon,
   StopCircleIcon,
+  Volume2Icon,
+  VolumeXIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -32,7 +34,10 @@ export type ViewerFormData = {
   userId: string;
   type: "mixed" | "default-only" | "voice-only";
   language: string;
+  theme: "light" | "dark";
   questions: ViewerQuestion[];
+  backgroundImageUrl: string | null;
+  backgroundMusicUrl: string | null;
 };
 
 function useTypewriter(text: string, speed = 25) {
@@ -229,9 +234,11 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
   const [answer, setAnswer] = useState<AnswerState>(null);
   const [recordState, setRecordState] = useState<RecordState>("idle");
   const [autoStopped, setAutoStopped] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [isPending, startTransition] = useTransition();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const tWelcome = useTranslations("viewer.welcome");
   const tQuestion = useTranslations("viewer.question");
   const tCompleted = useTranslations("viewer.completed");
@@ -242,6 +249,55 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
   const isLast = currentIndex === questions.length - 1;
   const showDefaultAnswers = form.type !== "voice-only";
   const showRecording = form.type !== "default-only";
+
+  const isDark = form.theme !== "light";
+  const tk = isDark
+    ? {
+        bg: "bg-black",
+        text: "text-white",
+        textSecondary: "text-white/40",
+        textHint: "text-white/30",
+        border: "border-white/10",
+        cardIdle:
+          "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10",
+        cardSelected: "border-white bg-white text-black",
+        cta: "bg-white text-black",
+        ctaDisabled: "disabled:opacity-20",
+        cursor: "animate-pulse bg-white/50",
+        progressActive: "bg-white",
+        progressCurrent: "bg-white/50",
+        progressInactive: "bg-white/10",
+        progressText: "text-white/30",
+        muteBtn: "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white",
+        overlay: "bg-black/60",
+        recordIdle:
+          "border-white/10 bg-white/5 text-white/50 hover:border-white/25 hover:bg-white/10 hover:text-white/80",
+        recordHint: "text-white/30",
+        reRecord: "text-white/25 hover:text-white/50",
+      }
+    : {
+        bg: "bg-white",
+        text: "text-black",
+        textSecondary: "text-black/40",
+        textHint: "text-black/30",
+        border: "border-black/10",
+        cardIdle:
+          "border-black/10 bg-black/5 text-black/70 hover:border-black/25 hover:bg-black/10",
+        cardSelected: "border-black bg-black text-white",
+        cta: "bg-black text-white",
+        ctaDisabled: "disabled:opacity-20",
+        cursor: "animate-pulse bg-black/50",
+        progressActive: "bg-black",
+        progressCurrent: "bg-black/50",
+        progressInactive: "bg-black/10",
+        progressText: "text-black/30",
+        muteBtn: "bg-black/10 text-black/60 hover:bg-black/20 hover:text-black",
+        overlay: "bg-white/60",
+        recordIdle:
+          "border-black/10 bg-black/5 text-black/50 hover:border-black/25 hover:bg-black/10 hover:text-black/80",
+        recordHint: "text-black/30",
+        reRecord: "text-black/25 hover:text-black/50",
+      };
   const displayedText = useTypewriter(
     phase === "question" ? currentQuestion.question : "",
   );
@@ -270,10 +326,22 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         if (serverError || !data) throw new Error();
         setSessionId(data.id);
         setPhase("question");
+
+        // Start background music on first user interaction
+        if (form.backgroundMusicUrl && bgMusicRef.current) {
+          bgMusicRef.current.volume = 0.15;
+          bgMusicRef.current.play().catch(() => {});
+        }
       } catch {
         toast(tErrors("cannotStart"));
       }
     });
+  };
+
+  const toggleMute = () => {
+    if (!bgMusicRef.current) return;
+    bgMusicRef.current.muted = !bgMusicRef.current.muted;
+    setIsMuted((m) => !m);
   };
 
   const startRecording = async () => {
@@ -290,6 +358,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         setAnswer({ type: "custom", blob });
         setRecordState("done");
         stream.getTracks().forEach((t) => t.stop());
+        bgMusicRef.current?.play().catch(() => {});
       };
 
       recorder.start();
@@ -297,6 +366,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
       setAutoStopped(false);
       setRecordState("recording");
       setAnswer(null);
+      bgMusicRef.current?.pause();
     } catch {
       toast(tErrors("micAccess"));
     }
@@ -365,17 +435,44 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
     });
   };
 
+  const bgStyle = form.backgroundImageUrl
+    ? {
+        backgroundImage: `url(${form.backgroundImageUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
+
+  // Persistent audio element — rendered once for the lifetime of the component
+  // so bgMusicRef stays valid across phase transitions
+  const bgAudio = form.backgroundMusicUrl ? (
+    <audio
+      ref={bgMusicRef}
+      src={form.backgroundMusicUrl}
+      loop
+      preload="auto"
+      className="hidden"
+    />
+  ) : null;
+
   if (phase === "welcome") {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-black p-6 text-white">
-        <div className="flex w-full max-w-md flex-col items-center gap-8 text-center">
-          <p className="text-xs tracking-widest text-white/30 uppercase">
+      <div
+        className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
+        style={bgStyle}
+      >
+        {bgAudio}
+        {form.backgroundImageUrl && (
+          <div className={`absolute inset-0 ${tk.overlay}`} />
+        )}
+        <div className="relative flex w-full max-w-md flex-col items-center gap-8 text-center">
+          <p className={`text-xs tracking-widest uppercase ${tk.textHint}`}>
             {form.name}
           </p>
           <h1 className="text-5xl font-black tracking-tight">
             {tWelcome("title")}
           </h1>
-          <p className="text-sm leading-relaxed text-white/40">
+          <p className={`text-sm leading-relaxed ${tk.textSecondary}`}>
             {tWelcome("questionsCount", { count: questions.length })}
             <br />
             {tWelcome("instructions")}
@@ -383,7 +480,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           <button
             onClick={handleStart}
             disabled={isPending}
-            className="mt-2 flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-opacity hover:opacity-80 disabled:opacity-40"
+            className={`mt-2 flex items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold transition-opacity hover:opacity-80 disabled:opacity-40 ${tk.cta}`}
           >
             {isPending ? tWelcome("loading") : tWelcome("start")}
             {!isPending && <ChevronRightIcon className="size-4" />}
@@ -406,51 +503,82 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
 
   if (phase === "completed") {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-black p-6 text-white">
-        <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">
-          <div className="flex size-20 items-center justify-center rounded-full bg-white/10">
-            <CheckCircleIcon className="size-10 text-white" />
+      <div
+        className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
+        style={bgStyle}
+      >
+        {form.backgroundImageUrl && (
+          <div className={`absolute inset-0 ${tk.overlay}`} />
+        )}
+        <div className="relative flex w-full max-w-md flex-col items-center gap-6 text-center">
+          <div
+            className={`flex size-20 items-center justify-center rounded-full ${isDark ? "bg-white/10" : "bg-black/10"}`}
+          >
+            <CheckCircleIcon className="size-10" />
           </div>
           <h1 className="text-4xl font-black">{tCompleted("title")}</h1>
-          <p className="text-sm text-white/40">{tCompleted("message")}</p>
+          <p className={`text-sm ${tk.textSecondary}`}>
+            {tCompleted("message")}
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-black text-white">
-      {/* Progress bar */}
-      <div className="flex items-center justify-between px-6 pt-8 pb-2">
-        <div className="flex gap-1.5">
+    <div
+      className={`relative flex min-h-dvh flex-col ${tk.bg} ${tk.text}`}
+      style={bgStyle}
+    >
+      {bgAudio}
+      {form.backgroundImageUrl && (
+        <div className={`absolute inset-0 ${tk.overlay}`} />
+      )}
+      {/* Progress bar + mute button on the same row */}
+      <div className="relative flex items-center gap-3 px-6 pt-8 pb-2">
+        <div className="flex flex-1 gap-1.5">
           {questions.map((_, i) => (
             <div
               key={i}
               className={`h-0.5 w-8 rounded-full transition-all duration-500 ${
                 i < currentIndex
-                  ? "bg-white"
+                  ? tk.progressActive
                   : i === currentIndex
-                    ? "bg-white/50"
-                    : "bg-white/10"
+                    ? tk.progressCurrent
+                    : tk.progressInactive
               }`}
             />
           ))}
         </div>
-        <span className="text-xs tabular-nums text-white/30">
+        <span className={`shrink-0 whitespace-nowrap text-xs tabular-nums ${tk.progressText}`}>
           {currentIndex + 1} / {questions.length}
         </span>
+        {form.backgroundMusicUrl && (
+          <button
+            onClick={toggleMute}
+            className={`flex size-7 shrink-0 items-center justify-center rounded-full transition-colors ${tk.muteBtn}`}
+          >
+            {isMuted ? (
+              <VolumeXIcon className="size-3.5" />
+            ) : (
+              <Volume2Icon className="size-3.5" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Question */}
-      <div className="flex flex-1 items-center justify-center px-6 py-10">
+      <div className="relative flex flex-1 items-center justify-center px-6 py-10">
         <p className="text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
           {displayedText}
-          <span className="ml-px inline-block h-6 w-0.5 animate-pulse bg-white/50 align-middle" />
+          <span
+            className={`ml-px inline-block h-6 w-0.5 align-middle ${tk.cursor}`}
+          />
         </p>
       </div>
 
       {/* Bottom answers + controls */}
-      <div className="space-y-3 px-4 pb-10">
+      <div className="relative space-y-3 px-4 pb-10">
         {/* Default answers grid */}
         {showDefaultAnswers && (
           <div className="grid grid-cols-2 gap-2">
@@ -462,9 +590,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
                   key={i}
                   onClick={() => handleSelectDefault(da.answer)}
                   className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
-                    isSelected
-                      ? "border-white bg-white text-black"
-                      : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10"
+                    isSelected ? tk.cardSelected : tk.cardIdle
                   }`}
                 >
                   {da.answer}
@@ -481,11 +607,11 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
               <>
                 <button
                   onClick={startRecording}
-                  className="flex size-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:border-white/25 hover:bg-white/10 hover:text-white/80 active:scale-95"
+                  className={`flex size-14 items-center justify-center rounded-full border transition-all active:scale-95 ${tk.recordIdle}`}
                 >
                   <MicIcon className="size-5" />
                 </button>
-                <p className="text-center text-xs text-white/30">
+                <p className={`text-center text-xs ${tk.recordHint}`}>
                   {tQuestion("recordHint")}
                 </p>
               </>
@@ -504,7 +630,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
                   </div>
                   <button
                     onClick={resetRecording}
-                    className="text-xs text-white/25 underline hover:text-white/50"
+                    className={`text-xs underline ${tk.reRecord}`}
                   >
                     {tQuestion("reRecord")}
                   </button>
@@ -523,7 +649,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         <button
           onClick={handleAdvance}
           disabled={!answer || isPending}
-          className="w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-all active:scale-95 disabled:opacity-20 hover:opacity-90"
+          className={`w-full rounded-2xl py-4 text-sm font-semibold transition-all active:scale-95 hover:opacity-90 ${tk.cta} ${tk.ctaDisabled}`}
         >
           {isPending ? "..." : isLast ? tQuestion("finish") : tQuestion("next")}
         </button>

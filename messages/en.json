@@ -111,9 +111,21 @@
       "instructions": "Instructions",
       "instructionsPlaceholder": "Instructions",
       "type": "Type",
+      "theme": "Theme",
+      "themes": {
+        "dark": "Dark",
+        "light": "Light"
+      },
       "submit": "Update form",
       "success": "Form successfully updated.",
       "error": "Form update failed."
+    },
+    "libraryPicker": {
+      "backgroundImage": "Background image",
+      "backgroundMusic": "Background music",
+      "select": "Select from library",
+      "none": "No file selected",
+      "empty": "No files in library."
     },
     "questions": {
       "defaultAnswers": "Default answers",

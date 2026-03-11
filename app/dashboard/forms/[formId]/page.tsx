@@ -35,10 +35,23 @@ export default async function FormsDetailPage({
     questionsRaw.map((q) => [q.id, q.file_key ? getFileUrl(q.file_key) : null]),
   );
 
+  const backgroundImageUrl = form.background_image_key
+    ? getFileUrl(form.background_image_key)
+    : null;
+  const backgroundMusicUrl = form.background_music_key
+    ? getFileUrl(form.background_music_key)
+    : null;
+
   return (
     <DashboardWrapper
       title={form.name}
-      actions={<EditFormSheet formData={form} />}
+      actions={
+        <EditFormSheet
+          formData={form}
+          backgroundImageUrl={backgroundImageUrl}
+          backgroundMusicUrl={backgroundMusicUrl}
+        />
+      }
     >
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">

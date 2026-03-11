@@ -89,7 +89,7 @@ export const editFormAction = authenticatedActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, formId, type } = parsedInput;
+    const { name, instructions, formId, type, theme, backgroundImageKey, backgroundMusicKey } = parsedInput;
 
     const { data: form, error } = await supabase
       .from("form")
@@ -97,6 +97,9 @@ export const editFormAction = authenticatedActionClient
         name,
         instructions,
         type,
+        theme: theme ?? "dark",
+        background_image_key: backgroundImageKey ?? null,
+        background_music_key: backgroundMusicKey ?? null,
       })
       .eq("id", formId)
       .eq("user_id", userId)

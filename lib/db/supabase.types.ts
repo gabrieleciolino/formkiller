@@ -141,31 +141,40 @@ export type Database = {
       }
       form: {
         Row: {
+          background_image_key: string | null
+          background_music_key: string | null
           created_at: string | null
           id: string
           instructions: string
           language: Database["public"]["Enums"]["form_language"]
           name: string
+          theme: Database["public"]["Enums"]["form_theme"]
           type: Database["public"]["Enums"]["form_type"]
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          background_image_key?: string | null
+          background_music_key?: string | null
           created_at?: string | null
           id?: string
           instructions: string
           language?: Database["public"]["Enums"]["form_language"]
           name: string
+          theme?: Database["public"]["Enums"]["form_theme"]
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          background_image_key?: string | null
+          background_music_key?: string | null
           created_at?: string | null
           id?: string
           instructions?: string
           language?: Database["public"]["Enums"]["form_language"]
           name?: string
+          theme?: Database["public"]["Enums"]["form_theme"]
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id?: string
@@ -322,6 +331,7 @@ export type Database = {
       asset_type: "image" | "video" | "audio"
       form_language: "en" | "it" | "es"
       form_session_status: "pending" | "in_progress" | "completed"
+      form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
     }
     CompositeTypes: {
@@ -456,6 +466,7 @@ export const Constants = {
       asset_type: ["image", "video", "audio"],
       form_language: ["en", "it", "es"],
       form_session_status: ["pending", "in_progress", "completed"],
+      form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
     },
   },

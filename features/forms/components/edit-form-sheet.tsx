@@ -22,19 +22,30 @@ import { editFormAction } from "@/features/forms/actions";
 import {
   editFormSchema,
   EditFormType,
+  FormTheme,
   FormType,
   formTypeSchema,
 } from "@/features/forms/schema";
+import { Moon, Sun } from "lucide-react";
 import { Form } from "@/features/forms/types";
+import LibraryPickerDialog from "@/features/forms/components/library-picker-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
-export default function EditFormSheet({ formData }: { formData: Form }) {
+export default function EditFormSheet({
+  formData,
+  backgroundImageUrl,
+  backgroundMusicUrl,
+}: {
+  formData: Form;
+  backgroundImageUrl: string | null;
+  backgroundMusicUrl: string | null;
+}) {
   const [open, setOpen] = useState(false);
-  const { name, instructions, id, type } = formData;
+  const { name, instructions, id, type, theme, background_image_key, background_music_key } = formData;
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("forms.edit");
   const tTypes = useTranslations("forms.types");
@@ -46,6 +57,9 @@ export default function EditFormSheet({ formData }: { formData: Form }) {
       instructions,
       formId: id,
       type: (type ?? "mixed") as FormType,
+      theme: (theme ?? "dark") as FormTheme,
+      backgroundImageKey: background_image_key ?? null,
+      backgroundMusicKey: background_music_key ?? null,
     },
   });
 
@@ -139,6 +153,63 @@ export default function EditFormSheet({ formData }: { formData: Form }) {
                     </SelectContent>
                   </Select>
                 </Field>
+              )}
+            />
+            <Controller
+              name="theme"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("theme")}</FieldLabel>
+                  <div className="flex rounded-lg border border-border overflow-hidden">
+                    {(["dark", "light"] as FormTheme[]).map((themeKey) => {
+                      const selected = field.value === themeKey;
+                      return (
+                        <button
+                          key={themeKey}
+                          type="button"
+                          onClick={() => field.onChange(themeKey)}
+                          className={`flex flex-1 items-center justify-center gap-2 py-2 text-sm transition-colors ${
+                            selected
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {themeKey === "dark" ? (
+                            <Moon className="size-4" />
+                          ) : (
+                            <Sun className="size-4" />
+                          )}
+                          {t(`themes.${themeKey}` as Parameters<typeof t>[0])}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              )}
+            />
+            <Controller
+              name="backgroundImageKey"
+              control={form.control}
+              render={({ field }) => (
+                <LibraryPickerDialog
+                  type="image"
+                  value={field.value ?? null}
+                  previewUrl={field.value ? backgroundImageUrl : null}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+            <Controller
+              name="backgroundMusicKey"
+              control={form.control}
+              render={({ field }) => (
+                <LibraryPickerDialog
+                  type="audio"
+                  value={field.value ?? null}
+                  previewUrl={field.value ? backgroundMusicUrl : null}
+                  onChange={field.onChange}
+                />
               )}
             />
             <Button type="submit" className="mt-2 w-full">

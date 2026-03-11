@@ -15,6 +15,7 @@ const authUserTable = pgSchema("auth").table("users", {
 });
 
 export const assetTypeEnum = pgEnum("asset_type", ["image", "video", "audio"]);
+export const formThemeEnum = pgEnum("form_theme", ["light", "dark"]);
 
 export const assetTable = pgTable("asset", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -50,6 +51,10 @@ export const formTable = pgTable("form", {
   instructions: text("instructions").notNull(),
   type: formTypeEnum("type").notNull().default("mixed"),
   language: formLanguageEnum("language").notNull().default("en"),
+
+  backgroundImageKey: text("background_image_key"),
+  backgroundMusicKey: text("background_music_key"),
+  theme: formThemeEnum("theme").notNull().default("dark"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
