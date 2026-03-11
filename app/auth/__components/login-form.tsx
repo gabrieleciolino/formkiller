@@ -21,8 +21,6 @@ export default function LoginForm() {
 
   const redirectTo = searchParams.get("redirect_to");
 
-  console.log(searchParams);
-
   const form = useForm<LoginFormType>({
     resolver: zodResolver(loginFormSchema),
     values: {

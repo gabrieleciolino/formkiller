@@ -1,7 +1,8 @@
 {
   "auth": {
     "login": {
-      "title": "Login",
+      "title": "Welcome back",
+      "description": "Sign in to your FormKiller account.",
       "email": "Email",
       "password": "Password",
       "submit": "Login",

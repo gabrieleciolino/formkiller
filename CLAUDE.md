@@ -88,11 +88,12 @@ FormKiller is a multi-modal form builder with AI-powered question generation, vo
 
 **File:** `lib/db/schema.ts`
 
-After schema changes, run:
+After schema changes, always remind the user to run:
 ```bash
 pnpm db:generate   # generates migration
 pnpm db:migrate    # applies + regenerates supabase types
 ```
+**Do this at the end of the same response where the schema change was made — never skip it or mention it only as an afterthought.**
 
 ### Enums
 
