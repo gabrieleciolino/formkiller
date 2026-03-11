@@ -45,10 +45,14 @@ export const leadTable = pgTable("lead", {
   formId: uuid("form_id")
     .notNull()
     .references(() => formTable.id, { onDelete: "cascade" }),
+  formSessionId: uuid("form_session_id")
+    .notNull()
+    .references(() => formSessionTable.id, { onDelete: "cascade" }),
 
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
+  notes: text("notes"),
 
   createdAt: timestamp("created_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }),

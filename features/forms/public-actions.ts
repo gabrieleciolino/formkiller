@@ -1,5 +1,6 @@
 "use server";
 
+import { createLeadSchema } from "@/features/leads/schema";
 import { generateSTT } from "@/lib/deepgram/functions";
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -109,4 +110,29 @@ export const submitAnswerAction = publicViewerClient
       .eq("id", sessionId);
 
     return { completed: isLast };
+  });
+
+export const createLeadAction = publicViewerClient
+  .inputSchema(createLeadSchema)
+  .action(async ({ parsedInput }) => {
+    const { sessionId, formId, userId, name, email, phone, notes } =
+      parsedInput;
+
+    const { data, error } = await supabaseAdmin
+      .from("lead")
+      .insert({
+        form_session_id: sessionId,
+        form_id: formId,
+        user_id: userId,
+        name,
+        email,
+        phone,
+        notes: notes ?? null,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
   });

@@ -57,6 +57,20 @@
       "when": 1773219289573,
       "tag": "0007_flashy_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773221791111,
+      "tag": "0008_condemned_switch",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773221829755,
+      "tag": "0009_dashing_betty_brant",
+      "breakpoints": true
     }
   ]
 }

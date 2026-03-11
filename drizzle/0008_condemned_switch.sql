@@ -1,0 +1,2 @@
+ALTER TABLE "lead" ADD COLUMN "form_session_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "lead" ADD CONSTRAINT "lead_form_session_id_form_session_id_fk" FOREIGN KEY ("form_session_id") REFERENCES "public"."form_session"("id") ON DELETE cascade ON UPDATE no action;

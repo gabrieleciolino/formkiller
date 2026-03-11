@@ -179,8 +179,10 @@ export type Database = {
           created_at: string | null
           email: string
           form_id: string
+          form_session_id: string
           id: string
           name: string
+          notes: string | null
           phone: string
           updated_at: string | null
           user_id: string
@@ -189,8 +191,10 @@ export type Database = {
           created_at?: string | null
           email: string
           form_id: string
+          form_session_id: string
           id?: string
           name: string
+          notes?: string | null
           phone: string
           updated_at?: string | null
           user_id: string
@@ -199,8 +203,10 @@ export type Database = {
           created_at?: string | null
           email?: string
           form_id?: string
+          form_session_id?: string
           id?: string
           name?: string
+          notes?: string | null
           phone?: string
           updated_at?: string | null
           user_id?: string
@@ -211,6 +217,13 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_form_session_id_form_session_id_fk"
+            columns: ["form_session_id"]
+            isOneToOne: false
+            referencedRelation: "form_session"
             referencedColumns: ["id"]
           },
         ]

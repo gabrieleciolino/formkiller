@@ -9,6 +9,27 @@ export const columns: ColumnDef<Lead>[] = [
     header: "Name",
   },
   {
+    accessorKey: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+  },
+  {
+    accessorKey: "notes",
+    header: "Notes",
+    cell: ({ getValue }) => getValue<string | null>() ?? "—",
+  },
+  {
+    id: "form",
+    header: "Form",
+    cell: ({ row }) => {
+      const form = row.original.form as { name: string } | null;
+      return form?.name ?? "—";
+    },
+  },
+  {
     accessorKey: "created_at",
     header: "Created at",
     cell: ({ getValue }) => {

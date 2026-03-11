@@ -1,9 +1,12 @@
 "use client";
 
 import {
+  createLeadAction,
   startFormSessionAction,
   submitAnswerAction,
 } from "@/features/forms/public-actions";
+import { createLeadSchema, CreateLeadType } from "@/features/leads/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CheckCircleIcon,
   ChevronRightIcon,
@@ -11,6 +14,7 @@ import {
   StopCircleIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export type ViewerQuestion = {
@@ -55,13 +59,93 @@ const blobToBase64 = (blob: Blob): Promise<string> =>
     reader.readAsDataURL(blob);
   });
 
+function LeadForm({
+  sessionId,
+  formId,
+  userId,
+  onCompleted,
+}: {
+  sessionId: string;
+  formId: string;
+  userId: string;
+  onCompleted: () => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const { register, handleSubmit, formState: { errors } } = useForm<CreateLeadType>({
+    resolver: zodResolver(createLeadSchema),
+    defaultValues: { sessionId, formId, userId },
+  });
+
+  const onSubmit = (values: CreateLeadType) => {
+    startTransition(async () => {
+      try {
+        const { data, serverError } = await createLeadAction(values);
+        if (serverError || !data) throw new Error();
+        onCompleted();
+      } catch {
+        toast("Errore durante il salvataggio dei dati.");
+      }
+    });
+  };
+
+  const fields = [
+    { key: "name" as const, label: "Nome", type: "text" },
+    { key: "email" as const, label: "Email", type: "email" },
+    { key: "phone" as const, label: "Telefono", type: "tel" },
+    { key: "notes" as const, label: "Note", type: "text" },
+  ];
+
+  return (
+    <div className="flex min-h-dvh flex-col bg-black text-white">
+      <div className="flex flex-1 flex-col justify-center px-6 py-10">
+        <div className="mx-auto w-full max-w-md space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black">Quasi fatto!</h2>
+            <p className="text-sm text-white/40">
+              Inserisci i tuoi dati per completare il questionario.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            {fields.map(({ key, label, type }) => (
+              <div key={key} className="space-y-1.5">
+                <label className="text-xs font-medium text-white/50">
+                  {label}
+                </label>
+                <input
+                  {...register(key)}
+                  type={type}
+                  className={`w-full rounded-xl border bg-white/5 px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition-colors focus:bg-white/8 ${
+                    errors[key]
+                      ? "border-red-500/50 focus:border-red-500/70"
+                      : "border-white/10 focus:border-white/30"
+                  }`}
+                />
+                {errors[key] && (
+                  <p className="text-xs text-red-400">{errors[key]?.message}</p>
+                )}
+              </div>
+            ))}
+            <button
+              type="submit"
+              disabled={isPending}
+              className="mt-2 w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity disabled:opacity-40 hover:opacity-90"
+            >
+              {isPending ? "..." : "Invia"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type AnswerState =
   | { type: "default"; text: string }
   | { type: "custom"; blob: Blob }
   | null;
 
 type RecordState = "idle" | "recording" | "done";
-type Phase = "welcome" | "question" | "completed";
+type Phase = "welcome" | "question" | "lead-form" | "completed";
 
 export default function FormViewer({ form }: { form: ViewerFormData }) {
   const [phase, setPhase] = useState<Phase>("welcome");
@@ -183,7 +267,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         if (serverError || !data) throw new Error();
 
         if (data.completed) {
-          setPhase("completed");
+          setPhase("lead-form");
         } else {
           setCurrentIndex((i) => i + 1);
           setAnswer(null);
@@ -218,6 +302,17 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           </button>
         </div>
       </div>
+    );
+  }
+
+  if (phase === "lead-form") {
+    return (
+      <LeadForm
+        sessionId={sessionId!}
+        formId={form.id}
+        userId={form.userId}
+        onCompleted={() => setPhase("completed")}
+      />
     );
   }
 
