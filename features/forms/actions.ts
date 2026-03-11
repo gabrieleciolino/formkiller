@@ -1,6 +1,10 @@
 "use server";
 
-import { createFormSchema } from "@/features/forms/schema";
+import {
+  createFormSchema,
+  editFormSchema,
+  editQuestionsSchema,
+} from "@/features/forms/schema";
 import { authenticatedActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
 import { urls } from "@/lib/urls";
@@ -23,7 +27,6 @@ export const createFormAction = authenticatedActionClient
       .single();
 
     if (error) {
-      console.log("[create_form_action_error", error);
       throw error;
     }
 
@@ -51,4 +54,51 @@ export const createFormAction = authenticatedActionClient
     revalidatePath(urls.dashboard.forms.index);
 
     return form;
+  });
+
+export const editFormAction = authenticatedActionClient
+  .inputSchema(editFormSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { name, instructions, formId } = parsedInput;
+
+    const { data: form, error } = await supabase
+      .from("form")
+      .update({
+        name,
+        instructions,
+      })
+      .eq("id", formId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return form;
+  });
+
+export const editQuestionsAction = authenticatedActionClient
+  .inputSchema(editQuestionsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { questions } = parsedInput;
+
+    const updatePromises = questions.map((q) =>
+      supabase
+        .from("question")
+        .update({
+          question: q.question,
+          default_answers: q.default_answers,
+        })
+        .eq("id", q.id)
+        .eq("user_id", userId)
+        .throwOnError(),
+    );
+
+    await Promise.all(updatePromises);
+
+    return questions;
   });

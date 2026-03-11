@@ -9,7 +9,7 @@ export const getFormsQuery = async ({
 }) => {
   const { data, error } = await supabase
     .from("form")
-    .select("*")
+    .select("*, questions:question(*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -27,7 +27,7 @@ export const getFormByIdQuery = async ({
 }) => {
   const { data } = await supabase
     .from("form")
-    .select("*")
+    .select("*, questions:question(*)")
     .eq("id", formId)
     .order("created_at", { ascending: false })
     .single()
