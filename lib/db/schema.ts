@@ -14,6 +14,14 @@ const authUserTable = pgSchema("auth").table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
 });
 
+export const formTypeEnum = pgEnum("form_type", [
+  "mixed",
+  "default-only",
+  "voice-only",
+]);
+
+export const formLanguageEnum = pgEnum("form_language", ["en", "it", "es"]);
+
 export const formTable = pgTable("form", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
@@ -22,6 +30,8 @@ export const formTable = pgTable("form", {
 
   name: text("name").notNull(),
   instructions: text("instructions").notNull(),
+  type: formTypeEnum("type").notNull().default("mixed"),
+  language: formLanguageEnum("language").notNull().default("en"),
 
   createdAt: timestamp("created_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }),

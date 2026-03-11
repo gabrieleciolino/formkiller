@@ -1,8 +1,18 @@
 import { z } from "zod";
 
+export const formTypeSchema = z.enum(["mixed", "default-only", "voice-only"]);
+export type FormType = z.infer<typeof formTypeSchema>;
+
+export const FORM_TYPE_LABELS: Record<FormType, string> = {
+  mixed: "Voice + buttons",
+  "default-only": "Only buttons",
+  "voice-only": "Only voice",
+};
+
 export const createFormSchema = z.object({
   name: z.string(),
   instructions: z.string(),
+  type: formTypeSchema,
 });
 
 export type CreateFormType = z.infer<typeof createFormSchema>;
@@ -11,6 +21,7 @@ export const editFormSchema = z.object({
   formId: z.string(),
   name: z.string(),
   instructions: z.string(),
+  type: formTypeSchema,
 });
 
 export type EditFormType = z.infer<typeof editFormSchema>;

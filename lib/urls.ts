@@ -12,4 +12,5 @@ export const urls = {
       index: "/dashboard/leads",
     },
   },
+  form: (formId: string) => `/form/${formId}`,
 };

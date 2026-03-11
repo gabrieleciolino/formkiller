@@ -42,6 +42,7 @@ export type Database = {
       answer: {
         Row: {
           created_at: string | null
+          default_answer: string | null
           file_generated_at: string | null
           file_key: string | null
           form_id: string
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          default_answer?: string | null
           file_generated_at?: string | null
           file_key?: string | null
           form_id: string
@@ -66,6 +68,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          default_answer?: string | null
           file_generated_at?: string | null
           file_key?: string | null
           form_id?: string
@@ -105,7 +108,9 @@ export type Database = {
           created_at: string | null
           id: string
           instructions: string
+          language: Database["public"]["Enums"]["form_language"]
           name: string
+          type: Database["public"]["Enums"]["form_type"]
           updated_at: string | null
           user_id: string
         }
@@ -113,7 +118,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           instructions: string
+          language?: Database["public"]["Enums"]["form_language"]
           name: string
+          type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id: string
         }
@@ -121,7 +128,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           instructions?: string
+          language?: Database["public"]["Enums"]["form_language"]
           name?: string
+          type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id?: string
         }
@@ -261,7 +270,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      form_language: "en" | "it" | "es"
       form_session_status: "pending" | "in_progress" | "completed"
+      form_type: "mixed" | "default-only" | "voice-only"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -392,7 +403,9 @@ export const Constants = {
   },
   public: {
     Enums: {
+      form_language: ["en", "it", "es"],
       form_session_status: ["pending", "in_progress", "completed"],
+      form_type: ["mixed", "default-only", "voice-only"],
     },
   },
 } as const

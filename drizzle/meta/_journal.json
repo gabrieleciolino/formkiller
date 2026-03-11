@@ -43,6 +43,20 @@
       "when": 1773215940776,
       "tag": "0005_shocking_jetstream",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773218708092,
+      "tag": "0006_sturdy_roland_deschain",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773219289573,
+      "tag": "0007_flashy_rafael_vega",
+      "breakpoints": true
     }
   ]
 }

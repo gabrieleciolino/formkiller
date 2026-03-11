@@ -11,8 +11,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { editFormAction } from "@/features/forms/actions";
-import { editFormSchema, EditFormType } from "@/features/forms/schema";
+import {
+  editFormSchema,
+  EditFormType,
+  FORM_TYPE_LABELS,
+  FormType,
+} from "@/features/forms/schema";
 import { Form } from "@/features/forms/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
@@ -21,12 +33,12 @@ import { toast } from "sonner";
 
 export default function EditFormSheet({ formData }: { formData: Form }) {
   const [open, setOpen] = useState(false);
-  const { name, instructions, id } = formData;
+  const { name, instructions, id, type } = formData;
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<EditFormType>({
     resolver: zodResolver(editFormSchema),
-    values: { name, instructions, formId: id },
+    values: { name, instructions, formId: id, type: (type ?? "mixed") as FormType },
   });
 
   const onSubmit = (values: EditFormType) => {
@@ -97,6 +109,27 @@ export default function EditFormSheet({ formData }: { formData: Form }) {
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="type"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Type</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(FORM_TYPE_LABELS) as FormType[]).map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {FORM_TYPE_LABELS[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               )}
             />

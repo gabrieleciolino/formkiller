@@ -24,6 +24,7 @@ export type ViewerFormData = {
   id: string;
   name: string;
   userId: string;
+  type: "mixed" | "default-only" | "voice-only";
   questions: ViewerQuestion[];
 };
 
@@ -75,6 +76,8 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
   const questions = form.questions;
   const currentQuestion = questions[currentIndex];
   const isLast = currentIndex === questions.length - 1;
+  const showDefaultAnswers = form.type !== "voice-only";
+  const showRecording = form.type !== "default-only";
   const displayedText = useTypewriter(
     phase === "question" ? currentQuestion.question : "",
   );
@@ -268,7 +271,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
       {/* Bottom answers + controls */}
       <div className="space-y-3 px-4 pb-10">
         {/* Default answers grid */}
-        <div className="grid grid-cols-2 gap-2">
+        {showDefaultAnswers && <div className="grid grid-cols-2 gap-2">
           {currentQuestion.defaultAnswers.map((da, i) => {
             const isSelected =
               answer?.type === "default" && answer.text === da.answer;
@@ -286,10 +289,10 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
               </button>
             );
           })}
-        </div>
+        </div>}
 
         {/* Recording button */}
-        <div className="flex justify-center py-1">
+        {showRecording && <div className="flex justify-center py-1">
           {recordState === "idle" && (
             <button
               onClick={startRecording}
@@ -322,7 +325,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
               </button>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Advance button */}
         <button

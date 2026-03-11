@@ -16,11 +16,23 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { createFormSchema, CreateFormType } from "@/features/forms/schema";
+import {
+  createFormSchema,
+  CreateFormType,
+  FORM_TYPE_LABELS,
+  FormType,
+} from "@/features/forms/schema";
 import { createFormAction } from "@/features/forms/actions";
 import { useRouter } from "next/navigation";
 import { urls } from "@/lib/urls";
@@ -34,6 +46,7 @@ export default function CreateFormSheet() {
     values: {
       name: "",
       instructions: "",
+      type: "mixed",
     },
   });
 
@@ -107,6 +120,27 @@ export default function CreateFormSheet() {
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="type"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Type</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(FORM_TYPE_LABELS) as FormType[]).map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {FORM_TYPE_LABELS[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               )}
             />

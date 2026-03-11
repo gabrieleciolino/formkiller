@@ -16,13 +16,14 @@ export const createFormAction = authenticatedActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions } = parsedInput;
+    const { name, instructions, type } = parsedInput;
 
     const { data: form, error } = await supabase
       .from("form")
       .insert({
         name,
         instructions,
+        type,
         user_id: userId,
       })
       .select()
@@ -82,13 +83,14 @@ export const editFormAction = authenticatedActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, formId } = parsedInput;
+    const { name, instructions, formId, type } = parsedInput;
 
     const { data: form, error } = await supabase
       .from("form")
       .update({
         name,
         instructions,
+        type,
       })
       .eq("id", formId)
       .eq("user_id", userId)
