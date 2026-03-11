@@ -114,9 +114,11 @@
       "loading": "Cargando..."
     },
     "question": {
-      "record": "Grabar respuesta",
+      "record": "Grabar",
+      "recordHint": "¿Quieres explicarlo mejor? Puedes grabar tu respuesta.",
       "stopRecording": "Detener grabación",
       "recorded": "Respuesta grabada",
+      "recordAutoStopped": "Tiempo límite alcanzado",
       "reRecord": "Volver a grabar",
       "next": "Siguiente →",
       "finish": "Finalizar"

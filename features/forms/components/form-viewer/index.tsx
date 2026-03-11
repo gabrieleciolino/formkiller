@@ -5,6 +5,7 @@ import {
   startFormSessionAction,
   submitAnswerAction,
 } from "@/features/forms/public-actions";
+import { MAX_RECORDING_SECONDS } from "@/features/forms/constants";
 import { createLeadSchema, CreateLeadType } from "@/features/leads/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -47,7 +48,7 @@ function useTypewriter(text: string, speed = 25) {
       if (i >= text.length) clearInterval(id);
     }, speed);
     return () => clearInterval(id);
-  }, [text]);
+  }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return displayed;
 }
@@ -59,6 +60,74 @@ const blobToBase64 = (blob: Blob): Promise<string> =>
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+
+// ── SVG circle timer constants ────────────────────────────────────────────────
+const RADIUS = 26;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+function RecordingButton({ onStop }: { onStop: (wasAuto: boolean) => void }) {
+  const [elapsed, setElapsed] = useState(0);
+  const onStopRef = useRef(onStop);
+  useEffect(() => {
+    onStopRef.current = onStop;
+  });
+
+  useEffect(() => {
+    const startTime = Date.now();
+    const id = setInterval(() => {
+      const e = Math.min(
+        (Date.now() - startTime) / 1000,
+        MAX_RECORDING_SECONDS,
+      );
+      setElapsed(e);
+      if (e >= MAX_RECORDING_SECONDS) {
+        clearInterval(id);
+        onStopRef.current(true);
+      }
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
+  const dashoffset = CIRCUMFERENCE * (elapsed / MAX_RECORDING_SECONDS);
+
+  return (
+    <div className="relative size-14">
+      <svg
+        className="absolute inset-0 -rotate-90"
+        viewBox="0 0 56 56"
+        fill="none"
+      >
+        {/* Track */}
+        <circle
+          cx="28"
+          cy="28"
+          r={RADIUS}
+          stroke="rgba(239,68,68,0.15)"
+          strokeWidth="2"
+        />
+        {/* Countdown arc */}
+        <circle
+          cx="28"
+          cy="28"
+          r={RADIUS}
+          stroke="rgba(239,68,68,0.7)"
+          strokeWidth="2"
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={dashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <button
+        onClick={() => onStopRef.current(false)}
+        className="absolute inset-0 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 active:scale-95"
+      >
+        <StopCircleIcon className="size-5" />
+      </button>
+    </div>
+  );
+}
+
+// ── LeadForm ──────────────────────────────────────────────────────────────────
 
 function LeadForm({
   sessionId,
@@ -143,6 +212,8 @@ function LeadForm({
   );
 }
 
+// ── FormViewer ────────────────────────────────────────────────────────────────
+
 type AnswerState =
   | { type: "default"; text: string }
   | { type: "custom"; blob: Blob }
@@ -157,6 +228,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState<AnswerState>(null);
   const [recordState, setRecordState] = useState<RecordState>("idle");
+  const [autoStopped, setAutoStopped] = useState(false);
   const [isPending, startTransition] = useTransition();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -186,7 +258,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
     return () => {
       audio.pause();
     };
-  }, [currentIndex, phase]);
+  }, [currentIndex, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = () => {
     startTransition(async () => {
@@ -222,6 +294,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
 
       recorder.start();
       mediaRecorderRef.current = recorder;
+      setAutoStopped(false);
       setRecordState("recording");
       setAnswer(null);
     } catch {
@@ -229,13 +302,15 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = (wasAuto = false) => {
+    setAutoStopped(wasAuto);
     mediaRecorderRef.current?.stop();
     mediaRecorderRef.current = null;
   };
 
   const resetRecording = () => {
     setRecordState("idle");
+    setAutoStopped(false);
     setAnswer(null);
   };
 
@@ -245,6 +320,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
       mediaRecorderRef.current = null;
     }
     setRecordState("idle");
+    setAutoStopped(false);
     setAnswer({ type: "default", text });
   };
 
@@ -281,6 +357,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           setCurrentIndex((i) => i + 1);
           setAnswer(null);
           setRecordState("idle");
+          setAutoStopped(false);
         }
       } catch {
         toast(tErrors("saveAnswer"));
@@ -364,7 +441,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
         </span>
       </div>
 
-      {/* Question — subtitle style, vertically centered */}
+      {/* Question */}
       <div className="flex flex-1 items-center justify-center px-6 py-10">
         <p className="text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
           {displayedText}
@@ -397,39 +474,46 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           </div>
         )}
 
-        {/* Recording button */}
+        {/* Recording section */}
         {showRecording && (
-          <div className="flex justify-center py-1">
+          <div className="flex flex-col items-center gap-2 py-1">
             {recordState === "idle" && (
-              <button
-                onClick={startRecording}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/50 transition-all hover:border-white/20 hover:text-white/80 active:scale-95"
-              >
-                <MicIcon className="size-4" />
-                {tQuestion("record")}
-              </button>
-            )}
-            {recordState === "recording" && (
-              <button
-                onClick={stopRecording}
-                className="flex animate-pulse items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2.5 text-sm text-red-400"
-              >
-                <StopCircleIcon className="size-4" />
-                {tQuestion("stopRecording")}
-              </button>
-            )}
-            {recordState === "done" && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-                  <CheckCircleIcon className="size-4" />
-                  {tQuestion("recorded")}
-                </div>
+              <>
                 <button
-                  onClick={resetRecording}
-                  className="text-xs text-white/25 underline hover:text-white/50"
+                  onClick={startRecording}
+                  className="flex size-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 transition-all hover:border-white/25 hover:bg-white/10 hover:text-white/80 active:scale-95"
                 >
-                  {tQuestion("reRecord")}
+                  <MicIcon className="size-5" />
                 </button>
+                <p className="text-center text-xs text-white/30">
+                  {tQuestion("recordHint")}
+                </p>
+              </>
+            )}
+
+            {recordState === "recording" && (
+              <RecordingButton onStop={stopRecording} />
+            )}
+
+            {recordState === "done" && (
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+                    <CheckCircleIcon className="size-4" />
+                    {tQuestion("recorded")}
+                  </div>
+                  <button
+                    onClick={resetRecording}
+                    className="text-xs text-white/25 underline hover:text-white/50"
+                  >
+                    {tQuestion("reRecord")}
+                  </button>
+                </div>
+                {autoStopped && (
+                  <p className="text-xs text-amber-400/70">
+                    {tQuestion("recordAutoStopped")}
+                  </p>
+                )}
               </div>
             )}
           </div>

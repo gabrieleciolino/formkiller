@@ -5,6 +5,7 @@ import FormViewer, {
 import { getFormByIdQuery } from "@/features/forms/queries";
 import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
+import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 
 export default async function FormViewerPage({
@@ -19,6 +20,9 @@ export default async function FormViewerPage({
   );
 
   if (!form) notFound();
+
+  const language = form.language ?? "it";
+  const messages = (await import(`@/messages/${language}.json`)).default;
 
   type RawQuestion = {
     id: string;
@@ -35,7 +39,7 @@ export default async function FormViewerPage({
     name: form.name,
     userId: form.user_id,
     type: (form.type ?? "mixed") as ViewerFormData["type"],
-    language: form.language ?? "it",
+    language,
     questions: rawQuestions.map((q): ViewerQuestion => ({
       id: q.id,
       question: q.question,
@@ -44,5 +48,9 @@ export default async function FormViewerPage({
     })),
   };
 
-  return <FormViewer form={viewerForm} />;
+  return (
+    <NextIntlClientProvider locale={language} messages={messages}>
+      <FormViewer form={viewerForm} />
+    </NextIntlClientProvider>
+  );
 }
