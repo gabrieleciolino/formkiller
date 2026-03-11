@@ -8,6 +8,20 @@
       "when": 1773145441267,
       "tag": "0000_light_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773157880036,
+      "tag": "0001_huge_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773180336102,
+      "tag": "0002_icy_rhino",
+      "breakpoints": true
     }
   ]
 }

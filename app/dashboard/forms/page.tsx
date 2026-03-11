@@ -1,7 +1,14 @@
 import DashboardWrapper from "@/app/dashboard/__components/wrapper";
-import CreateFormSheet from "@/app/dashboard/__components/create-form-sheet";
+import FormsTable from "@/app/dashboard/forms/table";
+import CreateFormSheet from "@/features/forms/components/create-form-sheet";
+import { getFormsQuery } from "@/features/forms/queries";
+import { authenticatedQuery } from "@/lib/queries";
 
-export default function FormsPage() {
+export default async function FormsPage() {
+  const forms = await authenticatedQuery(
+    async ({ supabase, userId }) => await getFormsQuery({ userId, supabase }),
+  );
+
   return (
     <DashboardWrapper
       title="Forms"
@@ -11,7 +18,7 @@ export default function FormsPage() {
         </div>
       }
     >
-      form
+      <FormsTable data={forms} />
     </DashboardWrapper>
   );
 }

@@ -45,6 +45,7 @@ export type Database = {
           id: string
           instructions: string
           name: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -52,6 +53,7 @@ export type Database = {
           id?: string
           instructions: string
           name: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -59,9 +61,92 @@ export type Database = {
           id?: string
           instructions?: string
           name?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
+      }
+      lead: {
+        Row: {
+          created_at: string | null
+          email: string
+          form_id: string
+          id: string
+          name: string
+          phone: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          form_id: string
+          id?: string
+          name: string
+          phone: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          form_id?: string
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_form_id_form_id_fk"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question: {
+        Row: {
+          created_at: string | null
+          default_answers: Json
+          form_id: string
+          id: string
+          order: number
+          question: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_answers: Json
+          form_id: string
+          id?: string
+          order?: number
+          question: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_answers?: Json
+          form_id?: string
+          id?: string
+          order?: number
+          question?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_form_id_form_id_fk"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

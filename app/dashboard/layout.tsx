@@ -26,6 +26,7 @@ export default function DashboardLayout({
               height={100}
               alt="FormKiller Logo"
               className="block w-auto min-h-[40px] md:hidden mb-2"
+              loading="eager"
             />
           </Link>
         </div>

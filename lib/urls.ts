@@ -6,6 +6,10 @@ export const urls = {
     index: "/dashboard",
     forms: {
       index: "/dashboard/forms",
+      detail: (formId: string) => `/dashboard/forms/${formId}`,
+    },
+    leads: {
+      index: "/dashboard/leads",
     },
   },
 };

@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  CreateForm,
-  createFormSchema,
-} from "@/app/dashboard/__components/schema";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -23,13 +19,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
-import { createFormAction } from "@/app/dashboard/__components/actions";
 import { toast } from "sonner";
+import { createFormSchema, CreateFormType } from "@/features/forms/schema";
+import { createFormAction } from "@/features/forms/actions";
+import { useRouter } from "next/navigation";
+import { urls } from "@/lib/urls";
 
 export default function CreateFormSheet() {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const form = useForm<CreateForm>({
+  const form = useForm<CreateFormType>({
     resolver: zodResolver(createFormSchema),
     values: {
       name: "",
@@ -37,17 +37,21 @@ export default function CreateFormSheet() {
     },
   });
 
-  const onSubmit = (values: CreateForm) => {
+  const onSubmit = (values: CreateFormType) => {
     startTransition(async () => {
       try {
-        const { data, serverError, validationErrors } =
-          await createFormAction(values);
+        const {
+          data: form,
+          serverError,
+          validationErrors,
+        } = await createFormAction(values);
 
-        if (serverError || validationErrors) {
+        if (serverError || validationErrors || !form) {
           throw new Error();
         }
 
         toast("Form successfully created.");
+        router.push(urls.dashboard.forms.detail(form.id));
       } catch (error) {
         console.log(error);
 

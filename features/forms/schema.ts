@@ -5,4 +5,4 @@ export const createFormSchema = z.object({
   instructions: z.string(),
 });
 
-export type CreateForm = z.infer<typeof createFormSchema>;
+export type CreateFormType = z.infer<typeof createFormSchema>;
