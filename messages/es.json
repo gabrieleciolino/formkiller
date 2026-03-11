@@ -12,7 +12,22 @@
   "dashboard": {
     "sidebar": {
       "forms": "Formularios",
-      "leads": "Contactos"
+      "leads": "Contactos",
+      "sessions": "Sesiones"
+    },
+    "sessions": {
+      "title": "Sesiones",
+      "columns": {
+        "form": "Formulario",
+        "status": "Estado",
+        "progress": "Progreso",
+        "createdAt": "Creado el"
+      },
+      "status": {
+        "pending": "Pendiente",
+        "in_progress": "En curso",
+        "completed": "Completado"
+      }
     },
     "forms": {
       "title": "Formularios",

@@ -12,7 +12,22 @@
   "dashboard": {
     "sidebar": {
       "forms": "Forms",
-      "leads": "Leads"
+      "leads": "Leads",
+      "sessions": "Sessions"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "columns": {
+        "form": "Form",
+        "status": "Status",
+        "progress": "Progress",
+        "createdAt": "Created at"
+      },
+      "status": {
+        "pending": "Pending",
+        "in_progress": "In progress",
+        "completed": "Completed"
+      }
     },
     "forms": {
       "title": "Forms",

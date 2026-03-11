@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Lead } from "@/features/leads/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
+import { format, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -42,7 +43,7 @@ export function useLeadsColumns(): ColumnDef<Lead>[] {
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";
-        return new Date(value).toLocaleDateString();
+        return format(parseISO(value), "dd MMM yyyy");
       },
     },
     {

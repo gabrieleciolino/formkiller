@@ -1,1 +1,1 @@
-export const MAX_RECORDING_SECONDS = 30;
+export const MAX_RECORDING_SECONDS = 15;

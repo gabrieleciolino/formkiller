@@ -33,8 +33,8 @@ export const formTable = pgTable("form", {
   type: formTypeEnum("type").notNull().default("mixed"),
   language: formLanguageEnum("language").notNull().default("en"),
 
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const leadTable = pgTable("lead", {
@@ -54,8 +54,8 @@ export const leadTable = pgTable("lead", {
   phone: text("phone").notNull(),
   notes: text("notes"),
 
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const questionTable = pgTable("question", {
@@ -74,8 +74,8 @@ export const questionTable = pgTable("question", {
   fileKey: text("file_key"),
   fileGeneratedAt: timestamp("file_generated_at"),
 
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const formSessionStatusEnum = pgEnum("form_session_status", [
@@ -97,8 +97,8 @@ export const formSessionTable = pgTable("form_session", {
   status: formSessionStatusEnum("status").notNull().default("pending"),
   currentQuestionIndex: integer("current_question_index").notNull().default(0),
 
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const answerTable = pgTable("answer", {
@@ -123,6 +123,6 @@ export const answerTable = pgTable("answer", {
   fileGeneratedAt: timestamp("file_generated_at"),
   stt: text("stt"),
 
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
