@@ -16,6 +16,7 @@ import {
 import {
   editQuestionsSchema,
   EditQuestionsType,
+  FormLanguage,
 } from "@/features/forms/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlayIcon, WandSparklesIcon } from "lucide-react";
@@ -70,10 +71,12 @@ function DefaultAnswersFields({
 function QuestionTTSControls({
   questionId,
   formId,
+  language,
   initialFileUrl,
 }: {
   questionId: string;
   formId: string;
+  language: string;
   initialFileUrl: string | null;
 }) {
   const [fileUrl, setFileUrl] = useState<string | null>(initialFileUrl);
@@ -86,6 +89,7 @@ function QuestionTTSControls({
         const { data, serverError } = await generateQuestionTTSAction({
           questionId,
           formId,
+          language,
         });
 
         if (serverError || !data) throw new Error();
@@ -132,15 +136,17 @@ function QuestionTTSControls({
 export default function EditQuestionsForm({
   questionsData,
   formId,
+  language,
   initialFileUrls,
 }: {
   questionsData: EditQuestionsType["questions"];
   formId: string;
+  language: FormLanguage;
   initialFileUrls: Record<string, string | null>;
 }) {
   const form = useForm<EditQuestionsType>({
     resolver: zodResolver(editQuestionsSchema),
-    values: { questions: questionsData, formId },
+    values: { questions: questionsData, formId, language },
   });
 
   const { fields: questionFields } = useFieldArray({
@@ -197,6 +203,7 @@ export default function EditQuestionsForm({
             <QuestionTTSControls
               questionId={questionsData[qIndex].id}
               formId={formId}
+              language={language}
               initialFileUrl={initialFileUrls[questionsData[qIndex].id] ?? null}
             />
           </div>

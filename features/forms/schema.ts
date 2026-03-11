@@ -9,10 +9,20 @@ export const FORM_TYPE_LABELS: Record<FormType, string> = {
   "voice-only": "Only voice",
 };
 
+export const formLanguageSchema = z.enum(["en", "it", "es"]);
+export type FormLanguage = z.infer<typeof formLanguageSchema>;
+
+export const FORM_LANGUAGE_LABELS: Record<FormLanguage, string> = {
+  en: "English",
+  it: "Italiano",
+  es: "Español",
+};
+
 export const createFormSchema = z.object({
   name: z.string(),
   instructions: z.string(),
   type: formTypeSchema,
+  language: formLanguageSchema,
 });
 
 export type CreateFormType = z.infer<typeof createFormSchema>;
@@ -28,6 +38,7 @@ export type EditFormType = z.infer<typeof editFormSchema>;
 
 export const editQuestionsSchema = z.object({
   formId: z.string(),
+  language: z.string(),
   questions: z.array(
     z.object({
       id: z.string(),
@@ -48,6 +59,7 @@ export type EditQuestionsType = z.infer<typeof editQuestionsSchema>;
 export const generateQuestionTTSSchema = z.object({
   questionId: z.string(),
   formId: z.string(),
+  language: z.string(),
 });
 
 export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;

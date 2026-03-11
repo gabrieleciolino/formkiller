@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import {
   createFormSchema,
   CreateFormType,
+  FORM_LANGUAGE_LABELS,
+  FormLanguage,
   FORM_TYPE_LABELS,
   FormType,
 } from "@/features/forms/schema";
@@ -47,6 +49,7 @@ export default function CreateFormSheet() {
       name: "",
       instructions: "",
       type: "mixed",
+      language: "it",
     },
   });
 
@@ -137,6 +140,27 @@ export default function CreateFormSheet() {
                       {(Object.keys(FORM_TYPE_LABELS) as FormType[]).map((t) => (
                         <SelectItem key={t} value={t}>
                           {FORM_TYPE_LABELS[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+            <Controller
+              name="language"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Language</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(FORM_LANGUAGE_LABELS) as FormLanguage[]).map((l) => (
+                        <SelectItem key={l} value={l}>
+                          {FORM_LANGUAGE_LABELS[l]}
                         </SelectItem>
                       ))}
                     </SelectContent>

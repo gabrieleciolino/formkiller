@@ -4,6 +4,7 @@ import {
   createFormSchema,
   editFormSchema,
   editQuestionsSchema,
+  FormLanguage,
   generateQuestionTTSSchema,
 } from "@/features/forms/schema";
 import { authenticatedActionClient } from "@/lib/actions";
@@ -16,7 +17,7 @@ export const createFormAction = authenticatedActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, type } = parsedInput;
+    const { name, instructions, type, language } = parsedInput;
 
     const { data: form, error } = await supabase
       .from("form")
@@ -24,6 +25,7 @@ export const createFormAction = authenticatedActionClient
         name,
         instructions,
         type,
+        language,
         user_id: userId,
       })
       .select()
@@ -33,7 +35,7 @@ export const createFormAction = authenticatedActionClient
       throw error;
     }
 
-    const output = await generateForm({ instructions });
+    const output = await generateForm({ instructions, language });
 
     if (!output || output.questions.length === 0) {
       throw new Error("Empty AI output.");
@@ -58,7 +60,11 @@ export const createFormAction = authenticatedActionClient
 
     const ttsResults = await Promise.all(
       insertedQuestions.map((q) =>
-        generateTTS({ text: q.question, formId: form.id }),
+        generateTTS({
+          text: q.question,
+          formId: form.id,
+          language: form.language,
+        }),
       ),
     );
 
@@ -110,13 +116,13 @@ export const editQuestionsAction = authenticatedActionClient
   .inputSchema(editQuestionsSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { questions, formId } = parsedInput;
+    const { questions, formId, language } = parsedInput;
 
     const ids = questions.map((q) => q.id);
 
     const { data: currentQuestions } = await supabase
       .from("question")
-      .select("id, question, form_id")
+      .select("id, question")
       .in("id", ids)
       .eq("user_id", userId)
       .throwOnError();
@@ -146,7 +152,8 @@ export const editQuestionsAction = authenticatedActionClient
         changedQuestions.map((q) =>
           generateTTS({
             text: q.question,
-            formId: currentMap.get(q.id)!.form_id,
+            formId,
+            language: language as FormLanguage,
           }),
         ),
       );
@@ -174,7 +181,7 @@ export const generateQuestionTTSAction = authenticatedActionClient
   .inputSchema(generateQuestionTTSSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { questionId, formId } = parsedInput;
+    const { questionId, formId, language } = parsedInput;
 
     const { data: question } = await supabase
       .from("question")
@@ -186,7 +193,11 @@ export const generateQuestionTTSAction = authenticatedActionClient
 
     if (!question) throw new Error("Question not found.");
 
-    const { url, key } = await generateTTS({ text: question.question, formId });
+    const { url, key } = await generateTTS({
+      text: question.question,
+      formId,
+      language: language as FormLanguage,
+    });
 
     await supabase
       .from("question")

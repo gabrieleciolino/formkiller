@@ -3,7 +3,11 @@ import { Separator } from "@/components/ui/separator";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 import { getFormByIdQuery } from "@/features/forms/queries";
-import { EditQuestionsType } from "@/features/forms/schema";
+import {
+  EditQuestionsType,
+  FORM_LANGUAGE_LABELS,
+  FORM_TYPE_LABELS,
+} from "@/features/forms/schema";
 import { authenticatedQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { notFound } from "next/navigation";
@@ -34,12 +38,32 @@ export default async function FormsDetailPage({
       title={form.name}
       actions={<EditFormSheet formData={form} />}
     >
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">
           <p className="text-sm font-medium">Name</p>
           <p className="text-sm text-muted-foreground">{form.name}</p>
         </div>
         <div className="space-y-1">
+          <p className="text-sm font-medium">Type</p>
+          <p className="text-sm text-muted-foreground">
+            {
+              FORM_TYPE_LABELS[
+                (form.type ?? "mixed") as keyof typeof FORM_TYPE_LABELS
+              ]
+            }
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Language</p>
+          <p className="text-sm text-muted-foreground">
+            {
+              FORM_LANGUAGE_LABELS[
+                (form.language ?? "it") as keyof typeof FORM_LANGUAGE_LABELS
+              ]
+            }
+          </p>
+        </div>
+        <div className="col-span-2 space-y-1 md:col-span-4">
           <p className="text-sm font-medium">Instructions</p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {form.instructions}
@@ -48,8 +72,11 @@ export default async function FormsDetailPage({
       </div>
       <Separator />
       <EditQuestionsForm
-        questionsData={questionsRaw as unknown as EditQuestionsType["questions"]}
+        questionsData={
+          questionsRaw as unknown as EditQuestionsType["questions"]
+        }
         formId={formId}
+        language={form.language}
         initialFileUrls={initialFileUrls}
       />
     </DashboardWrapper>

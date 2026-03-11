@@ -38,7 +38,12 @@ export default function EditFormSheet({ formData }: { formData: Form }) {
 
   const form = useForm<EditFormType>({
     resolver: zodResolver(editFormSchema),
-    values: { name, instructions, formId: id, type: (type ?? "mixed") as FormType },
+    values: {
+      name,
+      instructions,
+      formId: id,
+      type: (type ?? "mixed") as FormType,
+    },
   });
 
   const onSubmit = (values: EditFormType) => {
