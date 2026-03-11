@@ -30,6 +30,7 @@ export type ViewerFormData = {
   name: string;
   userId: string;
   type: "mixed" | "default-only" | "voice-only";
+  language: string;
   questions: ViewerQuestion[];
 };
 
@@ -54,8 +55,7 @@ function useTypewriter(text: string, speed = 25) {
 const blobToBase64 = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () =>
-      resolve((reader.result as string).split(",")[1]);
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
@@ -73,7 +73,11 @@ function LeadForm({
 }) {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("viewer.leadForm");
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateLeadType>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateLeadType>({
     resolver: zodResolver(createLeadSchema),
     defaultValues: { sessionId, formId, userId },
   });
@@ -260,6 +264,7 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
           sessionId,
           questionId: currentQuestion.id,
           formId: form.id,
+          language: form.language,
           userId: form.userId,
           questionIndex: currentIndex,
           totalQuestions: questions.length,
@@ -370,61 +375,65 @@ export default function FormViewer({ form }: { form: ViewerFormData }) {
       {/* Bottom answers + controls */}
       <div className="space-y-3 px-4 pb-10">
         {/* Default answers grid */}
-        {showDefaultAnswers && <div className="grid grid-cols-2 gap-2">
-          {currentQuestion.defaultAnswers.map((da, i) => {
-            const isSelected =
-              answer?.type === "default" && answer.text === da.answer;
-            return (
-              <button
-                key={i}
-                onClick={() => handleSelectDefault(da.answer)}
-                className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
-                  isSelected
-                    ? "border-white bg-white text-black"
-                    : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10"
-                }`}
-              >
-                {da.answer}
-              </button>
-            );
-          })}
-        </div>}
+        {showDefaultAnswers && (
+          <div className="grid grid-cols-2 gap-2">
+            {currentQuestion.defaultAnswers.map((da, i) => {
+              const isSelected =
+                answer?.type === "default" && answer.text === da.answer;
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSelectDefault(da.answer)}
+                  className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
+                    isSelected
+                      ? "border-white bg-white text-black"
+                      : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10"
+                  }`}
+                >
+                  {da.answer}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Recording button */}
-        {showRecording && <div className="flex justify-center py-1">
-          {recordState === "idle" && (
-            <button
-              onClick={startRecording}
-              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/50 transition-all hover:border-white/20 hover:text-white/80 active:scale-95"
-            >
-              <MicIcon className="size-4" />
-              {tQuestion("record")}
-            </button>
-          )}
-          {recordState === "recording" && (
-            <button
-              onClick={stopRecording}
-              className="flex animate-pulse items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2.5 text-sm text-red-400"
-            >
-              <StopCircleIcon className="size-4" />
-              {tQuestion("stopRecording")}
-            </button>
-          )}
-          {recordState === "done" && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-                <CheckCircleIcon className="size-4" />
-                {tQuestion("recorded")}
-              </div>
+        {showRecording && (
+          <div className="flex justify-center py-1">
+            {recordState === "idle" && (
               <button
-                onClick={resetRecording}
-                className="text-xs text-white/25 underline hover:text-white/50"
+                onClick={startRecording}
+                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/50 transition-all hover:border-white/20 hover:text-white/80 active:scale-95"
               >
-                {tQuestion("reRecord")}
+                <MicIcon className="size-4" />
+                {tQuestion("record")}
               </button>
-            </div>
-          )}
-        </div>}
+            )}
+            {recordState === "recording" && (
+              <button
+                onClick={stopRecording}
+                className="flex animate-pulse items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-5 py-2.5 text-sm text-red-400"
+              >
+                <StopCircleIcon className="size-4" />
+                {tQuestion("stopRecording")}
+              </button>
+            )}
+            {recordState === "done" && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+                  <CheckCircleIcon className="size-4" />
+                  {tQuestion("recorded")}
+                </div>
+                <button
+                  onClick={resetRecording}
+                  className="text-xs text-white/25 underline hover:text-white/50"
+                >
+                  {tQuestion("reRecord")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Advance button */}
         <button

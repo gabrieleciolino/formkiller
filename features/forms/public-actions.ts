@@ -52,6 +52,7 @@ export const submitAnswerAction = publicViewerClient
       sessionId: z.string(),
       questionId: z.string(),
       formId: z.string(),
+      language: z.string(),
       userId: z.string(),
       questionIndex: z.number(),
       totalQuestions: z.number(),
@@ -65,6 +66,7 @@ export const submitAnswerAction = publicViewerClient
       sessionId,
       questionId,
       formId,
+      language,
       userId,
       questionIndex,
       totalQuestions,
@@ -83,21 +85,19 @@ export const submitAnswerAction = publicViewerClient
 
       await uploadFile({ key, body: buffer, contentType: mimeType });
       fileKey = key;
-      stt = await generateSTT({ buffer, mimeType });
+      stt = await generateSTT({ buffer, mimeType, language: language as import("@/features/forms/schema").FormLanguage });
     }
 
-    await supabaseAdmin
-      .from("answer")
-      .insert({
-        form_session_id: sessionId,
-        question_id: questionId,
-        form_id: formId,
-        user_id: userId,
-        stt: stt ?? null,
-        file_key: fileKey ?? null,
-        file_generated_at: fileKey ? new Date().toISOString() : null,
-        ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
-      } as never);
+    await supabaseAdmin.from("answer").insert({
+      form_session_id: sessionId,
+      question_id: questionId,
+      form_id: formId,
+      user_id: userId,
+      stt: stt ?? null,
+      file_key: fileKey ?? null,
+      file_generated_at: fileKey ? new Date().toISOString() : null,
+      ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
+    } as never);
 
     const isLast = questionIndex + 1 >= totalQuestions;
 

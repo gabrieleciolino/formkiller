@@ -35,6 +35,7 @@ export default async function FormViewerPage({
     name: form.name,
     userId: form.user_id,
     type: (form.type ?? "mixed") as ViewerFormData["type"],
+    language: form.language ?? "it",
     questions: rawQuestions.map((q): ViewerQuestion => ({
       id: q.id,
       question: q.question,

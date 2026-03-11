@@ -34,13 +34,24 @@
     },
     "leads": {
       "title": "Leads",
+      "detail": {
+        "back": "Back",
+        "contact": "Contact",
+        "answers": "Answers",
+        "noAnswers": "No answers found.",
+        "play": "Play",
+        "transcript": "Transcript",
+        "submittedAt": "Submitted",
+        "voiceAnswer": "Voice answer"
+      },
       "columns": {
         "name": "Name",
         "email": "Email",
         "phone": "Phone",
         "notes": "Notes",
         "form": "Form",
-        "createdAt": "Created at"
+        "createdAt": "Created at",
+        "view": "View"
       }
     }
   },

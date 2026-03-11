@@ -34,13 +34,24 @@
     },
     "leads": {
       "title": "Lead",
+      "detail": {
+        "back": "Indietro",
+        "contact": "Contatto",
+        "answers": "Risposte",
+        "noAnswers": "Nessuna risposta trovata.",
+        "play": "Riproduci",
+        "transcript": "Trascrizione",
+        "submittedAt": "Inviato il",
+        "voiceAnswer": "Risposta vocale"
+      },
       "columns": {
         "name": "Nome",
         "email": "Email",
         "phone": "Telefono",
         "notes": "Note",
         "form": "Form",
-        "createdAt": "Creato il"
+        "createdAt": "Creato il",
+        "view": "Visualizza"
       }
     }
   },

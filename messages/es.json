@@ -34,13 +34,24 @@
     },
     "leads": {
       "title": "Contactos",
+      "detail": {
+        "back": "Volver",
+        "contact": "Contacto",
+        "answers": "Respuestas",
+        "noAnswers": "No se encontraron respuestas.",
+        "play": "Reproducir",
+        "transcript": "Transcripción",
+        "submittedAt": "Enviado el",
+        "voiceAnswer": "Respuesta de voz"
+      },
       "columns": {
         "name": "Nombre",
         "email": "Email",
         "phone": "Teléfono",
         "notes": "Notas",
         "form": "Formulario",
-        "createdAt": "Creado el"
+        "createdAt": "Creado el",
+        "view": "Ver"
       }
     }
   },

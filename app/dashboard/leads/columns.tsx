@@ -1,8 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Lead } from "@/features/leads/types";
+import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 export function useLeadsColumns(): ColumnDef<Lead>[] {
   const t = useTranslations("dashboard.leads.columns");
@@ -41,6 +44,16 @@ export function useLeadsColumns(): ColumnDef<Lead>[] {
         if (!value) return "—";
         return new Date(value).toLocaleDateString();
       },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <Button asChild size="sm" variant="outline">
+          <Link href={urls.dashboard.leads.detail(row.original.id)}>
+            {t("view")}
+          </Link>
+        </Button>
+      ),
     },
   ];
 }
