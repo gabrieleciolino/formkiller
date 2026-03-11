@@ -56,6 +56,9 @@ export const questionTable = pgTable("question", {
   question: text("question").notNull(),
   defaultAnswers: jsonb("default_answers").$type<GenerateFormType>().notNull(),
 
+  fileKey: text("file_key"),
+  fileGeneratedAt: timestamp("file_generated_at"),
+
   createdAt: timestamp("created_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });

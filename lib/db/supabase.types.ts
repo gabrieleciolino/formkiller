@@ -111,6 +111,8 @@ export type Database = {
         Row: {
           created_at: string | null
           default_answers: Json
+          file_generated_at: string | null
+          file_key: string | null
           form_id: string
           id: string
           order: number
@@ -121,6 +123,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           default_answers: Json
+          file_generated_at?: string | null
+          file_key?: string | null
           form_id: string
           id?: string
           order?: number
@@ -131,6 +135,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           default_answers?: Json
+          file_generated_at?: string | null
+          file_key?: string | null
           form_id?: string
           id?: string
           order?: number

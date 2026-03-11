@@ -7,6 +7,7 @@ import {
 } from "@/features/forms/schema";
 import { authenticatedActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
+import { generateTTS } from "@/lib/elevenlabs/functions";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
 
@@ -46,10 +47,30 @@ export const createFormAction = authenticatedActionClient
           form_id: form.id,
           user_id: userId,
         })
-        .select(),
+        .select()
+        .single(),
     );
 
-    await Promise.all(insertPromises);
+    const insertResults = await Promise.all(insertPromises);
+    const insertedQuestions = insertResults.map((r) => r.data!);
+
+    const ttsResults = await Promise.all(
+      insertedQuestions.map((q) =>
+        generateTTS({ text: q.question, formId: form.id }),
+      ),
+    );
+
+    await Promise.all(
+      insertedQuestions.map((q, i) =>
+        supabase
+          .from("question")
+          .update({
+            file_key: ttsResults[i].key,
+            file_generated_at: new Date().toUTCString(),
+          })
+          .eq("id", q.id),
+      ),
+    );
 
     revalidatePath(urls.dashboard.forms.index);
 
@@ -86,19 +107,58 @@ export const editQuestionsAction = authenticatedActionClient
     const { supabase, userId } = ctx;
     const { questions } = parsedInput;
 
-    const updatePromises = questions.map((q) =>
-      supabase
-        .from("question")
-        .update({
-          question: q.question,
-          default_answers: q.default_answers,
-        })
-        .eq("id", q.id)
-        .eq("user_id", userId)
-        .throwOnError(),
+    const ids = questions.map((q) => q.id);
+
+    const { data: currentQuestions } = await supabase
+      .from("question")
+      .select("id, question, form_id")
+      .in("id", ids)
+      .eq("user_id", userId)
+      .throwOnError();
+
+    const currentMap = new Map(currentQuestions!.map((q) => [q.id, q]));
+
+    const changedQuestions = questions.filter(
+      (q) => currentMap.get(q.id)?.question !== q.question,
     );
 
-    await Promise.all(updatePromises);
+    await Promise.all(
+      questions.map((q) =>
+        supabase
+          .from("question")
+          .update({
+            question: q.question,
+            default_answers: q.default_answers,
+          })
+          .eq("id", q.id)
+          .eq("user_id", userId)
+          .throwOnError(),
+      ),
+    );
+
+    if (changedQuestions.length > 0) {
+      const ttsResults = await Promise.all(
+        changedQuestions.map((q) =>
+          generateTTS({
+            text: q.question,
+            formId: currentMap.get(q.id)!.form_id,
+          }),
+        ),
+      );
+
+      await Promise.all(
+        changedQuestions.map((q, i) =>
+          supabase
+            .from("question")
+            .update({
+              file_key: ttsResults[i].key,
+              file_generated_at: new Date().toUTCString(),
+            } as never)
+            .eq("id", q.id)
+            .throwOnError(),
+        ),
+      );
+    }
 
     return questions;
   });

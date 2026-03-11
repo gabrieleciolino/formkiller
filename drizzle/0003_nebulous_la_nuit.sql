@@ -1,0 +1,1 @@
+ALTER TABLE "question" ADD COLUMN "tts_url" text;
