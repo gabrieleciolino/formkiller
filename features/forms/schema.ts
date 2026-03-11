@@ -19,13 +19,22 @@ export const FORM_LANGUAGE_LABELS: Record<FormLanguage, string> = {
 };
 
 export const createFormSchema = z.object({
-  name: z.string(),
-  instructions: z.string(),
+  name: z.string().min(1),
+  instructions: z.string().min(1),
   type: formTypeSchema,
   language: formLanguageSchema,
 });
 
 export type CreateFormType = z.infer<typeof createFormSchema>;
+
+export function makeCreateFormSchema(msgs: { required: string }) {
+  return z.object({
+    name: z.string().min(1, msgs.required),
+    instructions: z.string().min(1, msgs.required),
+    type: formTypeSchema,
+    language: formLanguageSchema,
+  });
+}
 
 export const formThemeSchema = z.enum(["light", "dark"]);
 export type FormTheme = z.infer<typeof formThemeSchema>;
@@ -61,6 +70,12 @@ export const editQuestionsSchema = z.object({
 });
 
 export type EditQuestionsType = z.infer<typeof editQuestionsSchema>;
+
+export const deleteFormSchema = z.object({
+  formId: z.string(),
+});
+
+export type DeleteFormType = z.infer<typeof deleteFormSchema>;
 
 export const generateQuestionTTSSchema = z.object({
   questionId: z.string(),

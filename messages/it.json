@@ -1,4 +1,10 @@
 {
+  "validation": {
+    "required": "Questo campo è obbligatorio.",
+    "emailInvalid": "Inserisci un indirizzo email valido.",
+    "minLength2": "Deve contenere almeno 2 caratteri.",
+    "phoneInvalid": "Inserisci un numero di telefono valido."
+  },
   "auth": {
     "login": {
       "title": "Bentornato",
@@ -58,7 +64,9 @@
         "createdAt": "Creato il",
         "actions": "Azioni",
         "view": "Visualizza",
-        "open": "Apri"
+        "open": "Apri",
+        "delete": "Elimina",
+        "confirmDelete": "Sei sicuro di voler eliminare questo form? L'azione non può essere annullata."
       },
       "detail": {
         "name": "Nome",

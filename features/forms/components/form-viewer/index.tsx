@@ -6,7 +6,7 @@ import {
   submitAnswerAction,
 } from "@/features/forms/public-actions";
 import { MAX_RECORDING_SECONDS } from "@/features/forms/constants";
-import { createLeadSchema, CreateLeadType } from "@/features/leads/schema";
+import { makeCreateLeadSchema, CreateLeadType } from "@/features/leads/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CheckCircleIcon,
@@ -147,12 +147,19 @@ function LeadForm({
 }) {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("viewer.leadForm");
+  const tv = useTranslations("validation");
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<CreateLeadType>({
-    resolver: zodResolver(createLeadSchema),
+    resolver: zodResolver(
+      makeCreateLeadSchema({
+        minLength2: tv("minLength2"),
+        emailInvalid: tv("emailInvalid"),
+        phoneInvalid: tv("phoneInvalid"),
+      }),
+    ),
     defaultValues: { sessionId, formId, userId },
   });
 

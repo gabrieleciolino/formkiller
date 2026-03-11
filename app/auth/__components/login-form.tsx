@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { loginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
+import { makeLoginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
 import { loginAction } from "@/app/auth/__components/actions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { urls } from "@/lib/urls";
@@ -18,11 +18,12 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("auth.login");
+  const tv = useTranslations("validation");
 
   const redirectTo = searchParams.get("redirect_to");
 
   const form = useForm<LoginFormType>({
-    resolver: zodResolver(loginFormSchema),
+    resolver: zodResolver(makeLoginFormSchema({ required: tv("required"), emailInvalid: tv("emailInvalid") })),
     values: {
       email: "",
       password: "",

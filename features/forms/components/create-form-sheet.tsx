@@ -28,7 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import {
-  createFormSchema,
+  makeCreateFormSchema,
   CreateFormType,
   FormLanguage,
   formLanguageSchema,
@@ -46,9 +46,10 @@ export default function CreateFormSheet() {
   const t = useTranslations("forms.create");
   const tTypes = useTranslations("forms.types");
   const tLangs = useTranslations("forms.languages");
+  const tv = useTranslations("validation");
 
   const form = useForm<CreateFormType>({
-    resolver: zodResolver(createFormSchema),
+    resolver: zodResolver(makeCreateFormSchema({ required: tv("required") })),
     values: {
       name: "",
       instructions: "",

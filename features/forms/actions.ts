@@ -2,6 +2,7 @@
 
 import {
   createFormSchema,
+  deleteFormSchema,
   editFormSchema,
   editQuestionsSchema,
   FormLanguage,
@@ -178,6 +179,23 @@ export const editQuestionsAction = authenticatedActionClient
     revalidatePath(urls.dashboard.forms.detail(formId));
 
     return questions;
+  });
+
+export const deleteFormAction = authenticatedActionClient
+  .inputSchema(deleteFormSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { formId } = parsedInput;
+
+    const { error } = await supabase
+      .from("form")
+      .delete()
+      .eq("id", formId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    revalidatePath(urls.dashboard.forms.index);
   });
 
 export const generateQuestionTTSAction = authenticatedActionClient

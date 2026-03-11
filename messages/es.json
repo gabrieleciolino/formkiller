@@ -1,4 +1,10 @@
 {
+  "validation": {
+    "required": "Este campo es obligatorio.",
+    "emailInvalid": "Por favor, introduce una dirección de correo válida.",
+    "minLength2": "Debe tener al menos 2 caracteres.",
+    "phoneInvalid": "Por favor, introduce un número de teléfono válido."
+  },
   "auth": {
     "login": {
       "title": "Bienvenido de nuevo",
@@ -58,7 +64,9 @@
         "createdAt": "Creado el",
         "actions": "Acciones",
         "view": "Ver",
-        "open": "Abrir"
+        "open": "Abrir",
+        "delete": "Eliminar",
+        "confirmDelete": "¿Estás seguro de que deseas eliminar este formulario? Esta acción no se puede deshacer."
       },
       "detail": {
         "name": "Nombre",

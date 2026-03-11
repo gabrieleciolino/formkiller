@@ -1,12 +1,40 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { deleteFormAction } from "@/features/forms/actions";
 import { Form } from "@/features/forms/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTransition } from "react";
+
+function DeleteFormButton({ formId }: { formId: string }) {
+  const t = useTranslations("dashboard.forms.columns");
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    if (!confirm(t("confirmDelete"))) return;
+    startTransition(async () => {
+      await deleteFormAction({ formId });
+    });
+  };
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      onClick={handleDelete}
+      disabled={isPending}
+      title={t("delete")}
+    >
+      <Trash2 className="size-4" />
+    </Button>
+  );
+}
 
 export function useFormsColumns(): ColumnDef<Form>[] {
   const t = useTranslations("dashboard.forms.columns");
@@ -60,6 +88,7 @@ export function useFormsColumns(): ColumnDef<Form>[] {
               {t("open")}
             </Link>
           </Button>
+          <DeleteFormButton formId={row.original.id} />
         </div>
       ),
     },
