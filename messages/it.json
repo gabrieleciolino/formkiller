@@ -13,7 +13,26 @@
     "sidebar": {
       "forms": "Form",
       "leads": "Lead",
-      "sessions": "Sessioni"
+      "sessions": "Sessioni",
+      "library": "Libreria"
+    },
+    "library": {
+      "title": "Libreria",
+      "empty": "Nessun file caricato.",
+      "delete": "Elimina",
+      "confirmDelete": "Sei sicuro di voler eliminare questo file?",
+      "upload": {
+        "dropHint": "Trascina qui i file o clicca per caricare",
+        "dropNow": "Rilascia per caricare",
+        "formats": "Immagini, video e audio",
+        "maxSize": "Max 20 MB per file",
+        "uploading": "Caricamento in corso",
+        "success": "Caricamento completato",
+        "errorGeneric": "Caricamento fallito.",
+        "errorTooLarge": "Il file supera il limite di 20 MB.",
+        "errorType": "Tipo di file non supportato.",
+        "dropAgain": "Clicca o trascina di nuovo per riprovare."
+      }
     },
     "sessions": {
       "title": "Sessioni",

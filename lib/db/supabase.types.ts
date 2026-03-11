@@ -103,6 +103,42 @@ export type Database = {
           },
         ]
       }
+      asset: {
+        Row: {
+          created_at: string | null
+          file_key: string
+          id: string
+          mime_type: string
+          name: string
+          size: number
+          type: Database["public"]["Enums"]["asset_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_key: string
+          id?: string
+          mime_type: string
+          name: string
+          size: number
+          type: Database["public"]["Enums"]["asset_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_key?: string
+          id?: string
+          mime_type?: string
+          name?: string
+          size?: number
+          type?: Database["public"]["Enums"]["asset_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       form: {
         Row: {
           created_at: string | null
@@ -283,6 +319,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      asset_type: "image" | "video" | "audio"
       form_language: "en" | "it" | "es"
       form_session_status: "pending" | "in_progress" | "completed"
       form_type: "mixed" | "default-only" | "voice-only"
@@ -416,6 +453,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      asset_type: ["image", "video", "audio"],
       form_language: ["en", "it", "es"],
       form_session_status: ["pending", "in_progress", "completed"],
       form_type: ["mixed", "default-only", "voice-only"],

@@ -15,6 +15,9 @@ export const urls = {
     sessions: {
       index: "/dashboard/sessions",
     },
+    library: {
+      index: "/dashboard/library",
+    },
   },
   form: (formId: string) => `/form/${formId}`,
 };

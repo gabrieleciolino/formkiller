@@ -13,7 +13,26 @@
     "sidebar": {
       "forms": "Forms",
       "leads": "Leads",
-      "sessions": "Sessions"
+      "sessions": "Sessions",
+      "library": "Library"
+    },
+    "library": {
+      "title": "Library",
+      "empty": "No files uploaded yet.",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this file?",
+      "upload": {
+        "dropHint": "Drop files here or click to upload",
+        "dropNow": "Release to upload",
+        "formats": "Images, videos and audio",
+        "maxSize": "Max 20 MB per file",
+        "uploading": "Uploading",
+        "success": "Upload completed",
+        "errorGeneric": "Upload failed.",
+        "errorTooLarge": "File exceeds 20 MB limit.",
+        "errorType": "Unsupported file type.",
+        "dropAgain": "Click or drop again to retry."
+      }
     },
     "sessions": {
       "title": "Sessions",

@@ -14,6 +14,24 @@ const authUserTable = pgSchema("auth").table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
 });
 
+export const assetTypeEnum = pgEnum("asset_type", ["image", "video", "audio"]);
+
+export const assetTable = pgTable("asset", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => authUserTable.id, { onDelete: "cascade" }),
+
+  name: text("name").notNull(),
+  fileKey: text("file_key").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  type: assetTypeEnum("type").notNull(),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
 export const formTypeEnum = pgEnum("form_type", [
   "mixed",
   "default-only",

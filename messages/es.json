@@ -13,7 +13,26 @@
     "sidebar": {
       "forms": "Formularios",
       "leads": "Contactos",
-      "sessions": "Sesiones"
+      "sessions": "Sesiones",
+      "library": "Biblioteca"
+    },
+    "library": {
+      "title": "Biblioteca",
+      "empty": "No hay archivos cargados.",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este archivo?",
+      "upload": {
+        "dropHint": "Arrastra archivos aquí o haz clic para subir",
+        "dropNow": "Suelta para subir",
+        "formats": "Imágenes, vídeos y audio",
+        "maxSize": "Máx. 20 MB por archivo",
+        "uploading": "Subiendo",
+        "success": "Subida completada",
+        "errorGeneric": "Error al subir el archivo.",
+        "errorTooLarge": "El archivo supera el límite de 20 MB.",
+        "errorType": "Tipo de archivo no soportado.",
+        "dropAgain": "Haz clic o arrastra de nuevo para reintentar."
+      }
     },
     "sessions": {
       "title": "Sesiones",

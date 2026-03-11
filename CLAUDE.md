@@ -279,6 +279,29 @@ urls.form(formId)           // public viewer
 - `h1, h2, h3 { @apply font-roboto font-black; }`
 - shadcn components: never edit `components/ui/` directly, use `pnpm ui:add`
 
+### CRITICAL: Always Use Semantic Color Tokens
+
+The app has both a **light** (default) and **dark** theme. The `:root` background is **white** (`oklch(1 0 0)`).
+
+**NEVER use hardcoded color utilities** like `text-white/*`, `bg-white/*`, `border-white/*`, `text-black/*` etc. These are invisible or broken on the default light theme.
+
+**ALWAYS use shadcn semantic tokens:**
+
+| Purpose | Token |
+|---|---|
+| Body text | `text-foreground` |
+| Secondary/hint text | `text-muted-foreground` |
+| Card/panel background | `bg-card` |
+| Subtle background | `bg-muted` or `bg-muted/50` |
+| Hover background | `bg-accent` |
+| Borders | `border-border` |
+| Focus ring | `border-ring` |
+| Error/destructive | `text-destructive`, `bg-destructive` |
+| Destructive foreground | `text-destructive-foreground` |
+| Page background | `bg-background` |
+
+For light/dark variants: use `dark:` prefix only for cases where light and dark genuinely need different values that the semantic tokens don't cover (rare).
+
 ---
 
 ## Environment Variables
