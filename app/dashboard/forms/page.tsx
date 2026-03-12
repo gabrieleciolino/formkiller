@@ -1,9 +1,11 @@
 import DashboardWrapper from "@/app/dashboard/__components/wrapper";
+import { Button } from "@/components/ui/button";
 import FormsTable from "@/app/dashboard/forms/table";
-import CreateFormSheet from "@/features/forms/components/create-form-sheet";
 import { getFormsQuery } from "@/features/forms/queries";
 import { authenticatedQuery } from "@/lib/queries";
+import { urls } from "@/lib/urls";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 export default async function FormsPage() {
   const [forms, t] = await Promise.all([
@@ -17,9 +19,11 @@ export default async function FormsPage() {
     <DashboardWrapper
       title={t("dashboard.forms.title")}
       actions={
-        <div>
-          <CreateFormSheet />
-        </div>
+        <Button asChild size="lg">
+          <Link href={urls.dashboard.forms.create}>
+            {t("forms.create.trigger")}
+          </Link>
+        </Button>
       }
     >
       <FormsTable data={forms} />

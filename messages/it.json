@@ -69,6 +69,7 @@
         "confirmDelete": "Sei sicuro di voler eliminare questo form? L'azione non può essere annullata."
       },
       "detail": {
+        "back": "Indietro",
         "name": "Nome",
         "type": "Tipo",
         "language": "Lingua",

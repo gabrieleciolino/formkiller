@@ -6,6 +6,7 @@ export const urls = {
     index: "/dashboard",
     forms: {
       index: "/dashboard/forms",
+      create: "/dashboard/forms/create",
       detail: (formId: string) => `/dashboard/forms/${formId}`,
     },
     leads: {

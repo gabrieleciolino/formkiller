@@ -69,6 +69,7 @@
         "confirmDelete": "¿Estás seguro de que deseas eliminar este formulario? Esta acción no se puede deshacer."
       },
       "detail": {
+        "back": "Volver",
         "name": "Nombre",
         "type": "Tipo",
         "language": "Idioma",
