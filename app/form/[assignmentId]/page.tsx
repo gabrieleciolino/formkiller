@@ -1,5 +1,8 @@
 import FormViewer from "@/features/forms/components/form-viewer";
-import { getFormAssignmentByIdQuery, getFormByIdQuery } from "@/features/forms/queries";
+import {
+  getFormAssignmentByIdQuery,
+  getFormByIdQuery,
+} from "@/features/forms/queries";
 import type { ViewerFormData, ViewerQuestion } from "@/features/forms/types";
 import { getFileUrl } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -43,20 +46,27 @@ export default async function FormViewerAssignmentPage({
     notFound();
   }
 
+  const contactAssignmentId = (process.env.CONTACT_FORM_ID ?? "").trim();
+  const isLandingContactForm =
+    contactAssignmentId.length > 0 && assignment.id === contactAssignmentId;
+
   const viewerForm: ViewerFormData = {
     id: form.id,
     assignmentId: assignment.id,
+    isLandingContactForm,
     name: form.name,
     userId: assignment.user_id,
     type: (form.type ?? "mixed") as ViewerFormData["type"],
     theme: (form.theme ?? "dark") as ViewerFormData["theme"],
     language,
-    questions: rawQuestions.map((q): ViewerQuestion => ({
-      id: q.id,
-      question: q.question,
-      audioUrl: q.file_key ? getFileUrl(q.file_key) : null,
-      defaultAnswers: q.default_answers,
-    })),
+    questions: rawQuestions.map(
+      (q): ViewerQuestion => ({
+        id: q.id,
+        question: q.question,
+        audioUrl: q.file_key ? getFileUrl(q.file_key) : null,
+        defaultAnswers: q.default_answers,
+      }),
+    ),
     backgroundImageUrl: form.background_image_key
       ? getFileUrl(form.background_image_key)
       : null,

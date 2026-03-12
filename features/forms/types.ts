@@ -76,6 +76,7 @@ export type ViewerQuestion = {
 export type ViewerFormData = {
   id: string;
   assignmentId: string;
+  isLandingContactForm: boolean;
   name: string;
   userId: string;
   type: FormType;
@@ -112,6 +113,7 @@ export type LeadFormProps = {
   onCompleted: (payload: FormViewerCompletionPayload) => void;
   bgStyle: FormViewerBackgroundStyle;
   hasBackgroundImage: boolean;
+  showLandingContactTechBackground: boolean;
   overlayClassName: string;
   isDark: boolean;
 };
@@ -148,6 +150,7 @@ export type FormViewerWelcomePhaseProps = {
   bgStyle: FormViewerBackgroundStyle;
   formName: string;
   hasBackgroundImage: boolean;
+  showLandingContactTechBackground: boolean;
   isDark: boolean;
   introTitle: string | null;
   introMessage: string | null;
@@ -164,6 +167,7 @@ export type FormViewerCompletedPhaseProps = {
   analysisText: string | null;
   analysisAudioUrl: string | null;
   hasBackgroundImage: boolean;
+  showLandingContactTechBackground: boolean;
   isDark: boolean;
   tk: FormViewerThemeTokens;
 };
@@ -176,6 +180,7 @@ export type FormViewerQuestionPhaseProps = {
   displayedText: string;
   hasBackgroundImage: boolean;
   hasBackgroundMusic: boolean;
+  showLandingContactTechBackground: boolean;
   isDark: boolean;
   isLast: boolean;
   isMuted: boolean;

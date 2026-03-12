@@ -1,5 +1,6 @@
 "use client";
 
+import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { FormViewerWelcomePhaseProps } from "@/features/forms/types";
 import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -7,6 +8,7 @@ import { useTranslations } from "next-intl";
 export function WelcomePhase({
   bgStyle,
   hasBackgroundImage,
+  showLandingContactTechBackground,
   isDark,
   introTitle,
   introMessage,
@@ -23,15 +25,19 @@ export function WelcomePhase({
       className={`relative flex h-dvh flex-col items-center justify-center overflow-hidden p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
+      {showLandingContactTechBackground && <LandingContactTechBackground />}
+
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}
 
       <div
-        className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/60" : "bg-white/60"}`}
+        className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${!showLandingContactTechBackground ? (isDark ? "bg-black/60" : "bg-white/60") : ""}`}
       >
         {resolvedTitle ? (
-          <h1 className="text-5xl font-black tracking-tight">{resolvedTitle}</h1>
+          <h1 className="text-5xl font-black tracking-tight">
+            {resolvedTitle}
+          </h1>
         ) : null}
 
         {resolvedMessage ? (

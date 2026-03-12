@@ -135,3 +135,59 @@
     @apply font-roboto font-black;
   }
 }
+
+@keyframes landing-tech-grid-pan {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(34px, 20px, 0);
+  }
+}
+
+@keyframes landing-tech-scan {
+  0%,
+  100% {
+    transform: translateX(-55%) rotate(8deg);
+  }
+  50% {
+    transform: translateX(55%) rotate(8deg);
+  }
+}
+
+@layer components {
+  .landing-tech-surface {
+    background: oklch(0.99 0 0);
+  }
+
+  .landing-tech-grid {
+    position: absolute;
+    inset: -32%;
+    background-image:
+      linear-gradient(to right, oklch(0.3 0 0 / 0.09) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.3 0 0 / 0.09) 1px, transparent 1px);
+    background-size: 24px 24px;
+    animation: landing-tech-grid-pan 26s linear infinite;
+  }
+
+  .landing-tech-scan {
+    position: absolute;
+    inset: -35% 0;
+    background: linear-gradient(
+      120deg,
+      transparent 20%,
+      oklch(0.26 0 0 / 0.12) 50%,
+      transparent 80%
+    );
+    animation: landing-tech-scan 8s ease-in-out infinite;
+  }
+
+  .landing-tech-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 18%, oklch(1 0 0 / 0.75), transparent 42%),
+      radial-gradient(circle at 77% 74%, oklch(0.98 0 0 / 0.9), transparent 46%);
+  }
+
+}

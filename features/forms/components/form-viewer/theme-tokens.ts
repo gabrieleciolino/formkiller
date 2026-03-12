@@ -46,7 +46,7 @@ export function getFormViewerThemeTokens(
     progressInactive: "bg-black/10",
     progressText: "text-black/30",
     muteBtn: "bg-black/10 text-black/60 hover:bg-black/20 hover:text-black",
-    overlay: "bg-white/60",
+    overlay: "bg-white/20",
     recordIdle:
       "border-black/10 bg-black/5 text-black/50 hover:border-black/25 hover:bg-black/10 hover:text-black/80",
     recordHint: "text-black/30",

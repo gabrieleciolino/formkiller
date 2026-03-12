@@ -1,5 +1,6 @@
 "use client";
 
+import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { FormViewerCompletedPhaseProps } from "@/features/forms/types";
 import { CheckCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,6 +13,7 @@ export function CompletedPhase({
   analysisText,
   analysisAudioUrl,
   hasBackgroundImage,
+  showLandingContactTechBackground,
   isDark,
   tk,
 }: FormViewerCompletedPhaseProps) {
@@ -34,6 +36,8 @@ export function CompletedPhase({
       className={`relative flex h-dvh flex-col items-center justify-center overflow-hidden p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
+      {showLandingContactTechBackground && <LandingContactTechBackground />}
+
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}

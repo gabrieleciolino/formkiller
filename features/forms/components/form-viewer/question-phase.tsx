@@ -1,5 +1,6 @@
 "use client";
 
+import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import { RecordingButton } from "@/features/forms/components/form-viewer/recording-button";
 import type { FormViewerQuestionPhaseProps } from "@/features/forms/types";
 import {
@@ -18,6 +19,7 @@ export function QuestionPhase({
   displayedText,
   hasBackgroundImage,
   hasBackgroundMusic,
+  showLandingContactTechBackground,
   isDark,
   isLast,
   isMuted,
@@ -46,6 +48,8 @@ export function QuestionPhase({
       className={`relative flex h-dvh flex-col overflow-hidden ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
+      {showLandingContactTechBackground && <LandingContactTechBackground />}
+
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}
@@ -159,7 +163,7 @@ export function QuestionPhase({
                   <button
                     key={index}
                     onClick={() => onSelectDefault(defaultAnswer.answer)}
-                    className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
+                    className={`rounded-2xl border px-4 py-4 text-left text-xs md:text-sm font-medium leading-snug transition-all active:scale-95 ${
                       isSelected ? tk.cardSelected : tk.cardIdle
                     }`}
                   >

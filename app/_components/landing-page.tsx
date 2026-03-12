@@ -338,7 +338,7 @@ export default function LandingPage({
                 title={content.ctaSectionFormTitle}
                 loading="lazy"
                 allow="microphone"
-                className="h-[680px] w-full"
+                className="h-[600px] md:h-[680px] w-full"
               />
             ) : (
               <div className="flex min-h-[320px] items-center justify-center px-6 py-10 text-center text-sm text-primary-foreground/70">
