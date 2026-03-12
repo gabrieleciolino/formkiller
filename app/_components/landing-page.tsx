@@ -333,12 +333,6 @@ export default function LandingPage({ content }: LandingPageProps) {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <Image src="/logo.png" alt="FormKiller" width={120} height={31} className="h-7 w-auto" />
           <p>{content.footer.copyright}</p>
-          <Link
-            href={urls.auth.login}
-            className="transition-colors hover:text-foreground"
-          >
-            {content.footer.signIn}
-          </Link>
         </div>
       </footer>
     </div>

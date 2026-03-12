@@ -99,6 +99,10 @@ export type LeadFormProps = {
   sessionId: string;
   formId: string;
   onCompleted: () => void;
+  bgStyle: FormViewerBackgroundStyle;
+  hasBackgroundImage: boolean;
+  overlayClassName: string;
+  isDark: boolean;
 };
 
 export type FormViewerProps = {

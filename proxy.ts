@@ -4,24 +4,11 @@ import { updateSession } from "@/lib/supabase/proxy";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname !== "/") {
-    return updateSession(request);
-  }
-
-  const acceptLanguage = request.headers.get("accept-language") ?? "";
-  const primaryLang = acceptLanguage
-    .split(",")[0]
-    .split(/-|;/)[0]
-    .toLowerCase();
-
-  if (primaryLang === "it") {
+  if (pathname === "/") {
     return NextResponse.redirect(new URL("/it", request.url));
   }
-  if (primaryLang === "es") {
-    return NextResponse.redirect(new URL("/es", request.url));
-  }
 
-  return NextResponse.next();
+  return updateSession(request);
 }
 
 export const config = {

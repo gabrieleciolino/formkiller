@@ -10,7 +10,15 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function LeadForm({ sessionId, formId, onCompleted }: LeadFormProps) {
+export function LeadForm({
+  sessionId,
+  formId,
+  onCompleted,
+  bgStyle,
+  hasBackgroundImage,
+  overlayClassName,
+  isDark,
+}: LeadFormProps) {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations();
 
@@ -45,9 +53,16 @@ export function LeadForm({ sessionId, formId, onCompleted }: LeadFormProps) {
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-black text-white">
-      <div className="flex flex-1 flex-col justify-center px-6 py-10">
-        <div className="mx-auto w-full max-w-md space-y-6">
+    <div
+      className="relative flex min-h-dvh flex-col bg-black text-white"
+      style={bgStyle}
+    >
+      {hasBackgroundImage && (
+        <div className={`absolute inset-0 ${overlayClassName}`} />
+      )}
+
+      <div className="relative flex flex-1 flex-col justify-center px-6 py-10">
+        <div className={`mx-auto w-full max-w-md space-y-6 rounded-2xl p-6 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
           <div className="space-y-1">
             <h2 className="text-2xl font-black">{t("viewer.leadForm.title")}</h2>
             <p className="text-sm text-white/40">{t("viewer.leadForm.subtitle")}</p>

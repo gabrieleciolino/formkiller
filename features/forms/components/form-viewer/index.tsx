@@ -227,6 +227,10 @@ export default function FormViewer({ form }: FormViewerProps) {
       <LeadForm
         sessionId={sessionId!}
         formId={form.id}
+        bgStyle={bgStyle}
+        hasBackgroundImage={hasBackgroundImage}
+        overlayClassName={tk.overlay}
+        isDark={isDark}
         onCompleted={() => setPhase("completed")}
       />
     );
