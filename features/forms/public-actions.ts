@@ -1,12 +1,17 @@
 "use server";
 
-import { formLanguageSchema } from "@/features/forms/schema";
+import { PUBLIC_FORM_TURNSTILE_ACTION } from "@/features/forms/constants";
+import { formLanguageSchema, turnstileTokenSchema } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
 import { generateCompletionAnalysis } from "@/lib/ai/functions";
 import { generateSTT } from "@/lib/deepgram/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import {
+  TurnstileVerificationError,
+  verifyTurnstileToken,
+} from "@/lib/turnstile/functions";
 import { setZodLocale } from "@/lib/zod/locale";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
@@ -17,6 +22,10 @@ import { z } from "zod";
 
 const publicViewerClient = createSafeActionClient({
   handleServerError(error) {
+    if (error instanceof TurnstileVerificationError) {
+      return "TURNSTILE_FAILED";
+    }
+
     console.log("[public_viewer_error]", {
       name: error.name,
       message: error.message,
@@ -74,9 +83,15 @@ export const startFormSessionAction = publicViewerClient
   .inputSchema(
     z.object({
       assignmentId: z.string().uuid(),
+      turnstileToken: turnstileTokenSchema,
     }),
   )
   .action(async ({ parsedInput }) => {
+    await verifyTurnstileToken({
+      token: parsedInput.turnstileToken,
+      expectedAction: PUBLIC_FORM_TURNSTILE_ACTION,
+    });
+
     const assignment = await getFormAssignmentOrThrow(parsedInput.assignmentId);
     const formId = assignment.form_id;
     const userId = assignment.user_id;
@@ -107,6 +122,7 @@ export const submitAnswerAction = publicViewerClient
       defaultAnswer: z.string().optional(),
       audioBase64: z.string().optional(),
       audioMimeType: z.string().optional(),
+      turnstileToken: turnstileTokenSchema,
     }),
   )
   .action(async ({ parsedInput }) => {
@@ -118,7 +134,13 @@ export const submitAnswerAction = publicViewerClient
       defaultAnswer,
       audioBase64,
       audioMimeType,
+      turnstileToken,
     } = parsedInput;
+
+    await verifyTurnstileToken({
+      token: turnstileToken,
+      expectedAction: PUBLIC_FORM_TURNSTILE_ACTION,
+    });
 
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {
@@ -184,9 +206,19 @@ export const submitAnswerAction = publicViewerClient
   });
 
 export const createLeadAction = publicViewerClient
-  .inputSchema(createLeadSchema)
+  .inputSchema(
+    createLeadSchema.extend({
+      turnstileToken: turnstileTokenSchema,
+    }),
+  )
   .action(async ({ parsedInput }) => {
-    const { sessionId, formId, name, email, phone } = parsedInput;
+    const { sessionId, formId, name, email, phone, turnstileToken } =
+      parsedInput;
+
+    await verifyTurnstileToken({
+      token: turnstileToken,
+      expectedAction: PUBLIC_FORM_TURNSTILE_ACTION,
+    });
 
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {

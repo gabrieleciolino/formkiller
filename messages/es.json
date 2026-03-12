@@ -289,7 +289,8 @@
     "errors": {
       "cannotStart": "No se puede iniciar el cuestionario.",
       "micAccess": "No se puede acceder al micrófono.",
-      "saveAnswer": "Error al guardar la respuesta."
+      "saveAnswer": "Error al guardar la respuesta.",
+      "securityCheck": "La verificación de seguridad falló. Inténtalo de nuevo."
     }
   }
 }

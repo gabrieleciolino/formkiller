@@ -289,7 +289,8 @@
     "errors": {
       "cannotStart": "Unable to start the questionnaire.",
       "micAccess": "Unable to access microphone.",
-      "saveAnswer": "Error saving answer."
+      "saveAnswer": "Error saving answer.",
+      "securityCheck": "Security verification failed. Please try again."
     }
   }
 }

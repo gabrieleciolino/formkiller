@@ -289,7 +289,8 @@
     "errors": {
       "cannotStart": "Impossibile avviare il questionario.",
       "micAccess": "Impossibile accedere al microfono.",
-      "saveAnswer": "Errore durante il salvataggio della risposta."
+      "saveAnswer": "Errore durante il salvataggio della risposta.",
+      "securityCheck": "Verifica di sicurezza non riuscita. Riprova."
     }
   }
 }

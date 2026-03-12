@@ -110,6 +110,7 @@ export type RecordingButtonProps = {
 export type LeadFormProps = {
   sessionId: string;
   formId: string;
+  getTurnstileToken: () => Promise<string>;
   onCompleted: (payload: FormViewerCompletionPayload) => void;
   bgStyle: FormViewerBackgroundStyle;
   hasBackgroundImage: boolean;

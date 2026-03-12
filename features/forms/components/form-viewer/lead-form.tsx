@@ -14,6 +14,7 @@ import { toast } from "sonner";
 export function LeadForm({
   sessionId,
   formId,
+  getTurnstileToken,
   onCompleted,
   bgStyle,
   hasBackgroundImage,
@@ -38,8 +39,24 @@ export function LeadForm({
   const onSubmit = (values: CreateLeadType) => {
     startTransition(async () => {
       try {
-        const { data, serverError } = await createLeadAction(values);
+        const turnstileToken = await getTurnstileToken().catch(() => null);
+        if (!turnstileToken) {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
+        const { data, serverError } = await createLeadAction({
+          ...values,
+          turnstileToken,
+        });
+
+        if (serverError === "TURNSTILE_FAILED") {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
         if (serverError || !data) throw new Error();
+
         onCompleted({
           analysisText: data.analysisText ?? null,
           analysisAudioUrl: data.analysisAudioUrl ?? null,

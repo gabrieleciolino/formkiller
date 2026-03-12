@@ -19,6 +19,9 @@ export const FORM_TYPE_LABELS: Record<FormType, string> = {
 export const formLanguageSchema = z.enum(["en", "it", "es"]);
 export type FormLanguage = z.infer<typeof formLanguageSchema>;
 
+export const turnstileTokenSchema = z.string().trim().min(1);
+export type TurnstileToken = z.infer<typeof turnstileTokenSchema>;
+
 export const FORM_LANGUAGE_LABELS: Record<FormLanguage, string> = {
   en: "English",
   it: "Italiano",

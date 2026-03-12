@@ -5,8 +5,10 @@ import { CompletedPhase } from "@/features/forms/components/form-viewer/complete
 import { LeadForm } from "@/features/forms/components/form-viewer/lead-form";
 import { QuestionPhase } from "@/features/forms/components/form-viewer/question-phase";
 import { getFormViewerThemeTokens } from "@/features/forms/components/form-viewer/theme-tokens";
+import { useInvisibleTurnstile } from "@/features/forms/components/form-viewer/use-invisible-turnstile";
 import { useTypewriter } from "@/features/forms/components/form-viewer/use-typewriter";
 import { WelcomePhase } from "@/features/forms/components/form-viewer/welcome-phase";
+import { PUBLIC_FORM_TURNSTILE_ACTION } from "@/features/forms/constants";
 import {
   type FormViewerAnswerState,
   type FormViewerBackgroundStyle,
@@ -40,6 +42,13 @@ export default function FormViewer({ form }: FormViewerProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const {
+    containerRef: turnstileContainerRef,
+    getToken: getTurnstileToken,
+    isConfigured: isTurnstileConfigured,
+  } = useInvisibleTurnstile({
+    action: PUBLIC_FORM_TURNSTILE_ACTION,
+  });
   const t = useTranslations();
 
   const questions = form.questions;
@@ -78,18 +87,35 @@ export default function FormViewer({ form }: FormViewerProps) {
   }, [currentIndex, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = () => {
-    if (hasBackgroundMusic && bgMusicRef.current) {
-      bgMusicRef.current.volume = 0.15;
-      void bgMusicRef.current.play().catch(() => {});
-    }
-
     startTransition(async () => {
       try {
-        const { data, serverError } = await startFormSessionAction(
-          { assignmentId: form.assignmentId },
-        );
+        if (!isTurnstileConfigured) {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
+        const turnstileToken = await getTurnstileToken().catch(() => null);
+        if (!turnstileToken) {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
+        const { data, serverError } = await startFormSessionAction({
+          assignmentId: form.assignmentId,
+          turnstileToken,
+        });
+
+        if (serverError === "TURNSTILE_FAILED") {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
 
         if (serverError || !data) throw new Error();
+
+        if (hasBackgroundMusic && bgMusicRef.current) {
+          bgMusicRef.current.volume = 0.15;
+          void bgMusicRef.current.play().catch(() => {});
+        }
 
         setSessionId(data.id);
         setPhase("question");
@@ -172,6 +198,17 @@ export default function FormViewer({ form }: FormViewerProps) {
 
     startTransition(async () => {
       try {
+        if (!isTurnstileConfigured) {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
+        const turnstileToken = await getTurnstileToken().catch(() => null);
+        if (!turnstileToken) {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
+
         let audioBase64: string | undefined;
         let audioMimeType: string | undefined;
 
@@ -188,7 +225,13 @@ export default function FormViewer({ form }: FormViewerProps) {
           defaultAnswer: answer.type === "default" ? answer.text : undefined,
           audioBase64,
           audioMimeType,
+          turnstileToken,
         });
+
+        if (serverError === "TURNSTILE_FAILED") {
+          toast(t("viewer.errors.securityCheck"));
+          return;
+        }
 
         if (serverError || !data) throw new Error();
 
@@ -245,6 +288,7 @@ export default function FormViewer({ form }: FormViewerProps) {
         showLandingContactTechBackground={isLandingContactForm}
         overlayClassName={tk.overlay}
         isDark={isDark}
+        getTurnstileToken={getTurnstileToken}
         onCompleted={(payload) => {
           setCompletionPayload(payload);
           setPhase("completed");
@@ -306,6 +350,7 @@ export default function FormViewer({ form }: FormViewerProps) {
           className="hidden"
         />
       )}
+      <div ref={turnstileContainerRef} className="hidden" aria-hidden />
       {phaseContent}
     </>
   );
