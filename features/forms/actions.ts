@@ -22,20 +22,41 @@ export const createFormAction = adminActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, type, language } = parsedInput;
+    const { name, instructions, type, language, questions = [] } = parsedInput;
     const generatedTtsKeys: string[] = [];
     let createdFormId: string | null = null;
 
     try {
-      const output = await generateForm({ instructions, language });
-      if (!output || output.questions.length === 0) {
-        throw new Error("Empty AI output.");
-      }
+      const hasManualQuestions = questions.length > 0;
+      let introTitle: string | null = null;
+      let introMessage: string | null = null;
+      let endTitle: string | null = null;
+      let endMessage: string | null = null;
+      const questionsToInsert = hasManualQuestions
+        ? questions.map((question) => ({
+            question: question.question,
+            order: question.order,
+            defaultAnswers: question.default_answers,
+          }))
+        : [];
 
       const toNullableText = (value: string) => {
         const trimmed = value.trim();
         return trimmed.length > 0 ? trimmed : null;
       };
+
+      if (!hasManualQuestions) {
+        const output = await generateForm({ instructions, language });
+        if (!output || output.questions.length === 0) {
+          throw new Error("Empty AI output.");
+        }
+
+        questionsToInsert.push(...output.questions);
+        introTitle = toNullableText(output.introTitle);
+        introMessage = toNullableText(output.introMessage);
+        endTitle = toNullableText(output.endTitle);
+        endMessage = toNullableText(output.endMessage);
+      }
 
       const { data: form, error } = await supabase
         .from("form")
@@ -45,10 +66,10 @@ export const createFormAction = adminActionClient
           type,
           language,
           user_id: userId,
-          intro_title: toNullableText(output.introTitle),
-          intro_message: toNullableText(output.introMessage),
-          end_title: toNullableText(output.endTitle),
-          end_message: toNullableText(output.endMessage),
+          intro_title: introTitle,
+          intro_message: introMessage,
+          end_title: endTitle,
+          end_message: endMessage,
         })
         .select()
         .single();
@@ -60,7 +81,7 @@ export const createFormAction = adminActionClient
       createdFormId = form.id;
 
       const insertedQuestions = await Promise.all(
-        output.questions.map(async (question) => {
+        questionsToInsert.map(async (question) => {
           const { data, error: insertError } = await supabase
             .from("question")
             .insert({

@@ -23,6 +23,22 @@ export const createFormSchema = z.object({
   instructions: z.string().min(1),
   type: formTypeSchema,
   language: formLanguageSchema,
+  questions: z
+    .array(
+      z.object({
+        question: z.string().min(1),
+        order: z.number().int().nonnegative(),
+        default_answers: z
+          .array(
+            z.object({
+              answer: z.string().min(1),
+              order: z.number().int().nonnegative(),
+            }),
+          )
+          .length(4),
+      }),
+    )
+    .optional(),
 });
 
 export type CreateFormType = z.infer<typeof createFormSchema>;

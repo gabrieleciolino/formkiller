@@ -11,9 +11,10 @@ import {
 import type { EditQuestionsFormProps } from "@/features/forms/types";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PlusIcon, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useEffect, useRef, useTransition } from "react";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import AddQuestionSheet from "@/features/forms/components/edit-questions-form/add-question-sheet";
 import DefaultAnswersFields from "@/features/forms/components/edit-questions-form/default-answers-fields";
@@ -24,31 +25,82 @@ export default function EditQuestionsForm({
   questionsData,
   formId,
   language,
-  initialFileUrls,
+  initialFileUrls = {},
+  mode = "edit",
+  onQuestionsChange,
   readOnly = false,
 }: EditQuestionsFormProps) {
   const t = useTranslations();
   const [isPending, startTransition] = useTransition();
   useZodLocale();
+  const isCreateMode = mode === "create";
+  const resolvedFormId =
+    formId ?? "00000000-0000-0000-0000-000000000000";
+
+  if (!isCreateMode && !formId) {
+    throw new Error("formId is required in edit mode");
+  }
 
   const form = useForm<EditQuestionsType>({
     resolver: zodResolver(editQuestionsSchema),
-    defaultValues: { questions: questionsData, formId, language },
+    defaultValues: { questions: questionsData, formId: resolvedFormId, language },
   });
 
-  const { fields: questionFields } = useFieldArray({
+  const { fields: questionFields, append, remove } = useFieldArray({
     control: form.control,
     name: "questions",
     keyName: "rhfKey",
   });
+  const watchedQuestions = useWatch({
+    control: form.control,
+    name: "questions",
+  });
+  const lastSyncedQuestionsRef = useRef<string>("");
 
   const nextOrder =
     questionFields.reduce((maxOrder, question) => {
       return Math.max(maxOrder, question.order);
     }, -1) + 1;
 
+  useEffect(() => {
+    if (!isCreateMode || !onQuestionsChange) {
+      return;
+    }
+
+    const normalizedQuestions = (watchedQuestions ?? []).map(
+      (question, questionIndex) => ({
+        question: question.question,
+        order: questionIndex,
+        default_answers: question.default_answers.map((answer, answerIndex) => ({
+          answer: answer.answer,
+          order: answerIndex,
+        })),
+      }),
+    );
+
+    const serializedQuestions = JSON.stringify(normalizedQuestions);
+    if (serializedQuestions === lastSyncedQuestionsRef.current) {
+      return;
+    }
+
+    lastSyncedQuestionsRef.current = serializedQuestions;
+    onQuestionsChange(normalizedQuestions);
+  }, [isCreateMode, onQuestionsChange, watchedQuestions]);
+
+  const handleAddLocalQuestion = () => {
+    append({
+      id: crypto.randomUUID(),
+      question: "",
+      order: nextOrder,
+      default_answers: [0, 1, 2, 3].map((answerIndex) => ({
+        answer: "",
+        order: answerIndex,
+      })),
+    });
+  };
+
   const onSubmit = (values: EditQuestionsType) => {
-    if (readOnly) {
+    if (readOnly || isCreateMode) {
       return;
     }
 
@@ -69,7 +121,7 @@ export default function EditQuestionsForm({
   return (
     <form
       onSubmit={
-        readOnly
+        readOnly || isCreateMode
           ? (event) => {
               event.preventDefault();
             }
@@ -79,7 +131,19 @@ export default function EditQuestionsForm({
     >
       {!readOnly && (
         <div className="flex justify-end">
-          <AddQuestionSheet formId={formId} nextOrder={nextOrder} />
+          {isCreateMode ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddLocalQuestion}
+            >
+              <PlusIcon />
+              {t("forms.questions.addQuestion")}
+            </Button>
+          ) : (
+            <AddQuestionSheet formId={formId!} nextOrder={nextOrder} />
+          )}
         </div>
       )}
 
@@ -115,10 +179,23 @@ export default function EditQuestionsForm({
               />
               {!readOnly && (
                 <div className="mt-5 shrink-0">
-                  <DeleteQuestionButton
-                    questionId={questionField.id}
-                    formId={formId}
-                  />
+                  {isCreateMode ? (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => remove(questionIndex)}
+                      title={t("forms.questions.deleteQuestion")}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  ) : (
+                    <DeleteQuestionButton
+                      questionId={questionField.id}
+                      formId={formId!}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -129,18 +206,20 @@ export default function EditQuestionsForm({
               readOnly={readOnly}
             />
 
-            <QuestionTTSControls
-              questionId={questionField.id}
-              formId={formId}
-              language={language}
-              initialFileUrl={initialFileUrls[questionField.id] ?? null}
-              readOnly={readOnly}
-            />
+            {!isCreateMode && (
+              <QuestionTTSControls
+                questionId={questionField.id}
+                formId={formId!}
+                language={language}
+                initialFileUrl={initialFileUrls[questionField.id] ?? null}
+                readOnly={readOnly}
+              />
+            )}
           </div>
         ))}
       </div>
 
-      {!readOnly && (
+      {!readOnly && !isCreateMode && (
         <Button
           type="submit"
           className="mt-2 w-full md:w-auto"

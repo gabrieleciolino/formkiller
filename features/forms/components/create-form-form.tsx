@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   createFormSchema,
@@ -28,6 +28,7 @@ import { useZodLocale } from "@/hooks/use-zod-locale";
 import { useRouter } from "next/navigation";
 import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
+import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 
 export default function CreateFormForm({
   detailPathPrefix = urls.dashboard.forms.index,
@@ -35,6 +36,9 @@ export default function CreateFormForm({
   detailPathPrefix?: string;
 } = {}) {
   const [isPending, startTransition] = useTransition();
+  const [manualQuestions, setManualQuestions] = useState<
+    NonNullable<CreateFormType["questions"]>
+  >([]);
   const router = useRouter();
   const t = useTranslations();
   useZodLocale();
@@ -48,15 +52,21 @@ export default function CreateFormForm({
       language: "it",
     },
   });
+  const selectedLanguage = form.watch("language") ?? "it";
 
   const onSubmit = (values: CreateFormType) => {
     startTransition(async () => {
       try {
+        const payload: CreateFormType = {
+          ...values,
+          questions: manualQuestions,
+        };
+
         const {
           data: form,
           serverError,
           validationErrors,
-        } = await createFormAction(values);
+        } = await createFormAction(payload);
 
         if (serverError || validationErrors || !form) {
           throw new Error();
@@ -158,6 +168,12 @@ export default function CreateFormForm({
             </Select>
           </Field>
         )}
+      />
+      <EditQuestionsForm
+        mode="create"
+        questionsData={[]}
+        language={selectedLanguage}
+        onQuestionsChange={setManualQuestions}
       />
       <Button
         type="submit"

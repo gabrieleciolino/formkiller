@@ -1,6 +1,7 @@
 import { getAdminFormsQuery, getUserFormsQuery } from "@/features/forms/queries";
 import type {
   AddQuestionFormType,
+  CreateFormType,
   EditQuestionsType,
   FormLanguage,
   FormTheme,
@@ -40,9 +41,11 @@ export type QuestionTTSControlsProps = {
 
 export type EditQuestionsFormProps = {
   questionsData: EditQuestionsType["questions"];
-  formId: string;
+  formId?: string;
   language: FormLanguage;
-  initialFileUrls: Record<string, string | null>;
+  initialFileUrls?: Record<string, string | null>;
+  mode?: "edit" | "create";
+  onQuestionsChange?: (questions: NonNullable<CreateFormType["questions"]>) => void;
   readOnly?: boolean;
 };
 
