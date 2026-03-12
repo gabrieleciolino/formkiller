@@ -155,7 +155,28 @@
       "assigned": "Asignado",
       "notAssigned": "No asignado",
       "assign": "Asignar",
-      "unassign": "Quitar"
+      "unassign": "Quitar",
+      "embed": {
+        "trigger": "Embed",
+        "title": "Código de inserción",
+        "description": "Copia y pega uno de estos snippets para insertar el formulario en un sitio externo.",
+        "iframeHeight": "Altura del iframe (px)",
+        "buttonLabel": "Etiqueta del botón sticky",
+        "buttonLabelPlaceholder": "Abrir quiz",
+        "copy": "Copiar código",
+        "copyError": "No se pudo copiar el código.",
+        "inline": {
+          "title": "Iframe inline",
+          "description": "Pega este iframe en el punto exacto de la página donde quieres mostrar el formulario.",
+          "copySuccess": "Código iframe copiado."
+        },
+        "sticky": {
+          "title": "Widget sticky",
+          "description": "Pega este snippet para mostrar un botón fijo que abre el quiz en un widget.",
+          "copySuccess": "Código widget sticky copiado.",
+          "defaultButtonLabel": "Abrir quiz"
+        }
+      }
     },
     "edit": {
       "trigger": "Personalizar",

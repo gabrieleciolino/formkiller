@@ -77,7 +77,13 @@ export default function LandingPage({ content }: LandingPageProps) {
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Image src="/logo.png" alt="FormKiller" width={140} height={36} className="h-8 w-auto" />
+          <Image
+            src="/logo.png"
+            alt="FormKiller"
+            width={140}
+            height={36}
+            className="h-8 w-auto"
+          />
           <nav className="flex items-center gap-3">
             <Link
               href={urls.auth.login}
@@ -331,7 +337,13 @@ export default function LandingPage({ content }: LandingPageProps) {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
-          <Image src="/logo.png" alt="FormKiller" width={120} height={31} className="h-7 w-auto" />
+          <Image
+            src="/logo.png"
+            alt="FormKiller"
+            width={120}
+            height={31}
+            className="h-7 w-auto"
+          />
           <p>{content.footer.copyright}</p>
         </div>
       </footer>

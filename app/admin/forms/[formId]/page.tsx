@@ -101,6 +101,7 @@ export default async function AdminFormDetailPage({
 
       <FormAssignmentsManager
         formId={formId}
+        formName={form.name}
         assignments={assignments}
         users={users}
       />

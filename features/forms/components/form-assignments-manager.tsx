@@ -6,6 +6,7 @@ import {
   assignUserToFormAction,
   unassignUserFromFormAction,
 } from "@/features/forms/actions";
+import FormEmbedDialog from "@/features/forms/components/form-embed-dialog";
 import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -29,10 +30,12 @@ type FormAssignment = {
 
 export default function FormAssignmentsManager({
   formId,
+  formName,
   users,
   assignments,
 }: {
   formId: string;
+  formName: string;
   users: AssignableUser[];
   assignments: FormAssignment[];
 }) {
@@ -127,15 +130,18 @@ export default function FormAssignmentsManager({
 
                 <div className="flex items-center gap-2">
                   {assignmentId ? (
-                    <Button asChild type="button" size="sm" variant="outline">
-                      <Link
-                        href={urls.form(assignmentId)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {t("dashboard.forms.columns.open")}
-                      </Link>
-                    </Button>
+                    <>
+                      <Button asChild type="button" size="sm" variant="outline">
+                        <Link
+                          href={urls.form(assignmentId)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t("dashboard.forms.columns.open")}
+                        </Link>
+                      </Button>
+                      <FormEmbedDialog assignmentId={assignmentId} formName={formName} />
+                    </>
                   ) : null}
                   <Button
                     type="button"

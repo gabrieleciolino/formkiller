@@ -197,7 +197,28 @@
       "assigned": "Assigned",
       "notAssigned": "Not assigned",
       "assign": "Assign",
-      "unassign": "Remove"
+      "unassign": "Remove",
+      "embed": {
+        "trigger": "Embed",
+        "title": "Embed code",
+        "description": "Copy and paste one of these snippets to embed the form on an external website.",
+        "iframeHeight": "Iframe height (px)",
+        "buttonLabel": "Sticky button label",
+        "buttonLabelPlaceholder": "Open quiz",
+        "copy": "Copy code",
+        "copyError": "Unable to copy code.",
+        "inline": {
+          "title": "Inline iframe",
+          "description": "Paste this iframe exactly where you want the form to appear in the page.",
+          "copySuccess": "Iframe code copied."
+        },
+        "sticky": {
+          "title": "Sticky widget",
+          "description": "Paste this snippet to show a sticky button that opens the quiz in a widget.",
+          "copySuccess": "Sticky widget code copied.",
+          "defaultButtonLabel": "Open quiz"
+        }
+      }
     },
     "questions": {
       "addQuestion": "Add question",
