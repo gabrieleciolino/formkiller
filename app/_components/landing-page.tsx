@@ -1,16 +1,15 @@
 import Image from "next/image";
-import Link from "next/link";
 import {
   Mic,
-  MousePointerClick,
-  Zap,
   BarChart3,
-  ImageIcon,
-  Globe,
   ChevronRight,
-  Play,
   CheckCircle2,
   Layers,
+  MousePointerClick,
+  Play,
+  Zap,
+  ImageIcon,
+  Globe,
 } from "lucide-react";
 import { urls } from "@/lib/urls";
 
@@ -57,7 +56,8 @@ export interface LandingContent {
   ctaSectionH2Line1: string;
   ctaSectionH2Line2: string;
   ctaSectionDescription: string;
-  ctaSectionButton: string;
+  ctaSectionFormTitle: string;
+  ctaSectionFormUnavailable: string;
   footer: {
     copyright: string;
     signIn: string;
@@ -69,9 +69,13 @@ const modeIcons = [Layers, Mic, MousePointerClick];
 
 interface LandingPageProps {
   content: LandingContent;
+  contactFormId: string;
 }
 
-export default function LandingPage({ content }: LandingPageProps) {
+export default function LandingPage({
+  content,
+  contactFormId,
+}: LandingPageProps) {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Nav */}
@@ -85,12 +89,12 @@ export default function LandingPage({ content }: LandingPageProps) {
             className="h-8 w-auto"
           />
           <nav className="flex items-center gap-3">
-            <Link
-              href={urls.auth.login}
+            <a
+              href="#contact-form"
               className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-80"
             >
               {content.nav.getStarted}
-            </Link>
+            </a>
           </nav>
         </div>
       </header>
@@ -127,13 +131,13 @@ export default function LandingPage({ content }: LandingPageProps) {
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link
-              href={urls.auth.login}
+            <a
+              href="#contact-form"
               className="group flex items-center gap-2 rounded-xl bg-primary-foreground px-8 py-3.5 text-base font-semibold text-primary transition-opacity hover:opacity-90"
             >
               {content.heroPrimary}
               <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            </a>
             <a
               href="#how-it-works"
               className="flex items-center gap-2 rounded-xl border border-primary-foreground/30 px-8 py-3.5 text-base font-medium text-primary-foreground/80 transition-colors hover:border-primary-foreground/60 hover:text-primary-foreground"
@@ -314,23 +318,34 @@ export default function LandingPage({ content }: LandingPageProps) {
       </section>
 
       {/* CTA */}
-      <section className="bg-primary py-24 text-primary-foreground">
-        <div className="mx-auto max-w-3xl px-6 text-center">
+      <section
+        id="contact-form"
+        className="scroll-mt-24 bg-primary py-24 text-primary-foreground"
+      >
+        <div className="mx-auto max-w-6xl px-6 text-center">
           <h2 className="font-roboto text-4xl font-black leading-tight tracking-tight sm:text-5xl md:text-6xl">
             {content.ctaSectionH2Line1}
             <br />
             {content.ctaSectionH2Line2}
           </h2>
-          <p className="mx-auto mt-6 max-w-lg text-lg text-primary-foreground/70">
+          <p className="mx-auto mt-6 max-w-3xl text-lg text-primary-foreground/70">
             {content.ctaSectionDescription}
           </p>
-          <Link
-            href={urls.auth.login}
-            className="group mt-10 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-10 py-4 text-base font-semibold text-primary transition-opacity hover:opacity-90"
-          >
-            {content.ctaSectionButton}
-            <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          <div className="mx-auto mt-10 max-w-md overflow-hidden rounded-2xl border border-primary-foreground/20 bg-primary-foreground/5 shadow-sm">
+            {contactFormId ? (
+              <iframe
+                src={urls.form(contactFormId)}
+                title={content.ctaSectionFormTitle}
+                loading="lazy"
+                allow="microphone"
+                className="h-[680px] w-full"
+              />
+            ) : (
+              <div className="flex min-h-[320px] items-center justify-center px-6 py-10 text-center text-sm text-primary-foreground/70">
+                {content.ctaSectionFormUnavailable}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

@@ -6,21 +6,17 @@ import { useTranslations } from "next-intl";
 
 export function WelcomePhase({
   bgStyle,
-  formName,
   hasBackgroundImage,
   isDark,
   introTitle,
   introMessage,
   isPending,
   onStart,
-  questionsCount,
   tk,
 }: FormViewerWelcomePhaseProps) {
   const t = useTranslations();
-  const resolvedTitle = introTitle?.trim() || t("viewer.welcome.title");
-  const resolvedMessage =
-    introMessage?.trim() ||
-    `${t("viewer.welcome.questionsCount", { count: questionsCount })}\n${t("viewer.welcome.instructions")}`;
+  const resolvedTitle = introTitle?.trim();
+  const resolvedMessage = introMessage?.trim();
 
   return (
     <div
@@ -34,13 +30,17 @@ export function WelcomePhase({
       <div
         className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/60" : "bg-white/60"}`}
       >
-        <h1 className="text-5xl font-black tracking-tight">{resolvedTitle}</h1>
+        {resolvedTitle ? (
+          <h1 className="text-5xl font-black tracking-tight">{resolvedTitle}</h1>
+        ) : null}
 
-        <p
-          className={`text-sm leading-relaxed whitespace-pre-line ${tk.textSecondary}`}
-        >
-          {resolvedMessage}
-        </p>
+        {resolvedMessage ? (
+          <p
+            className={`text-sm leading-relaxed whitespace-pre-line ${tk.textSecondary}`}
+          >
+            {resolvedMessage}
+          </p>
+        ) : null}
 
         <button
           onClick={onStart}

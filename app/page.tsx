@@ -1,9 +1,11 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 
+export const dynamic = "force-dynamic";
+
 const content: LandingContent = {
   nav: {
     signIn: "Sign in",
-    getStarted: "Get started",
+    getStarted: "Talk to us",
   },
   hero: {
     badge: "Voice-powered conversational forms",
@@ -12,9 +14,9 @@ const content: LandingContent = {
     h1Mid: "get",
     h1After: "answered.",
     description:
-      "FormKiller turns static questionnaires into immersive voice-driven conversations. Higher completion rates, richer answers, zero friction.",
+      "FormKiller turns static questionnaires into voice-first conversations your audience actually completes. Better completion, richer context, less drop-off.",
   },
-  heroPrimary: "Create your first form",
+  heroPrimary: "Request a tailored demo",
   heroSecondary: "See how it works",
   mockForm: {
     stepLabel: "Step 2 / 5",
@@ -88,7 +90,7 @@ const content: LandingContent = {
       number: "04",
       title: "Collect leads",
       description:
-        "View every session and lead in the dashboard. Export responses and contact details when you need them.",
+        "Track each session and lead in the dashboard, with contact details, transcripts and voice answers.",
     },
   ],
   modesLabel: "Flexible answer modes",
@@ -118,11 +120,13 @@ const content: LandingContent = {
       desc: "Pre-defined choices only. Great for quick surveys and structured data.",
     },
   ],
-  ctaSectionH2Line1: "Ready to kill",
-  ctaSectionH2Line2: "boring forms?",
+  ctaSectionH2Line1: "Need a voice form",
+  ctaSectionH2Line2: "for your funnel?",
   ctaSectionDescription:
-    "Create your first voice form in under a minute. No credit card required.",
-  ctaSectionButton: "Start for free",
+    "Tell us your goal and we'll help you design the right conversational flow.",
+  ctaSectionFormTitle: "FormKiller contact form",
+  ctaSectionFormUnavailable:
+    "Set CONTACT_FORM_ID to display the embedded contact form.",
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. All rights reserved.`,
     signIn: "Sign in →",
@@ -130,5 +134,6 @@ const content: LandingContent = {
 };
 
 export default function HomePage() {
-  return <LandingPage content={content} />;
+  const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
+  return <LandingPage content={content} contactFormId={contactFormId} />;
 }

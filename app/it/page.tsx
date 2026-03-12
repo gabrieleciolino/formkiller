@@ -1,9 +1,11 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 
+export const dynamic = "force-dynamic";
+
 const content: LandingContent = {
   nav: {
     signIn: "Accedi",
-    getStarted: "Inizia gratis",
+    getStarted: "Parla con noi",
   },
   hero: {
     badge: "Form conversazionali basati sulla voce",
@@ -11,17 +13,26 @@ const content: LandingContent = {
     h1Highlight: "davvero",
     h1After: "vengono compilati.",
     description:
-      "FormKiller trasforma i questionari statici in conversazioni coinvolgenti basate sulla voce. Tassi di completamento più alti, risposte più ricche, zero attrito.",
+      "FormKiller trasforma i questionari statici in conversazioni vocali che il tuo pubblico completa davvero. Più completamenti, risposte più ricche, meno abbandoni.",
   },
-  heroPrimary: "Crea il tuo primo form",
+  heroPrimary: "Richiedi una demo su misura",
   heroSecondary: "Scopri come funziona",
   mockForm: {
     stepLabel: "Fase 2 / 5",
-    question: "Qual è l'obiettivo principale che vuoi raggiungere questo trimestre?",
-    buttons: ["Aumentare i ricavi", "Ridurre il churn", "Lanciare il prodotto", "Assumere il team"],
+    question:
+      "Qual è l'obiettivo principale che vuoi raggiungere questo trimestre?",
+    buttons: [
+      "Aumentare i ricavi",
+      "Ridurre il churn",
+      "Lanciare il prodotto",
+      "Assumere il team",
+    ],
   },
   stats: [
-    { value: "3×", label: "tasso di completamento più alto rispetto ai form testuali" },
+    {
+      value: "3×",
+      label: "tasso di completamento più alto rispetto ai form testuali",
+    },
     { value: "< 60s", label: "per creare e pubblicare un form" },
     { value: "3", label: "lingue supportate" },
     { value: "0", label: "app necessarie per rispondere" },
@@ -87,7 +98,7 @@ const content: LandingContent = {
       number: "04",
       title: "Raccogli i lead",
       description:
-        "Visualizza ogni sessione e lead nella dashboard. Esporta risposte e dati di contatto quando ne hai bisogno.",
+        "Monitora sessioni e lead in dashboard, con dati di contatto, trascrizioni e risposte vocali.",
     },
   ],
   modesLabel: "Modalità di risposta flessibili",
@@ -117,11 +128,13 @@ const content: LandingContent = {
       desc: "Solo scelte predefinite. Ideale per sondaggi rapidi e dati strutturati.",
     },
   ],
-  ctaSectionH2Line1: "Pronto a eliminare",
-  ctaSectionH2Line2: "i form noiosi?",
+  ctaSectionH2Line1: "Vuoi un form vocale",
+  ctaSectionH2Line2: "per il tuo funnel?",
   ctaSectionDescription:
-    "Crea il tuo primo form vocale in meno di un minuto. Nessuna carta di credito richiesta.",
-  ctaSectionButton: "Inizia gratis",
+    "Raccontaci il tuo obiettivo e ti aiutiamo a disegnare il flusso conversazionale giusto.",
+  ctaSectionFormTitle: "Form di contatto FormKiller",
+  ctaSectionFormUnavailable:
+    "Imposta CONTACT_FORM_ID per mostrare il form di contatto incorporato.",
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. Tutti i diritti riservati.`,
     signIn: "Accedi →",
@@ -129,5 +142,6 @@ const content: LandingContent = {
 };
 
 export default function HomePageIT() {
-  return <LandingPage content={content} />;
+  const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
+  return <LandingPage content={content} contactFormId={contactFormId} />;
 }

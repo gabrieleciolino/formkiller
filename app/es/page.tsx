@@ -1,9 +1,11 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 
+export const dynamic = "force-dynamic";
+
 const content: LandingContent = {
   nav: {
     signIn: "Iniciar sesión",
-    getStarted: "Empezar gratis",
+    getStarted: "Habla con nosotros",
   },
   hero: {
     badge: "Formularios conversacionales por voz",
@@ -11,17 +13,26 @@ const content: LandingContent = {
     h1Highlight: "realmente",
     h1After: "se responden.",
     description:
-      "FormKiller transforma los cuestionarios estáticos en conversaciones inmersivas basadas en voz. Mayores tasas de finalización, respuestas más ricas, cero fricción.",
+      "FormKiller convierte cuestionarios estáticos en conversaciones por voz que tu audiencia realmente termina. Más finalizaciones, respuestas más ricas y menos abandono.",
   },
-  heroPrimary: "Crea tu primer formulario",
+  heroPrimary: "Solicita una demo a medida",
   heroSecondary: "Ver cómo funciona",
   mockForm: {
     stepLabel: "Paso 2 / 5",
-    question: "¿Cuál es el objetivo principal que quieres lograr este trimestre?",
-    buttons: ["Aumentar ingresos", "Reducir el churn", "Lanzar producto", "Contratar equipo"],
+    question:
+      "¿Cuál es el objetivo principal que quieres lograr este trimestre?",
+    buttons: [
+      "Aumentar ingresos",
+      "Reducir el churn",
+      "Lanzar producto",
+      "Contratar equipo",
+    ],
   },
   stats: [
-    { value: "3×", label: "mayor tasa de finalización que los formularios de texto" },
+    {
+      value: "3×",
+      label: "mayor tasa de finalización que los formularios de texto",
+    },
     { value: "< 60s", label: "para crear y publicar un formulario" },
     { value: "3", label: "idiomas admitidos" },
     { value: "0", label: "aplicaciones necesarias para responder" },
@@ -87,7 +98,7 @@ const content: LandingContent = {
       number: "04",
       title: "Recoge los leads",
       description:
-        "Consulta cada sesión y lead en el panel de control. Exporta respuestas y datos de contacto cuando los necesites.",
+        "Supervisa sesiones y leads en el panel, con datos de contacto, transcripciones y respuestas de voz.",
     },
   ],
   modesLabel: "Modos de respuesta flexibles",
@@ -117,11 +128,13 @@ const content: LandingContent = {
       desc: "Solo opciones predefinidas. Ideal para encuestas rápidas y datos estructurados.",
     },
   ],
-  ctaSectionH2Line1: "¿Listo para acabar con",
-  ctaSectionH2Line2: "los formularios aburridos?",
+  ctaSectionH2Line1: "¿Necesitas un formulario",
+  ctaSectionH2Line2: "de voz para tu funnel?",
   ctaSectionDescription:
-    "Crea tu primer formulario de voz en menos de un minuto. Sin tarjeta de crédito.",
-  ctaSectionButton: "Empezar gratis",
+    "Cuéntanos tu objetivo y te ayudamos a diseñar el flujo conversacional correcto.",
+  ctaSectionFormTitle: "Formulario de contacto de FormKiller",
+  ctaSectionFormUnavailable:
+    "Configura CONTACT_FORM_ID para mostrar el formulario de contacto embebido.",
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. Todos los derechos reservados.`,
     signIn: "Iniciar sesión →",
@@ -129,5 +142,6 @@ const content: LandingContent = {
 };
 
 export default function HomePageES() {
-  return <LandingPage content={content} />;
+  const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
+  return <LandingPage content={content} contactFormId={contactFormId} />;
 }
