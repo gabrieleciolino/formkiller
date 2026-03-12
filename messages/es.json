@@ -166,6 +166,14 @@
       "instructionsPlaceholder": "Instrucciones",
       "type": "Tipo",
       "theme": "Tema",
+      "introTitle": "Título de intro",
+      "introTitlePlaceholder": "Introduce el título de la pantalla inicial",
+      "introMessage": "Mensaje de intro",
+      "introMessagePlaceholder": "Introduce el mensaje de la pantalla inicial",
+      "endTitle": "Título final",
+      "endTitlePlaceholder": "Introduce el título de la pantalla final",
+      "endMessage": "Mensaje final",
+      "endMessagePlaceholder": "Introduce el mensaje de la pantalla final",
       "themes": {
         "dark": "Oscuro",
         "light": "Claro"

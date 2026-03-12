@@ -81,6 +81,10 @@ export type ViewerFormData = {
   questions: ViewerQuestion[];
   backgroundImageUrl: string | null;
   backgroundMusicUrl: string | null;
+  introTitle: string | null;
+  introMessage: string | null;
+  endTitle: string | null;
+  endMessage: string | null;
 };
 
 export type FormViewerAnswerState =
@@ -138,6 +142,9 @@ export type FormViewerWelcomePhaseProps = {
   bgStyle: FormViewerBackgroundStyle;
   formName: string;
   hasBackgroundImage: boolean;
+  isDark: boolean;
+  introTitle: string | null;
+  introMessage: string | null;
   isPending: boolean;
   onStart: () => void;
   questionsCount: number;
@@ -146,6 +153,8 @@ export type FormViewerWelcomePhaseProps = {
 
 export type FormViewerCompletedPhaseProps = {
   bgStyle: FormViewerBackgroundStyle;
+  endTitle: string | null;
+  endMessage: string | null;
   hasBackgroundImage: boolean;
   isDark: boolean;
   tk: FormViewerThemeTokens;
@@ -160,6 +169,7 @@ export type FormViewerQuestionPhaseProps = {
   displayedText: string;
   hasBackgroundImage: boolean;
   hasBackgroundMusic: boolean;
+  isDark: boolean;
   isLast: boolean;
   isMuted: boolean;
   isPending: boolean;

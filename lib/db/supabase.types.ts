@@ -165,8 +165,12 @@ export type Database = {
           background_image_key: string | null
           background_music_key: string | null
           created_at: string | null
+          end_message: string | null
+          end_title: string | null
           id: string
           instructions: string
+          intro_message: string | null
+          intro_title: string | null
           language: Database["public"]["Enums"]["form_language"]
           name: string
           theme: Database["public"]["Enums"]["form_theme"]
@@ -178,8 +182,12 @@ export type Database = {
           background_image_key?: string | null
           background_music_key?: string | null
           created_at?: string | null
+          end_message?: string | null
+          end_title?: string | null
           id?: string
           instructions: string
+          intro_message?: string | null
+          intro_title?: string | null
           language?: Database["public"]["Enums"]["form_language"]
           name: string
           theme?: Database["public"]["Enums"]["form_theme"]
@@ -191,8 +199,12 @@ export type Database = {
           background_image_key?: string | null
           background_music_key?: string | null
           created_at?: string | null
+          end_message?: string | null
+          end_title?: string | null
           id?: string
           instructions?: string
+          intro_message?: string | null
+          intro_title?: string | null
           language?: Database["public"]["Enums"]["form_language"]
           name?: string
           theme?: Database["public"]["Enums"]["form_theme"]

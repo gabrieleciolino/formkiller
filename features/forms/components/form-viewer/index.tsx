@@ -212,6 +212,9 @@ export default function FormViewer({ form }: FormViewerProps) {
         bgStyle={bgStyle}
         formName={form.name}
         hasBackgroundImage={hasBackgroundImage}
+        isDark={isDark}
+        introMessage={form.introMessage}
+        introTitle={form.introTitle}
         isPending={isPending}
         onStart={handleStart}
         questionsCount={questions.length}
@@ -238,6 +241,8 @@ export default function FormViewer({ form }: FormViewerProps) {
     return (
       <CompletedPhase
         bgStyle={bgStyle}
+        endMessage={form.endMessage}
+        endTitle={form.endTitle}
         hasBackgroundImage={hasBackgroundImage}
         isDark={isDark}
         tk={tk}
@@ -255,6 +260,7 @@ export default function FormViewer({ form }: FormViewerProps) {
       displayedText={displayedText}
       hasBackgroundImage={hasBackgroundImage}
       hasBackgroundMusic={hasBackgroundMusic}
+      isDark={isDark}
       isLast={isLast}
       isMuted={isMuted}
       isPending={isPending}

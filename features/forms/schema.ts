@@ -36,6 +36,10 @@ export const editFormSchema = z.object({
   theme: formThemeSchema,
   backgroundImageKey: z.string().nullable().optional(),
   backgroundMusicKey: z.string().nullable().optional(),
+  introTitle: z.string(),
+  introMessage: z.string(),
+  endTitle: z.string(),
+  endMessage: z.string(),
 });
 
 export type EditFormType = z.infer<typeof editFormSchema>;

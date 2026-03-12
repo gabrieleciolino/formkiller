@@ -126,8 +126,22 @@ export const editFormAction = adminActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
-    const { formId, type, theme, backgroundImageKey, backgroundMusicKey } =
-      parsedInput;
+    const {
+      formId,
+      type,
+      theme,
+      backgroundImageKey,
+      backgroundMusicKey,
+      introTitle,
+      introMessage,
+      endTitle,
+      endMessage,
+    } = parsedInput;
+
+    const toNullableText = (value: string) => {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    };
 
     const { data: form, error } = await supabase
       .from("form")
@@ -136,6 +150,10 @@ export const editFormAction = adminActionClient
         theme: theme ?? "dark",
         background_image_key: backgroundImageKey ?? null,
         background_music_key: backgroundMusicKey ?? null,
+        intro_title: toNullableText(introTitle),
+        intro_message: toNullableText(introMessage),
+        end_title: toNullableText(endTitle),
+        end_message: toNullableText(endMessage),
       })
       .eq("id", formId)
       .select()

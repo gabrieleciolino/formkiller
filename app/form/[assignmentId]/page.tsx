@@ -63,6 +63,10 @@ export default async function FormViewerAssignmentPage({
     backgroundMusicUrl: form.background_music_key
       ? getFileUrl(form.background_music_key)
       : null,
+    introTitle: form.intro_title ?? null,
+    introMessage: form.intro_message ?? null,
+    endTitle: form.end_title ?? null,
+    endMessage: form.end_message ?? null,
   };
 
   return (

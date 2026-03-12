@@ -9,12 +9,19 @@ export function WelcomePhase({
   bgStyle,
   formName,
   hasBackgroundImage,
+  isDark,
+  introTitle,
+  introMessage,
   isPending,
   onStart,
   questionsCount,
   tk,
 }: FormViewerWelcomePhaseProps) {
   const t = useTranslations();
+  const resolvedTitle = introTitle?.trim() || t("viewer.welcome.title");
+  const resolvedMessage =
+    introMessage?.trim() ||
+    `${t("viewer.welcome.questionsCount", { count: questionsCount })}\n${t("viewer.welcome.instructions")}`;
 
   return (
     <div
@@ -24,17 +31,15 @@ export function WelcomePhase({
       {bgAudio}
       {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
 
-      <div className="relative flex w-full max-w-md flex-col items-center gap-8 text-center">
+      <div className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/80" : "bg-white/80"}`}>
         <p className={`text-xs uppercase tracking-widest ${tk.textHint}`}>{formName}</p>
 
         <h1 className="text-5xl font-black tracking-tight">
-          {t("viewer.welcome.title")}
+          {resolvedTitle}
         </h1>
 
-        <p className={`text-sm leading-relaxed ${tk.textSecondary}`}>
-          {t("viewer.welcome.questionsCount", { count: questionsCount })}
-          <br />
-          {t("viewer.welcome.instructions")}
+        <p className={`text-sm leading-relaxed whitespace-pre-line ${tk.textSecondary}`}>
+          {resolvedMessage}
         </p>
 
         <button

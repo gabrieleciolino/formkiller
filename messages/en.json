@@ -149,6 +149,14 @@
       "instructionsPlaceholder": "Instructions",
       "type": "Type",
       "theme": "Theme",
+      "introTitle": "Intro title",
+      "introTitlePlaceholder": "Enter the welcome screen title",
+      "introMessage": "Intro message",
+      "introMessagePlaceholder": "Enter the welcome screen message",
+      "endTitle": "End title",
+      "endTitlePlaceholder": "Enter the completion screen title",
+      "endMessage": "End message",
+      "endMessagePlaceholder": "Enter the completion screen message",
       "themes": {
         "dark": "Dark",
         "light": "Light"

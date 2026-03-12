@@ -6,11 +6,15 @@ import { useTranslations } from "next-intl";
 
 export function CompletedPhase({
   bgStyle,
+  endMessage,
+  endTitle,
   hasBackgroundImage,
   isDark,
   tk,
 }: FormViewerCompletedPhaseProps) {
   const t = useTranslations();
+  const resolvedTitle = endTitle?.trim() || t("viewer.completed.title");
+  const resolvedMessage = endMessage?.trim() || t("viewer.completed.message");
 
   return (
     <div
@@ -26,10 +30,10 @@ export function CompletedPhase({
           <CheckCircleIcon className="size-10" />
         </div>
 
-        <h1 className="text-4xl font-black">{t("viewer.completed.title")}</h1>
+        <h1 className="text-4xl font-black">{resolvedTitle}</h1>
 
         <p className={`text-sm ${tk.textSecondary}`}>
-          {t("viewer.completed.message")}
+          {resolvedMessage}
         </p>
       </div>
     </div>

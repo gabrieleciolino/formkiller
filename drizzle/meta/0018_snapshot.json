@@ -1,0 +1,1172 @@
+{
+  "id": "b78b3738-2060-4270-9620-4bfbd6395c8b",
+  "prevId": "6d35a8ad-e143-4688-a990-34672b7347a1",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "account_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'user'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_user_id_users_id_fk": {
+          "name": "account_user_id_users_id_fk",
+          "tableFrom": "account",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "account_select_own": {
+          "name": "account_select_own",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"account\".\"user_id\" = auth.uid()"
+        },
+        "account_insert_own_user": {
+          "name": "account_insert_own_user",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "\"account\".\"user_id\" = auth.uid() and \"account\".\"role\" = 'user'"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.answer": {
+      "name": "answer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_session_id": {
+          "name": "form_session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "question_id": {
+          "name": "question_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_answer": {
+          "name": "default_answer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_key": {
+          "name": "file_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_generated_at": {
+          "name": "file_generated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stt": {
+          "name": "stt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "answer_user_id_users_id_fk": {
+          "name": "answer_user_id_users_id_fk",
+          "tableFrom": "answer",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "answer_form_id_form_id_fk": {
+          "name": "answer_form_id_form_id_fk",
+          "tableFrom": "answer",
+          "tableTo": "form",
+          "columnsFrom": [
+            "form_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "answer_form_session_id_form_session_id_fk": {
+          "name": "answer_form_session_id_form_session_id_fk",
+          "tableFrom": "answer",
+          "tableTo": "form_session",
+          "columnsFrom": [
+            "form_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "answer_question_id_question_id_fk": {
+          "name": "answer_question_id_question_id_fk",
+          "tableFrom": "answer",
+          "tableTo": "question",
+          "columnsFrom": [
+            "question_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "answer_select_owner_or_admin": {
+          "name": "answer_select_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"answer\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "answer_delete_owner_or_admin": {
+          "name": "answer_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"answer\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.asset": {
+      "name": "asset",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_key": {
+          "name": "file_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "asset_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "asset_user_id_users_id_fk": {
+          "name": "asset_user_id_users_id_fk",
+          "tableFrom": "asset",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "asset_select_owner_or_admin": {
+          "name": "asset_select_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"asset\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "asset_insert_owner_or_admin": {
+          "name": "asset_insert_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "\"asset\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "asset_update_owner_or_admin": {
+          "name": "asset_update_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"asset\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n",
+          "withCheck": "\"asset\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "asset_delete_owner_or_admin": {
+          "name": "asset_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"asset\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.form_assignment": {
+      "name": "form_assignment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_by": {
+          "name": "assigned_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "form_assignment_form_id_idx": {
+          "name": "form_assignment_form_id_idx",
+          "columns": [
+            {
+              "expression": "form_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "form_assignment_user_id_idx": {
+          "name": "form_assignment_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "form_assignment_active_idx": {
+          "name": "form_assignment_active_idx",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "form_assignment_form_id_form_id_fk": {
+          "name": "form_assignment_form_id_form_id_fk",
+          "tableFrom": "form_assignment",
+          "tableTo": "form",
+          "columnsFrom": [
+            "form_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "form_assignment_user_id_users_id_fk": {
+          "name": "form_assignment_user_id_users_id_fk",
+          "tableFrom": "form_assignment",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "form_assignment_assigned_by_users_id_fk": {
+          "name": "form_assignment_assigned_by_users_id_fk",
+          "tableFrom": "form_assignment",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "assigned_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "form_assignment_form_user_unique": {
+          "name": "form_assignment_form_user_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "form_id",
+            "user_id"
+          ]
+        }
+      },
+      "policies": {
+        "form_assignment_select_owner_or_admin": {
+          "name": "form_assignment_select_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"form_assignment\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_assignment_insert_admin": {
+          "name": "form_assignment_insert_admin",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "\n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_assignment_update_admin": {
+          "name": "form_assignment_update_admin",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n",
+          "withCheck": "\n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_assignment_delete_admin": {
+          "name": "form_assignment_delete_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.form_session": {
+      "name": "form_session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "form_session_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "current_question_index": {
+          "name": "current_question_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "form_session_user_id_users_id_fk": {
+          "name": "form_session_user_id_users_id_fk",
+          "tableFrom": "form_session",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "form_session_form_id_form_id_fk": {
+          "name": "form_session_form_id_form_id_fk",
+          "tableFrom": "form_session",
+          "tableTo": "form",
+          "columnsFrom": [
+            "form_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "form_session_select_owner_or_admin": {
+          "name": "form_session_select_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"form_session\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_session_delete_owner_or_admin": {
+          "name": "form_session_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"form_session\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.form": {
+      "name": "form",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instructions": {
+          "name": "instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "form_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'mixed'"
+        },
+        "language": {
+          "name": "language",
+          "type": "form_language",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en'"
+        },
+        "background_image_key": {
+          "name": "background_image_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "background_music_key": {
+          "name": "background_music_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "theme": {
+          "name": "theme",
+          "type": "form_theme",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'dark'"
+        },
+        "intro_title": {
+          "name": "intro_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "intro_message": {
+          "name": "intro_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_title": {
+          "name": "end_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_message": {
+          "name": "end_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "form_user_id_users_id_fk": {
+          "name": "form_user_id_users_id_fk",
+          "tableFrom": "form",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "form_select_public": {
+          "name": "form_select_public",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ],
+          "using": "true"
+        },
+        "form_insert_owner_or_admin": {
+          "name": "form_insert_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "\"form\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_update_owner_or_admin": {
+          "name": "form_update_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"form\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n",
+          "withCheck": "\"form\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "form_delete_owner_or_admin": {
+          "name": "form_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"form\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.lead": {
+      "name": "lead",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_session_id": {
+          "name": "form_session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lead_user_id_users_id_fk": {
+          "name": "lead_user_id_users_id_fk",
+          "tableFrom": "lead",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lead_form_id_form_id_fk": {
+          "name": "lead_form_id_form_id_fk",
+          "tableFrom": "lead",
+          "tableTo": "form",
+          "columnsFrom": [
+            "form_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lead_form_session_id_form_session_id_fk": {
+          "name": "lead_form_session_id_form_session_id_fk",
+          "tableFrom": "lead",
+          "tableTo": "form_session",
+          "columnsFrom": [
+            "form_session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "lead_select_owner_or_admin": {
+          "name": "lead_select_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"lead\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        },
+        "lead_delete_owner_or_admin": {
+          "name": "lead_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"lead\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.question": {
+      "name": "question",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "form_id": {
+          "name": "form_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "question": {
+          "name": "question",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_answers": {
+          "name": "default_answers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_key": {
+          "name": "file_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_generated_at": {
+          "name": "file_generated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "question_user_id_users_id_fk": {
+          "name": "question_user_id_users_id_fk",
+          "tableFrom": "question",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "question_form_id_form_id_fk": {
+          "name": "question_form_id_form_id_fk",
+          "tableFrom": "question",
+          "tableTo": "form",
+          "columnsFrom": [
+            "form_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "question_select_public": {
+          "name": "question_select_public",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ],
+          "using": "exists (select 1 from \"form\" f where f.id = \"question\".\"form_id\")"
+        },
+        "question_insert_owner_or_admin": {
+          "name": "question_insert_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "\n        \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n\n        or (\n          \"question\".\"user_id\" = auth.uid()\n          and \n  exists (\n    select 1\n    from \"form\" f\n    where f.id = \"question\".\"form_id\"\n      and f.user_id = auth.uid()\n  )\n\n        )\n      "
+        },
+        "question_update_owner_or_admin": {
+          "name": "question_update_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"question\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n",
+          "withCheck": "\n        \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n\n        or (\n          \"question\".\"user_id\" = auth.uid()\n          and \n  exists (\n    select 1\n    from \"form\" f\n    where f.id = \"question\".\"form_id\"\n      and f.user_id = auth.uid()\n  )\n\n        )\n      "
+        },
+        "question_delete_owner_or_admin": {
+          "name": "question_delete_owner_or_admin",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "\"question\".\"user_id\" = auth.uid() or \n  exists (\n    select 1\n    from \"account\" a\n    where a.user_id = auth.uid()\n      and a.role = 'admin'\n  )\n"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {
+    "public.account_role": {
+      "name": "account_role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "user"
+      ]
+    },
+    "public.asset_type": {
+      "name": "asset_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video",
+        "audio"
+      ]
+    },
+    "public.form_language": {
+      "name": "form_language",
+      "schema": "public",
+      "values": [
+        "en",
+        "it",
+        "es"
+      ]
+    },
+    "public.form_session_status": {
+      "name": "form_session_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "in_progress",
+        "completed"
+      ]
+    },
+    "public.form_theme": {
+      "name": "form_theme",
+      "schema": "public",
+      "values": [
+        "light",
+        "dark"
+      ]
+    },
+    "public.form_type": {
+      "name": "form_type",
+      "schema": "public",
+      "values": [
+        "mixed",
+        "default-only",
+        "voice-only"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

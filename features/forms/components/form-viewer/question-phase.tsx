@@ -19,6 +19,7 @@ export function QuestionPhase({
   displayedText,
   hasBackgroundImage,
   hasBackgroundMusic,
+  isDark,
   isLast,
   isMuted,
   isPending,
@@ -94,7 +95,7 @@ export function QuestionPhase({
         </p>
       </div>
 
-      <div className="relative space-y-3 px-4 pb-10">
+      <div className={`relative mx-4 mb-10 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
         {showDefaultAnswers && (
           <div className="grid grid-cols-2 gap-2">
             {currentQuestion.defaultAnswers.map((defaultAnswer, index) => {

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
   SheetContent,
@@ -40,8 +41,17 @@ export default function EditFormSheet({
   backgroundMusicUrl,
 }: EditFormSheetProps) {
   const [open, setOpen] = useState(false);
-  const { id, type, theme, background_image_key, background_music_key } =
-    formData;
+  const {
+    id,
+    type,
+    theme,
+    background_image_key,
+    background_music_key,
+    intro_title,
+    intro_message,
+    end_title,
+    end_message,
+  } = formData;
   const [isPending, startTransition] = useTransition();
   const t = useTranslations();
   useZodLocale();
@@ -60,6 +70,10 @@ export default function EditFormSheet({
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
+      introTitle: intro_title ?? "",
+      introMessage: intro_message ?? "",
+      endTitle: end_title ?? "",
+      endMessage: end_message ?? "",
     },
   });
 
@@ -70,6 +84,10 @@ export default function EditFormSheet({
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
+      introTitle: intro_title ?? "",
+      introMessage: intro_message ?? "",
+      endTitle: end_title ?? "",
+      endMessage: end_message ?? "",
     });
     setImagePreviewUrl(background_image_key ? backgroundImageUrl : null);
     setMusicPreviewUrl(background_music_key ? backgroundMusicUrl : null);
@@ -81,6 +99,10 @@ export default function EditFormSheet({
     backgroundMusicUrl,
     background_image_key,
     background_music_key,
+    intro_title,
+    intro_message,
+    end_title,
+    end_message,
     form,
   ]);
 
@@ -113,12 +135,15 @@ export default function EditFormSheet({
           {t("forms.edit.trigger")}
         </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className="gap-0 p-0">
+        <SheetHeader className="pr-12">
           <SheetTitle>{t("forms.edit.title")}</SheetTitle>
         </SheetHeader>
-        <div className="m-4">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 pt-2"
+          >
             <Controller
               name="type"
               control={form.control}
@@ -176,6 +201,66 @@ export default function EditFormSheet({
                       );
                     })}
                   </div>
+                </Field>
+              )}
+            />
+            <Controller
+              name="introTitle"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("forms.edit.introTitle")}</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={field.name}
+                    rows={2}
+                    placeholder={t("forms.edit.introTitlePlaceholder")}
+                  />
+                </Field>
+              )}
+            />
+            <Controller
+              name="introMessage"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("forms.edit.introMessage")}</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={field.name}
+                    rows={3}
+                    placeholder={t("forms.edit.introMessagePlaceholder")}
+                  />
+                </Field>
+              )}
+            />
+            <Controller
+              name="endTitle"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("forms.edit.endTitle")}</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={field.name}
+                    rows={2}
+                    placeholder={t("forms.edit.endTitlePlaceholder")}
+                  />
+                </Field>
+              )}
+            />
+            <Controller
+              name="endMessage"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("forms.edit.endMessage")}</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={field.name}
+                    rows={3}
+                    placeholder={t("forms.edit.endMessagePlaceholder")}
+                  />
                 </Field>
               )}
             />

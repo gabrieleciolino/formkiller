@@ -144,6 +144,10 @@ export const formTable = pgTable(
     backgroundImageKey: text("background_image_key"),
     backgroundMusicKey: text("background_music_key"),
     theme: formThemeEnum("theme").notNull().default("dark"),
+    introTitle: text("intro_title"),
+    introMessage: text("intro_message"),
+    endTitle: text("end_title"),
+    endMessage: text("end_message"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
