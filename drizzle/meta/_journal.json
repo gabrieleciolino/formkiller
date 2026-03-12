@@ -99,6 +99,13 @@
       "when": 1773297258805,
       "tag": "0013_fancy_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773300583896,
+      "tag": "0014_nasty_mister_fear",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import type { FormLanguage } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
 import { generateSTT } from "@/lib/deepgram/functions";
 import { uploadFile } from "@/lib/r2/functions";
@@ -27,21 +28,60 @@ const publicViewerClient = createSafeActionClient({
   return next();
 });
 
+async function getFormOwnerOrThrow(formId: string) {
+  const { data: form, error } = await supabaseAdmin
+    .from("form")
+    .select("id, user_id")
+    .eq("id", formId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!form) throw new Error("Form not found");
+
+  return form;
+}
+
+async function getFormSessionOrThrow(sessionId: string) {
+  const { data: session, error } = await supabaseAdmin
+    .from("form_session")
+    .select("id, form_id, user_id, status, current_question_index")
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!session) throw new Error("Form session not found");
+
+  return session;
+}
+
+async function getQuestionOrThrow(questionId: string) {
+  const { data: question, error } = await supabaseAdmin
+    .from("question")
+    .select("id, form_id")
+    .eq("id", questionId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!question) throw new Error("Question not found");
+
+  return question;
+}
+
 export const startFormSessionAction = publicViewerClient
   .inputSchema(
     z.object({
-      formId: z.string(),
-      userId: z.string(),
+      formId: z.string().uuid(),
     }),
   )
   .action(async ({ parsedInput }) => {
-    const { formId, userId } = parsedInput;
+    const { formId } = parsedInput;
+    const form = await getFormOwnerOrThrow(formId);
 
     const { data, error } = await supabaseAdmin
       .from("form_session")
       .insert({
         form_id: formId,
-        user_id: userId,
+        user_id: form.user_id,
         status: "in_progress",
         current_question_index: 0,
       })
@@ -56,13 +96,10 @@ export const startFormSessionAction = publicViewerClient
 export const submitAnswerAction = publicViewerClient
   .inputSchema(
     z.object({
-      sessionId: z.string(),
-      questionId: z.string(),
-      formId: z.string(),
+      sessionId: z.string().uuid(),
+      questionId: z.string().uuid(),
+      formId: z.string().uuid(),
       language: z.string(),
-      userId: z.string(),
-      questionIndex: z.number(),
-      totalQuestions: z.number(),
       defaultAnswer: z.string().optional(),
       audioBase64: z.string().optional(),
       audioMimeType: z.string().optional(),
@@ -74,13 +111,28 @@ export const submitAnswerAction = publicViewerClient
       questionId,
       formId,
       language,
-      userId,
-      questionIndex,
-      totalQuestions,
       defaultAnswer,
       audioBase64,
       audioMimeType,
     } = parsedInput;
+
+    const session = await getFormSessionOrThrow(sessionId);
+    if (session.form_id !== formId) {
+      throw new Error("Invalid session/form association");
+    }
+    if (session.status === "completed") {
+      throw new Error("Session already completed");
+    }
+
+    const question = await getQuestionOrThrow(questionId);
+    if (question.form_id !== formId) {
+      throw new Error("Invalid question/form association");
+    }
+
+    const form = await getFormOwnerOrThrow(formId);
+    if (form.user_id !== session.user_id) {
+      throw new Error("Invalid form ownership");
+    }
 
     let fileKey: string | undefined;
     let stt: string | undefined;
@@ -92,29 +144,46 @@ export const submitAnswerAction = publicViewerClient
 
       await uploadFile({ key, body: buffer, contentType: mimeType });
       fileKey = key;
-      stt = await generateSTT({ buffer, mimeType, language: language as import("@/features/forms/schema").FormLanguage });
+      stt = await generateSTT({
+        buffer,
+        mimeType,
+        language: language as FormLanguage,
+      });
     }
 
-    await supabaseAdmin.from("answer").insert({
-      form_session_id: sessionId,
-      question_id: questionId,
-      form_id: formId,
-      user_id: userId,
-      stt: stt ?? null,
-      file_key: fileKey ?? null,
-      file_generated_at: fileKey ? new Date().toISOString() : null,
-      ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
-    } as never);
+    await supabaseAdmin
+      .from("answer")
+      .insert({
+        form_session_id: session.id,
+        question_id: question.id,
+        form_id: session.form_id,
+        user_id: session.user_id,
+        stt: stt ?? null,
+        file_key: fileKey ?? null,
+        file_generated_at: fileKey ? new Date().toISOString() : null,
+        ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
+      } as never)
+      .throwOnError();
 
-    const isLast = questionIndex + 1 >= totalQuestions;
+    const { count, error: questionsCountError } = await supabaseAdmin
+      .from("question")
+      .select("id", { count: "exact", head: true })
+      .eq("form_id", formId);
+
+    if (questionsCountError) throw questionsCountError;
+    if (!count || count <= 0) throw new Error("Form has no questions");
+
+    const nextQuestionIndex = (session.current_question_index ?? 0) + 1;
+    const isLast = nextQuestionIndex >= count;
 
     await supabaseAdmin
       .from("form_session")
       .update({
-        current_question_index: questionIndex + 1,
+        current_question_index: nextQuestionIndex,
         status: isLast ? "completed" : "in_progress",
       })
-      .eq("id", sessionId);
+      .eq("id", session.id)
+      .throwOnError();
 
     return { completed: isLast };
   });
@@ -125,12 +194,29 @@ export const createLeadAction = publicViewerClient
     const { sessionId, formId, userId, name, email, phone, notes } =
       parsedInput;
 
+    const session = await getFormSessionOrThrow(sessionId);
+    if (session.form_id !== formId) {
+      throw new Error("Invalid session/form association");
+    }
+    if (session.user_id !== userId) {
+      throw new Error("Invalid session/user association");
+    }
+
+    const form = await getFormOwnerOrThrow(formId);
+    if (form.user_id !== session.user_id) {
+      throw new Error("Invalid form ownership");
+    }
+
+    if (session.status !== "completed") {
+      throw new Error("Session not completed");
+    }
+
     const { data, error } = await supabaseAdmin
       .from("lead")
       .insert({
-        form_session_id: sessionId,
-        form_id: formId,
-        user_id: userId,
+        form_session_id: session.id,
+        form_id: session.form_id,
+        user_id: session.user_id,
         name,
         email,
         phone,

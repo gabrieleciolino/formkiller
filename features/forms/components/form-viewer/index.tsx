@@ -71,7 +71,6 @@ export default function FormViewer({ form }: FormViewerProps) {
       try {
         const { data, serverError } = await startFormSessionAction({
           formId: form.id,
-          userId: form.userId,
         });
 
         if (serverError || !data) throw new Error();
@@ -166,9 +165,6 @@ export default function FormViewer({ form }: FormViewerProps) {
           questionId: currentQuestion.id,
           formId: form.id,
           language: form.language,
-          userId: form.userId,
-          questionIndex: currentIndex,
-          totalQuestions: questions.length,
           defaultAnswer: answer.type === "default" ? answer.text : undefined,
           audioBase64,
           audioMimeType,
