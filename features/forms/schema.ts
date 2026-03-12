@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const ANALYSIS_PROMPT_MAX_WORDS = 40;
+export const ANALYSIS_PROMPT_MAX_CHARS = 255;
+
+const hasMaxWords = (value: string, maxWords: number) =>
+  value.split(/\s+/).filter((token) => token.trim().length > 0).length <=
+  maxWords;
+
 export const formTypeSchema = z.enum(["mixed", "default-only", "voice-only"]);
 export type FormType = z.infer<typeof formTypeSchema>;
 
@@ -121,6 +128,32 @@ export const generateQuestionTTSSchema = z.object({
 });
 
 export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;
+
+export const generateAnalysisInstructionsSchema = z.object({
+  formId: z.string().uuid(),
+  additionalPrompt: z
+    .string()
+    .trim()
+    .max(ANALYSIS_PROMPT_MAX_CHARS)
+    .refine((value) => hasMaxWords(value, ANALYSIS_PROMPT_MAX_WORDS)),
+});
+
+export type GenerateAnalysisInstructionsType = z.infer<
+  typeof generateAnalysisInstructionsSchema
+>;
+
+export const saveAnalysisInstructionsSchema = z.object({
+  formId: z.string().uuid(),
+  analysisInstructions: z
+    .string()
+    .trim()
+    .max(ANALYSIS_PROMPT_MAX_CHARS)
+    .refine((value) => hasMaxWords(value, ANALYSIS_PROMPT_MAX_WORDS)),
+});
+
+export type SaveAnalysisInstructionsType = z.infer<
+  typeof saveAnalysisInstructionsSchema
+>;
 
 export const assignFormUserSchema = z.object({
   formId: z.string().uuid(),

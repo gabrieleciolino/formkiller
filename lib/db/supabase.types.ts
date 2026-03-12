@@ -162,6 +162,7 @@ export type Database = {
       }
       form: {
         Row: {
+          analysis_instructions: string | null
           background_image_key: string | null
           background_music_key: string | null
           created_at: string | null
@@ -179,6 +180,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          analysis_instructions?: string | null
           background_image_key?: string | null
           background_music_key?: string | null
           created_at?: string | null
@@ -196,6 +198,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          analysis_instructions?: string | null
           background_image_key?: string | null
           background_music_key?: string | null
           created_at?: string | null
@@ -298,7 +301,6 @@ export type Database = {
           form_session_id: string
           id: string
           name: string
-          notes: string | null
           phone: string
           updated_at: string | null
           user_id: string
@@ -310,7 +312,6 @@ export type Database = {
           form_session_id: string
           id?: string
           name: string
-          notes?: string | null
           phone: string
           updated_at?: string | null
           user_id: string
@@ -322,7 +323,6 @@ export type Database = {
           form_session_id?: string
           id?: string
           name?: string
-          notes?: string | null
           phone?: string
           updated_at?: string | null
           user_id?: string

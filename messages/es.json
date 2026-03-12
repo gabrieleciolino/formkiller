@@ -182,6 +182,23 @@
       "success": "Formulario actualizado con éxito.",
       "error": "Error al actualizar el formulario."
     },
+    "analysis": {
+      "trigger": "Generar análisis",
+      "title": "Generar análisis final",
+      "additionalPrompt": "Prompt adicional",
+      "additionalPromptPlaceholder": "Ej.: concéntrate en el perfil metabólico",
+      "generate": "Generar instrucciones",
+      "generating": "Generando...",
+      "instructions": "Instrucciones de análisis",
+      "instructionsPlaceholder": "Aquí aparecerán las instrucciones del informe final.",
+      "limitHint": "Máximo {words} palabras o {chars} caracteres.",
+      "save": "Guardar instrucciones",
+      "saving": "Guardando...",
+      "generateSuccess": "Instrucciones generadas.",
+      "generateError": "Error al generar instrucciones.",
+      "saveSuccess": "Instrucciones guardadas.",
+      "saveError": "Error al guardar instrucciones."
+    },
     "questions": {
       "addQuestion": "Añadir pregunta",
       "addQuestionTitle": "Nueva pregunta",
@@ -245,7 +262,8 @@
     },
     "completed": {
       "title": "¡Gracias!",
-      "message": "Tus respuestas han sido registradas correctamente."
+      "message": "Tus respuestas han sido registradas correctamente.",
+      "audioLabel": "Escuchar análisis"
     },
     "errors": {
       "cannotStart": "No se puede iniciar el cuestionario.",

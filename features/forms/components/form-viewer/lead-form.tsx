@@ -38,7 +38,10 @@ export function LeadForm({
       try {
         const { data, serverError } = await createLeadAction(values);
         if (serverError || !data) throw new Error();
-        onCompleted();
+        onCompleted({
+          analysisText: data.analysisText ?? null,
+          analysisAudioUrl: data.analysisAudioUrl ?? null,
+        });
       } catch {
         toast(t("viewer.leadForm.error"));
       }
@@ -99,4 +102,3 @@ export function LeadForm({
     </div>
   );
 }
-

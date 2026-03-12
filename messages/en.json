@@ -165,6 +165,23 @@
       "success": "Form successfully updated.",
       "error": "Form update failed."
     },
+    "analysis": {
+      "trigger": "Generate analysis",
+      "title": "Generate final analysis",
+      "additionalPrompt": "Additional prompt",
+      "additionalPromptPlaceholder": "Example: focus on metabolic profile",
+      "generate": "Generate instructions",
+      "generating": "Generating...",
+      "instructions": "Analysis instructions",
+      "instructionsPlaceholder": "Instructions for the final report will appear here.",
+      "limitHint": "Maximum {words} words or {chars} characters.",
+      "save": "Save instructions",
+      "saving": "Saving...",
+      "generateSuccess": "Instructions generated.",
+      "generateError": "Failed to generate instructions.",
+      "saveSuccess": "Instructions saved.",
+      "saveError": "Failed to save instructions."
+    },
     "libraryPicker": {
       "backgroundImage": "Background image",
       "backgroundMusic": "Background music",
@@ -245,7 +262,8 @@
     },
     "completed": {
       "title": "Thank you!",
-      "message": "Your answers have been recorded correctly."
+      "message": "Your answers have been recorded correctly.",
+      "audioLabel": "Listen to analysis"
     },
     "errors": {
       "cannotStart": "Unable to start the questionnaire.",

@@ -2,7 +2,9 @@
 
 import { formLanguageSchema } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
+import { generateCompletionAnalysis } from "@/lib/ai/functions";
 import { generateSTT } from "@/lib/deepgram/functions";
+import { generateTTS } from "@/lib/elevenlabs/functions";
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { setZodLocale } from "@/lib/zod/locale";
@@ -210,5 +212,75 @@ export const createLeadAction = publicViewerClient
 
     if (error) throw error;
 
-    return data;
+    const { data: form } = await supabaseAdmin
+      .from("form")
+      .select("name, language, analysis_instructions")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
+
+    let analysisText: string | null = null;
+    let analysisAudioUrl: string | null = null;
+    const analysisInstructions = form.analysis_instructions?.trim();
+
+    if (analysisInstructions) {
+      try {
+        const { data: answers } = await supabaseAdmin
+          .from("answer")
+          .select("default_answer, stt, question:question(question, order)")
+          .eq("form_session_id", session.id)
+          .order("order", { referencedTable: "question", ascending: true })
+          .throwOnError();
+
+        const normalizedAnswers = (answers ?? []).map((answer, index) => {
+          const rawQuestion = answer.question as
+            | { question: string; order: number }
+            | { question: string; order: number }[]
+            | null;
+          const resolvedQuestion = Array.isArray(rawQuestion)
+            ? rawQuestion[0]
+            : rawQuestion;
+
+          return {
+            order: resolvedQuestion?.order ?? index,
+            question: resolvedQuestion?.question ?? `Question ${index + 1}`,
+            response: (answer.stt ?? answer.default_answer ?? "").trim(),
+          };
+        });
+
+        if (normalizedAnswers.length > 0) {
+          analysisText = await generateCompletionAnalysis({
+            language: form.language,
+            formName: form.name,
+            analysisInstructions,
+            lead: { name, email, phone },
+            answers: normalizedAnswers,
+          });
+
+          if (analysisText.trim()) {
+            const { url } = await generateTTS({
+              text: analysisText,
+              formId,
+              language: form.language,
+            });
+            analysisAudioUrl = url;
+          }
+        }
+      } catch (analysisError) {
+        console.log("[lead_analysis_error]", {
+          sessionId,
+          formId,
+          message:
+            analysisError instanceof Error
+              ? analysisError.message
+              : String(analysisError),
+        });
+      }
+    }
+
+    return {
+      ...data,
+      analysisText,
+      analysisAudioUrl,
+    };
   });

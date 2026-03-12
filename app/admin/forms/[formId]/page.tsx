@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
 import FormAssignmentsManager from "@/features/forms/components/form-assignments-manager";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
+import GenerateAnalysisSheet from "@/features/forms/components/generate-analysis-sheet";
 import {
   getFormAssignmentsForAdminQuery,
   getFormByIdQuery,
@@ -50,11 +51,17 @@ export default async function AdminFormDetailPage({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-medium text-foreground">{form.name}</h2>
-        <EditFormSheet
-          formData={form}
-          backgroundImageUrl={backgroundImageUrl}
-          backgroundMusicUrl={backgroundMusicUrl}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <GenerateAnalysisSheet
+            formId={form.id}
+            initialAnalysisInstructions={form.analysis_instructions}
+          />
+          <EditFormSheet
+            formData={form}
+            backgroundImageUrl={backgroundImageUrl}
+            backgroundMusicUrl={backgroundMusicUrl}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

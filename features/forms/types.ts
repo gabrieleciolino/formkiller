@@ -97,6 +97,10 @@ export type FormViewerAnswerState =
 
 export type FormViewerRecordState = "idle" | "recording" | "done";
 export type FormViewerPhase = "welcome" | "question" | "lead-form" | "completed";
+export type FormViewerCompletionPayload = {
+  analysisText: string | null;
+  analysisAudioUrl: string | null;
+};
 
 export type RecordingButtonProps = {
   onStop: (wasAuto: boolean) => void;
@@ -105,7 +109,7 @@ export type RecordingButtonProps = {
 export type LeadFormProps = {
   sessionId: string;
   formId: string;
-  onCompleted: () => void;
+  onCompleted: (payload: FormViewerCompletionPayload) => void;
   bgStyle: FormViewerBackgroundStyle;
   hasBackgroundImage: boolean;
   overlayClassName: string;
@@ -157,6 +161,8 @@ export type FormViewerCompletedPhaseProps = {
   bgStyle: FormViewerBackgroundStyle;
   endTitle: string | null;
   endMessage: string | null;
+  analysisText: string | null;
+  analysisAudioUrl: string | null;
   hasBackgroundImage: boolean;
   isDark: boolean;
   tk: FormViewerThemeTokens;

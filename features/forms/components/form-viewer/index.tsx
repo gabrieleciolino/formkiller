@@ -10,6 +10,7 @@ import { WelcomePhase } from "@/features/forms/components/form-viewer/welcome-ph
 import {
   type FormViewerAnswerState,
   type FormViewerBackgroundStyle,
+  type FormViewerCompletionPayload,
   type FormViewerPhase,
   type FormViewerProps,
   type FormViewerRecordState,
@@ -28,6 +29,11 @@ export default function FormViewer({ form }: FormViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState<FormViewerAnswerState>(null);
   const [recordState, setRecordState] = useState<FormViewerRecordState>("idle");
+  const [completionPayload, setCompletionPayload] =
+    useState<FormViewerCompletionPayload>({
+      analysisText: null,
+      analysisAudioUrl: null,
+    });
   const [autoStopped, setAutoStopped] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -82,6 +88,10 @@ export default function FormViewer({ form }: FormViewerProps) {
 
         setSessionId(data.id);
         setPhase("question");
+        setCompletionPayload({
+          analysisText: null,
+          analysisAudioUrl: null,
+        });
       } catch {
         if (bgMusicRef.current) {
           bgMusicRef.current.pause();
@@ -228,7 +238,10 @@ export default function FormViewer({ form }: FormViewerProps) {
         hasBackgroundImage={hasBackgroundImage}
         overlayClassName={tk.overlay}
         isDark={isDark}
-        onCompleted={() => setPhase("completed")}
+        onCompleted={(payload) => {
+          setCompletionPayload(payload);
+          setPhase("completed");
+        }}
       />
     );
   } else if (phase === "completed") {
@@ -237,6 +250,8 @@ export default function FormViewer({ form }: FormViewerProps) {
         bgStyle={bgStyle}
         endMessage={form.endMessage}
         endTitle={form.endTitle}
+        analysisText={completionPayload.analysisText}
+        analysisAudioUrl={completionPayload.analysisAudioUrl}
         hasBackgroundImage={hasBackgroundImage}
         isDark={isDark}
         tk={tk}

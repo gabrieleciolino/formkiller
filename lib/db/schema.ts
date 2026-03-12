@@ -148,6 +148,7 @@ export const formTable = pgTable(
     introMessage: text("intro_message"),
     endTitle: text("end_title"),
     endMessage: text("end_message"),
+    analysisInstructions: text("analysis_instructions"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

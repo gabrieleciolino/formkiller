@@ -3,18 +3,33 @@
 import type { FormViewerCompletedPhaseProps } from "@/features/forms/types";
 import { CheckCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 
 export function CompletedPhase({
   bgStyle,
   endMessage,
   endTitle,
+  analysisText,
+  analysisAudioUrl,
   hasBackgroundImage,
   isDark,
   tk,
 }: FormViewerCompletedPhaseProps) {
   const t = useTranslations();
   const resolvedTitle = endTitle?.trim() || t("viewer.completed.title");
-  const resolvedMessage = endMessage?.trim() || t("viewer.completed.message");
+  const resolvedMessage =
+    analysisText?.trim() ||
+    endMessage?.trim() ||
+    t("viewer.completed.message");
+  const analysisAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!analysisAudioUrl || !analysisAudioRef.current) {
+      return;
+    }
+
+    void analysisAudioRef.current.play().catch(() => {});
+  }, [analysisAudioUrl]);
 
   return (
     <div
@@ -32,9 +47,22 @@ export function CompletedPhase({
 
         <h1 className="text-4xl font-black">{resolvedTitle}</h1>
 
-        <p className={`text-sm ${tk.textSecondary}`}>
-          {resolvedMessage}
-        </p>
+        <p className={`text-sm ${tk.textSecondary}`}>{resolvedMessage}</p>
+
+        {analysisAudioUrl && (
+          <div className="w-full space-y-1 rounded-xl border border-border bg-card/80 p-3">
+            <p className="text-xs text-muted-foreground">
+              {t("viewer.completed.audioLabel")}
+            </p>
+            <audio
+              ref={analysisAudioRef}
+              src={analysisAudioUrl}
+              controls
+              preload="auto"
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

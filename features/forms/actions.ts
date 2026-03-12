@@ -8,11 +8,16 @@ import {
   deleteQuestionSchema,
   editFormSchema,
   editQuestionsSchema,
+  generateAnalysisInstructionsSchema,
   generateQuestionTTSSchema,
+  saveAnalysisInstructionsSchema,
   unassignFormUserSchema,
 } from "@/features/forms/schema";
 import { adminActionClient } from "@/lib/actions";
-import { generateForm } from "@/lib/ai/functions";
+import {
+  generateForm,
+  generateFormAnalysisInstructions,
+} from "@/lib/ai/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
@@ -382,6 +387,75 @@ export const generateQuestionTTSAction = adminActionClient
     revalidatePath(urls.admin.forms.detail(formId));
 
     return { url };
+  });
+
+export const generateFormAnalysisInstructionsAction = adminActionClient
+  .inputSchema(generateAnalysisInstructionsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase } = ctx;
+    const { formId, additionalPrompt } = parsedInput;
+
+    const { data: form } = await supabase
+      .from("form")
+      .select("id, language, instructions, questions:question(question, order, default_answers)")
+      .eq("id", formId)
+      .order("order", { referencedTable: "question", ascending: true })
+      .single()
+      .throwOnError();
+
+    const questions = form.questions as Array<{
+      question: string;
+      order: number;
+      default_answers: Array<{ answer: string; order: number }>;
+    }>;
+    if (!questions || questions.length === 0) {
+      throw new Error("Form has no questions.");
+    }
+
+    const normalizedQuestions = questions.map((question) => ({
+      order: question.order,
+      question: question.question,
+      defaultAnswers: (question.default_answers as Array<{
+        answer: string;
+        order: number;
+      }>).map((answer) => ({
+        answer: answer.answer,
+        order: answer.order,
+      })),
+    }));
+
+    const analysisInstructions = await generateFormAnalysisInstructions({
+      language: form.language,
+      formInstructions: form.instructions,
+      additionalPrompt,
+      questions: normalizedQuestions,
+    });
+
+    return { analysisInstructions };
+  });
+
+export const saveFormAnalysisInstructionsAction = adminActionClient
+  .inputSchema(saveAnalysisInstructionsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase } = ctx;
+    const { formId, analysisInstructions } = parsedInput;
+
+    const trimmed = analysisInstructions.trim();
+
+    await supabase
+      .from("form")
+      .update({
+        analysis_instructions: trimmed.length > 0 ? trimmed : null,
+      })
+      .eq("id", formId)
+      .throwOnError();
+
+    revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.detail(formId));
+    revalidatePath(urls.dashboard.forms.index);
+    revalidatePath(urls.admin.forms.index);
+
+    return { analysisInstructions: trimmed.length > 0 ? trimmed : null };
   });
 
 export const assignUserToFormAction = adminActionClient

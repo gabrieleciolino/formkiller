@@ -165,6 +165,23 @@
       "success": "Form aggiornato con successo.",
       "error": "Aggiornamento form fallito."
     },
+    "analysis": {
+      "trigger": "Genera analisi",
+      "title": "Genera analisi finale",
+      "additionalPrompt": "Prompt aggiuntivo",
+      "additionalPromptPlaceholder": "Es. concentrati sul profilo metabolico",
+      "generate": "Genera istruzioni",
+      "generating": "Generazione...",
+      "instructions": "Istruzioni analisi",
+      "instructionsPlaceholder": "Le istruzioni per il report finale compariranno qui.",
+      "limitHint": "Massimo {words} parole o {chars} caratteri.",
+      "save": "Salva istruzioni",
+      "saving": "Salvataggio...",
+      "generateSuccess": "Istruzioni generate.",
+      "generateError": "Generazione istruzioni fallita.",
+      "saveSuccess": "Istruzioni salvate.",
+      "saveError": "Salvataggio istruzioni fallito."
+    },
     "libraryPicker": {
       "backgroundImage": "Immagine di sfondo",
       "backgroundMusic": "Musica di sottofondo",
@@ -245,7 +262,8 @@
     },
     "completed": {
       "title": "Grazie!",
-      "message": "Le tue risposte sono state registrate correttamente."
+      "message": "Le tue risposte sono state registrate correttamente.",
+      "audioLabel": "Ascolta analisi"
     },
     "errors": {
       "cannotStart": "Impossibile avviare il questionario.",
