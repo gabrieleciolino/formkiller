@@ -17,3 +17,18 @@ export const getAssetsQuery = async ({
 
   return data;
 };
+
+export const getAdminAssetsQuery = async ({
+  supabase,
+}: {
+  supabase: TypedSupabaseClient;
+}) => {
+  const { data, error } = await supabase
+    .from("asset")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return data;
+};

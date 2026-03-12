@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { urls } from "@/lib/urls";
-import { Form, PersonStanding, Layers, LibraryBig } from "lucide-react";
+import { Form, PersonStanding, Layers } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,11 +37,6 @@ export default async function DashboardSidebar() {
       label: t("dashboard.sidebar.sessions"),
       icon: Layers,
       url: urls.dashboard.sessions.index,
-    },
-    {
-      label: t("dashboard.sidebar.library"),
-      icon: LibraryBig,
-      url: urls.dashboard.library.index,
     },
   ];
 

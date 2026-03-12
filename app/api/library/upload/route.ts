@@ -27,6 +27,16 @@ export async function POST(request: NextRequest) {
 
   const userId = data.claims.sub;
 
+  const { data: account, error: accountError } = await supabase
+    .from("account")
+    .select("role")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (accountError || account?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
 
