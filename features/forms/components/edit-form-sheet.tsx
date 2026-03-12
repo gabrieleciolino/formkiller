@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
@@ -43,6 +44,7 @@ export default function EditFormSheet({
   const [open, setOpen] = useState(false);
   const {
     id,
+    name,
     type,
     theme,
     background_image_key,
@@ -66,6 +68,7 @@ export default function EditFormSheet({
     resolver: zodResolver(editFormSchema),
     defaultValues: {
       formId: id,
+      name,
       type: (type ?? "mixed") as FormType,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
@@ -80,6 +83,7 @@ export default function EditFormSheet({
   useEffect(() => {
     form.reset({
       formId: id,
+      name,
       type: (type ?? "mixed") as FormType,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
@@ -93,6 +97,7 @@ export default function EditFormSheet({
     setMusicPreviewUrl(background_music_key ? backgroundMusicUrl : null);
   }, [
     id,
+    name,
     theme,
     type,
     backgroundImageUrl,
@@ -144,6 +149,20 @@ export default function EditFormSheet({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 pt-2"
           >
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("forms.edit.name")}</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder={t("forms.edit.namePlaceholder")}
+                  />
+                </Field>
+              )}
+            />
             <Controller
               name="type"
               control={form.control}

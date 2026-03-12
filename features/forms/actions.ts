@@ -27,6 +27,16 @@ export const createFormAction = adminActionClient
     let createdFormId: string | null = null;
 
     try {
+      const output = await generateForm({ instructions, language });
+      if (!output || output.questions.length === 0) {
+        throw new Error("Empty AI output.");
+      }
+
+      const toNullableText = (value: string) => {
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      };
+
       const { data: form, error } = await supabase
         .from("form")
         .insert({
@@ -35,6 +45,10 @@ export const createFormAction = adminActionClient
           type,
           language,
           user_id: userId,
+          intro_title: toNullableText(output.introTitle),
+          intro_message: toNullableText(output.introMessage),
+          end_title: toNullableText(output.endTitle),
+          end_message: toNullableText(output.endMessage),
         })
         .select()
         .single();
@@ -44,11 +58,6 @@ export const createFormAction = adminActionClient
       }
 
       createdFormId = form.id;
-
-      const output = await generateForm({ instructions, language });
-      if (!output || output.questions.length === 0) {
-        throw new Error("Empty AI output.");
-      }
 
       const insertedQuestions = await Promise.all(
         output.questions.map(async (question) => {
@@ -128,6 +137,7 @@ export const editFormAction = adminActionClient
     const { supabase } = ctx;
     const {
       formId,
+      name,
       type,
       theme,
       backgroundImageKey,
@@ -146,6 +156,7 @@ export const editFormAction = adminActionClient
     const { data: form, error } = await supabase
       .from("form")
       .update({
+        name,
         type,
         theme: theme ?? "dark",
         background_image_key: backgroundImageKey ?? null,

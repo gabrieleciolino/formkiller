@@ -95,75 +95,80 @@ export function QuestionPhase({
         </p>
       </div>
 
+      {showRecording && (
+        <div className="relative flex flex-col items-center gap-3 pb-4">
+          {recordState === "idle" && (
+            <>
+              <button
+                onClick={onStartRecording}
+                className={`flex size-20 items-center justify-center rounded-full border-2 transition-all active:scale-95 ${tk.recordIdle}`}
+              >
+                <MicIcon className="size-8" />
+              </button>
+              <p className={`text-center text-xs ${tk.recordHint}`}>
+                {t("viewer.question.recordHint")}
+              </p>
+            </>
+          )}
+
+          {recordState === "recording" && (
+            <RecordingButton onStop={onStopRecording} />
+          )}
+
+          {recordState === "done" && (
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+                  <CheckCircleIcon className="size-4" />
+                  {t("viewer.question.recorded")}
+                </div>
+                <button
+                  onClick={onResetRecording}
+                  className={`text-xs underline ${tk.reRecord}`}
+                >
+                  {t("viewer.question.reRecord")}
+                </button>
+              </div>
+              {autoStopped && (
+                <p className="text-xs text-amber-400/70">
+                  {t("viewer.question.recordAutoStopped")}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div
         className={`relative mx-4 mb-10 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/60" : "bg-white/60"}`}
       >
         {showDefaultAnswers && (
-          <div className="grid grid-cols-2 gap-2">
-            {currentQuestion.defaultAnswers.map((defaultAnswer, index) => {
-              const isSelected =
-                answer?.type === "default" &&
-                answer.text === defaultAnswer.answer;
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => onSelectDefault(defaultAnswer.answer)}
-                  className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
-                    isSelected ? tk.cardSelected : tk.cardIdle
-                  }`}
-                >
-                  {defaultAnswer.answer}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {showRecording && (
-          <div className="flex flex-col items-center gap-2 py-1">
-            {recordState === "idle" && (
-              <>
-                <button
-                  onClick={onStartRecording}
-                  className={`flex size-14 items-center justify-center rounded-full border transition-all active:scale-95 ${tk.recordIdle}`}
-                >
-                  <MicIcon className="size-5" />
-                </button>
-                <p className={`text-center text-xs ${tk.recordHint}`}>
-                  {t("viewer.question.recordHint")}
-                </p>
-              </>
+          <>
+            {showRecording && (
+              <p className={`text-center text-xs ${tk.recordHint}`}>
+                {t("viewer.question.orPickAnswer")}
+              </p>
             )}
+            <div className="grid grid-cols-2 gap-2">
+              {currentQuestion.defaultAnswers.map((defaultAnswer, index) => {
+                const isSelected =
+                  answer?.type === "default" &&
+                  answer.text === defaultAnswer.answer;
 
-            {recordState === "recording" && (
-              <RecordingButton onStop={onStopRecording} />
-            )}
-
-            {recordState === "done" && (
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-                    <CheckCircleIcon className="size-4" />
-                    {t("viewer.question.recorded")}
-                  </div>
-
+                return (
                   <button
-                    onClick={onResetRecording}
-                    className={`text-xs underline ${tk.reRecord}`}
+                    key={index}
+                    onClick={() => onSelectDefault(defaultAnswer.answer)}
+                    className={`rounded-2xl border px-4 py-4 text-left text-sm font-medium leading-snug transition-all active:scale-95 ${
+                      isSelected ? tk.cardSelected : tk.cardIdle
+                    }`}
                   >
-                    {t("viewer.question.reRecord")}
+                    {defaultAnswer.answer}
                   </button>
-                </div>
-
-                {autoStopped && (
-                  <p className="text-xs text-amber-400/70">
-                    {t("viewer.question.recordAutoStopped")}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         <button

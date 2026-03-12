@@ -32,6 +32,7 @@ export type FormTheme = z.infer<typeof formThemeSchema>;
 
 export const editFormSchema = z.object({
   formId: z.string().uuid(),
+  name: z.string().trim().min(1),
   type: formTypeSchema,
   theme: formThemeSchema,
   backgroundImageKey: z.string().nullable().optional(),

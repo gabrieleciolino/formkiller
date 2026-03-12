@@ -223,11 +223,12 @@
     },
     "question": {
       "record": "Record",
-      "recordHint": "Want to explain better? You can record your answer.",
+      "recordHint": "Click the button to record your answer.",
       "stopRecording": "Stop recording",
       "recorded": "Answer recorded",
       "recordAutoStopped": "Time limit reached",
       "reRecord": "Re-record",
+      "orPickAnswer": "or pick a quick answer",
       "next": "Next →",
       "finish": "Finish"
     },

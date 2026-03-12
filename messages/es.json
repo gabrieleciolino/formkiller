@@ -223,11 +223,12 @@
     },
     "question": {
       "record": "Grabar",
-      "recordHint": "¿Quieres explicarlo mejor? Puedes grabar tu respuesta.",
+      "recordHint": "Haz clic en el botón para responder.",
       "stopRecording": "Detener grabación",
       "recorded": "Respuesta grabada",
       "recordAutoStopped": "Tiempo límite alcanzado",
       "reRecord": "Volver a grabar",
+      "orPickAnswer": "o elige una respuesta rápida",
       "next": "Siguiente →",
       "finish": "Finalizar"
     },
