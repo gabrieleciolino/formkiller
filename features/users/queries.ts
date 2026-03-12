@@ -1,11 +1,8 @@
 import { TypedSupabaseClient } from "@/lib/supabase/types";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export const getAdminUsersQuery = async ({
-  supabase,
-}: {
-  supabase: TypedSupabaseClient;
-}) => {
-  const { data, error } = await supabase
+export const getAdminUsersQuery = async () => {
+  const { data, error } = await supabaseAdmin
     .from("account")
     .select("user_id, role, created_at")
     .order("created_at", { ascending: false });

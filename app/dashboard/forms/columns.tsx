@@ -58,7 +58,7 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
             </Button>
             {assignmentId ? (
               <Button asChild size="sm" variant="outline">
-                <Link href={urls.formAssignment(assignmentId)} target="_blank">
+                <Link href={urls.form(assignmentId)} target="_blank">
                   {t("dashboard.forms.columns.open")}
                 </Link>
               </Button>

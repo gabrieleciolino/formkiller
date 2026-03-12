@@ -107,6 +107,21 @@
         "userId": "User ID",
         "role": "Rol",
         "createdAt": "Creado el"
+      },
+      "roles": {
+        "admin": "Admin",
+        "user": "User"
+      },
+      "create": {
+        "trigger": "Nuevo usuario",
+        "title": "Crear usuario",
+        "email": "Email",
+        "emailPlaceholder": "usuario@email.com",
+        "password": "Password",
+        "role": "Rol",
+        "submit": "Crear usuario",
+        "success": "Usuario creado correctamente.",
+        "error": "No se pudo crear el usuario."
       }
     }
   },

@@ -41,6 +41,5 @@ export const urls = {
       index: "/dashboard/library",
     },
   },
-  form: (formId: string) => `/form/${formId}`,
-  formAssignment: (assignmentId: string) => `/form/a/${assignmentId}`,
+  form: (assignmentId: string) => `/form/${assignmentId}`,
 };

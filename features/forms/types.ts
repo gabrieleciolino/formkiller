@@ -72,7 +72,7 @@ export type ViewerQuestion = {
 
 export type ViewerFormData = {
   id: string;
-  assignmentId: string | null;
+  assignmentId: string;
   name: string;
   userId: string;
   type: FormType;

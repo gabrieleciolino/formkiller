@@ -1,0 +1,1 @@
+DROP POLICY "account_select_admin" ON "account" CASCADE;

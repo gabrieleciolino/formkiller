@@ -28,19 +28,6 @@ const publicViewerClient = createSafeActionClient({
   return next();
 });
 
-async function getFormOwnerOrThrow(formId: string) {
-  const { data: form, error } = await supabaseAdmin
-    .from("form")
-    .select("id, user_id")
-    .eq("id", formId)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!form) throw new Error("Form not found");
-
-  return form;
-}
-
 async function getFormAssignmentOrThrow(assignmentId: string) {
   const { data: assignment, error } = await supabaseAdmin
     .from("form_assignment")
@@ -83,28 +70,14 @@ async function getQuestionOrThrow(questionId: string) {
 
 export const startFormSessionAction = publicViewerClient
   .inputSchema(
-    z
-      .object({
-        assignmentId: z.string().uuid().optional(),
-        formId: z.string().uuid().optional(),
-      })
-      .refine(
-        (value) => Boolean(value.assignmentId) || Boolean(value.formId),
-        "assignmentId or formId is required",
-      ),
+    z.object({
+      assignmentId: z.string().uuid(),
+    }),
   )
   .action(async ({ parsedInput }) => {
-    const assignment = parsedInput.assignmentId
-      ? await getFormAssignmentOrThrow(parsedInput.assignmentId)
-      : null;
-    const formId = assignment?.form_id ?? parsedInput.formId;
-
-    if (!formId) {
-      throw new Error("Form id missing");
-    }
-
-    const userId =
-      assignment?.user_id ?? (await getFormOwnerOrThrow(formId)).user_id;
+    const assignment = await getFormAssignmentOrThrow(parsedInput.assignmentId);
+    const formId = assignment.form_id;
+    const userId = assignment.user_id;
 
     const { data, error } = await supabaseAdmin
       .from("form_session")

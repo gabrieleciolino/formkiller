@@ -6,21 +6,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import CreateUserSheet from "@/features/users/components/create-user-sheet";
 import { getAdminUsersQuery } from "@/features/users/queries";
 import { adminQuery } from "@/lib/queries";
 import { getTranslations } from "next-intl/server";
 
 export default async function AdminUsersPage() {
   const [users, t] = await Promise.all([
-    adminQuery(async ({ supabase }) => getAdminUsersQuery({ supabase })),
+    adminQuery(async () => getAdminUsersQuery()),
     getTranslations(),
   ]);
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-medium text-foreground">
-        {t("dashboard.users.title")}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {t("dashboard.users.title")}
+        </h2>
+        <CreateUserSheet />
+      </div>
 
       <div className="rounded-lg border border-border">
         <Table>
@@ -45,7 +49,13 @@ export default async function AdminUsersPage() {
               users.map((user) => (
                 <TableRow key={user.user_id}>
                   <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
-                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    {t(
+                      `dashboard.users.roles.${user.role}` as Parameters<
+                        typeof t
+                      >[0],
+                    )}
+                  </TableCell>
                   <TableCell>
                     {user.created_at
                       ? new Date(user.created_at).toLocaleString()

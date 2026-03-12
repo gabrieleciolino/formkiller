@@ -88,11 +88,6 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
               {t("dashboard.forms.columns.view")}
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href={urls.form(row.original.id)} target="_blank">
-              {t("dashboard.forms.columns.open")}
-            </Link>
-          </Button>
           <DeleteFormButton formId={row.original.id} />
         </div>
       ),
