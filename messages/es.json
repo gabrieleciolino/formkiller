@@ -137,6 +137,13 @@
       "error": "Error al actualizar el formulario."
     },
     "questions": {
+      "addQuestion": "Añadir pregunta",
+      "addQuestionTitle": "Nueva pregunta",
+      "addQuestionSubmit": "Añadir",
+      "addQuestionError": "Error al añadir la pregunta.",
+      "deleteQuestion": "Eliminar pregunta",
+      "confirmDeleteQuestion": "¿Estás seguro de que deseas eliminar esta pregunta?",
+      "deleteQuestionError": "Error al eliminar la pregunta.",
       "defaultAnswers": "Respuestas predeterminadas",
       "answerPlaceholder": "Respuesta {index}",
       "questionLabel": "Pregunta {index}",

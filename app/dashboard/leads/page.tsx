@@ -9,11 +9,11 @@ export default async function LeadsPage() {
     authenticatedQuery(async ({ supabase, userId }) =>
       getLeadsQuery({ supabase, userId }),
     ),
-    getTranslations("dashboard.leads"),
+    getTranslations(),
   ]);
 
   return (
-    <DashboardWrapper title={t("title")}>
+    <DashboardWrapper title={t("dashboard.leads.title")}>
       <LeadsTable data={leads} />
     </DashboardWrapper>
   );

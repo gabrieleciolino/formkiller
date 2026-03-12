@@ -1,0 +1,37 @@
+"use client";
+
+import type { FormViewerCompletedPhaseProps } from "@/features/forms/types";
+import { CheckCircleIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+export function CompletedPhase({
+  bgStyle,
+  hasBackgroundImage,
+  isDark,
+  tk,
+}: FormViewerCompletedPhaseProps) {
+  const t = useTranslations();
+
+  return (
+    <div
+      className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
+      style={bgStyle}
+    >
+      {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
+
+      <div className="relative flex w-full max-w-md flex-col items-center gap-6 text-center">
+        <div
+          className={`flex size-20 items-center justify-center rounded-full ${isDark ? "bg-white/10" : "bg-black/10"}`}
+        >
+          <CheckCircleIcon className="size-10" />
+        </div>
+
+        <h1 className="text-4xl font-black">{t("viewer.completed.title")}</h1>
+
+        <p className={`text-sm ${tk.textSecondary}`}>
+          {t("viewer.completed.message")}
+        </p>
+      </div>
+    </div>
+  );
+}

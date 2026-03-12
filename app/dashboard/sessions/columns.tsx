@@ -12,13 +12,12 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function useSessionsColumns(): ColumnDef<Session>[] {
-  const t = useTranslations("dashboard.sessions.columns");
-  const tStatus = useTranslations("dashboard.sessions.status");
+  const t = useTranslations();
 
   return [
     {
       id: "form",
-      header: t("form"),
+      header: t("dashboard.sessions.columns.form"),
       cell: ({ row }) => {
         const form = row.original.form as { name: string } | null;
         return form?.name ?? "—";
@@ -26,7 +25,7 @@ export function useSessionsColumns(): ColumnDef<Session>[] {
     },
     {
       accessorKey: "status",
-      header: t("status"),
+      header: t("dashboard.sessions.columns.status"),
       cell: ({ getValue }) => {
         const status = getValue<string>();
         const colorClass =
@@ -35,14 +34,14 @@ export function useSessionsColumns(): ColumnDef<Session>[] {
           <span
             className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${colorClass}`}
           >
-            {tStatus(status as Parameters<typeof tStatus>[0])}
+            {t(`dashboard.sessions.status.${status}` as Parameters<typeof t>[0])}
           </span>
         );
       },
     },
     {
       id: "progress",
-      header: t("progress"),
+      header: t("dashboard.sessions.columns.progress"),
       cell: ({ row }) => {
         const session = row.original;
         const form = session.form as { questions: { id: string }[] } | null;
@@ -55,7 +54,7 @@ export function useSessionsColumns(): ColumnDef<Session>[] {
     },
     {
       accessorKey: "created_at",
-      header: t("createdAt"),
+      header: t("dashboard.sessions.columns.createdAt"),
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";

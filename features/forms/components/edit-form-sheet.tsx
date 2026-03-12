@@ -27,8 +27,9 @@ import {
   formTypeSchema,
 } from "@/features/forms/schema";
 import { Moon, Sun } from "lucide-react";
-import { Form } from "@/features/forms/types";
+import type { EditFormSheetProps } from "@/features/forms/types";
 import LibraryPickerDialog from "@/features/forms/components/library-picker-dialog";
+import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -39,16 +40,12 @@ export default function EditFormSheet({
   formData,
   backgroundImageUrl,
   backgroundMusicUrl,
-}: {
-  formData: Form;
-  backgroundImageUrl: string | null;
-  backgroundMusicUrl: string | null;
-}) {
+}: EditFormSheetProps) {
   const [open, setOpen] = useState(false);
   const { name, instructions, id, type, theme, background_image_key, background_music_key } = formData;
   const [isPending, startTransition] = useTransition();
-  const t = useTranslations("forms.edit");
-  const tTypes = useTranslations("forms.types");
+  const t = useTranslations();
+  useZodLocale();
 
   const form = useForm<EditFormType>({
     resolver: zodResolver(editFormSchema),
@@ -76,10 +73,10 @@ export default function EditFormSheet({
           throw new Error();
         }
 
-        toast(t("success"));
+        toast(t("forms.edit.success"));
         setOpen(false);
       } catch {
-        toast(t("error"));
+        toast(t("forms.edit.error"));
       }
     });
   };
@@ -87,11 +84,11 @@ export default function EditFormSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline">{t("trigger")}</Button>
+        <Button variant="outline">{t("forms.edit.trigger")}</Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{t("title")}</SheetTitle>
+          <SheetTitle>{t("forms.edit.title")}</SheetTitle>
         </SheetHeader>
         <div className="m-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -100,12 +97,14 @@ export default function EditFormSheet({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>{t("name")}</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    {t("forms.edit.name")}
+                  </FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder={t("namePlaceholder")}
+                    placeholder={t("forms.edit.namePlaceholder")}
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -119,12 +118,14 @@ export default function EditFormSheet({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>{t("instructions")}</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    {t("forms.edit.instructions")}
+                  </FieldLabel>
                   <Textarea
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder={t("instructionsPlaceholder")}
+                    placeholder={t("forms.edit.instructionsPlaceholder")}
                     autoComplete="off"
                     className="min-h-[150px]"
                   />
@@ -139,7 +140,7 @@ export default function EditFormSheet({
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>{t("type")}</FieldLabel>
+                  <FieldLabel>{t("forms.edit.type")}</FieldLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue />
@@ -147,7 +148,9 @@ export default function EditFormSheet({
                     <SelectContent>
                       {(formTypeSchema.options as FormType[]).map((typeKey) => (
                         <SelectItem key={typeKey} value={typeKey}>
-                          {tTypes(typeKey as Parameters<typeof tTypes>[0])}
+                          {t(
+                            `forms.types.${typeKey}` as Parameters<typeof t>[0],
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -160,7 +163,7 @@ export default function EditFormSheet({
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>{t("theme")}</FieldLabel>
+                  <FieldLabel>{t("forms.edit.theme")}</FieldLabel>
                   <div className="flex rounded-lg border border-border overflow-hidden">
                     {(["dark", "light"] as FormTheme[]).map((themeKey) => {
                       const selected = field.value === themeKey;
@@ -180,7 +183,11 @@ export default function EditFormSheet({
                           ) : (
                             <Sun className="size-4" />
                           )}
-                          {t(`themes.${themeKey}` as Parameters<typeof t>[0])}
+                          {t(
+                            `forms.edit.themes.${themeKey}` as Parameters<
+                              typeof t
+                            >[0],
+                          )}
                         </button>
                       );
                     })}
@@ -213,7 +220,7 @@ export default function EditFormSheet({
               )}
             />
             <Button type="submit" className="mt-2 w-full">
-              {t("submit")}
+              {t("forms.edit.submit")}
             </Button>
           </form>
         </div>

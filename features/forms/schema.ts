@@ -27,15 +27,6 @@ export const createFormSchema = z.object({
 
 export type CreateFormType = z.infer<typeof createFormSchema>;
 
-export function makeCreateFormSchema(msgs: { required: string }) {
-  return z.object({
-    name: z.string().min(1, msgs.required),
-    instructions: z.string().min(1, msgs.required),
-    type: formTypeSchema,
-    language: formLanguageSchema,
-  });
-}
-
 export const formThemeSchema = z.enum(["light", "dark"]);
 export type FormTheme = z.infer<typeof formThemeSchema>;
 
@@ -70,6 +61,34 @@ export const editQuestionsSchema = z.object({
 });
 
 export type EditQuestionsType = z.infer<typeof editQuestionsSchema>;
+
+export const addQuestionSchema = z.object({
+  formId: z.string(),
+  order: z.number(),
+  question: z.string().min(1),
+  answers: z.array(z.string().min(1)).length(4),
+});
+
+export type AddQuestionType = z.infer<typeof addQuestionSchema>;
+
+export const addQuestionFormSchema = z.object({
+  question: z.string().min(1),
+  answers: z.tuple([
+    z.string().min(1),
+    z.string().min(1),
+    z.string().min(1),
+    z.string().min(1),
+  ]),
+});
+
+export type AddQuestionFormType = z.infer<typeof addQuestionFormSchema>;
+
+export const deleteQuestionSchema = z.object({
+  questionId: z.string(),
+  formId: z.string(),
+});
+
+export type DeleteQuestionType = z.infer<typeof deleteQuestionSchema>;
 
 export const deleteFormSchema = z.object({
   formId: z.string(),

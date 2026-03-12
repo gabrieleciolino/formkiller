@@ -12,11 +12,11 @@ import Link from "next/link";
 import { useTransition } from "react";
 
 function DeleteFormButton({ formId }: { formId: string }) {
-  const t = useTranslations("dashboard.forms.columns");
+  const t = useTranslations();
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
-    if (!confirm(t("confirmDelete"))) return;
+    if (!confirm(t("dashboard.forms.columns.confirmDelete"))) return;
     startTransition(async () => {
       await deleteFormAction({ formId });
     });
@@ -29,7 +29,7 @@ function DeleteFormButton({ formId }: { formId: string }) {
       className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
       onClick={handleDelete}
       disabled={isPending}
-      title={t("delete")}
+      title={t("dashboard.forms.columns.delete")}
     >
       <Trash2 className="size-4" />
     </Button>
@@ -37,36 +37,34 @@ function DeleteFormButton({ formId }: { formId: string }) {
 }
 
 export function useFormsColumns(): ColumnDef<Form>[] {
-  const t = useTranslations("dashboard.forms.columns");
-  const tTypes = useTranslations("forms.types");
-  const tLangs = useTranslations("forms.languages");
+  const t = useTranslations();
 
   return [
     {
       accessorKey: "name",
-      header: t("name"),
+      header: t("dashboard.forms.columns.name"),
     },
     {
       accessorKey: "type",
-      header: t("type"),
+      header: t("dashboard.forms.columns.type"),
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";
-        return tTypes(value as Parameters<typeof tTypes>[0]);
+        return t(`forms.types.${value}` as Parameters<typeof t>[0]);
       },
     },
     {
       accessorKey: "language",
-      header: t("language"),
+      header: t("dashboard.forms.columns.language"),
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";
-        return tLangs(value as Parameters<typeof tLangs>[0]);
+        return t(`forms.languages.${value}` as Parameters<typeof t>[0]);
       },
     },
     {
       accessorKey: "created_at",
-      header: t("createdAt"),
+      header: t("dashboard.forms.columns.createdAt"),
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";
@@ -75,17 +73,17 @@ export function useFormsColumns(): ColumnDef<Form>[] {
     },
     {
       id: "actions",
-      header: t("actions"),
+      header: t("dashboard.forms.columns.actions"),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline">
             <Link href={urls.dashboard.forms.detail(row.original.id)}>
-              {t("view")}
+              {t("dashboard.forms.columns.view")}
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline">
             <Link href={urls.form(row.original.id)} target="_blank">
-              {t("open")}
+              {t("dashboard.forms.columns.open")}
             </Link>
           </Button>
           <DeleteFormButton formId={row.original.id} />

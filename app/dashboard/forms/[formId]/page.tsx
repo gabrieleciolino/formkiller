@@ -20,12 +20,10 @@ export default async function FormsDetailPage({
     authenticatedQuery(async ({ supabase }) =>
       getFormByIdQuery({ formId, supabase }),
     ),
-    getTranslations("dashboard.forms.detail"),
+    getTranslations(),
   ]);
 
   if (!form) notFound();
-
-  const tForms = await getTranslations("forms");
 
   type QuestionRaw = EditQuestionsType["questions"][0] & {
     file_key?: string | null;
@@ -55,23 +53,31 @@ export default async function FormsDetailPage({
     >
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">
-          <p className="text-sm font-medium">{t("name")}</p>
+          <p className="text-sm font-medium">
+            {t("dashboard.forms.detail.name")}
+          </p>
           <p className="text-sm text-muted-foreground">{form.name}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium">{t("type")}</p>
+          <p className="text-sm font-medium">
+            {t("dashboard.forms.detail.type")}
+          </p>
           <p className="text-sm text-muted-foreground">
-            {tForms(`types.${form.type ?? "mixed"}` as Parameters<typeof tForms>[0])}
+            {t(`forms.types.${form.type ?? "mixed"}`)}
           </p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium">{t("language")}</p>
+          <p className="text-sm font-medium">
+            {t("dashboard.forms.detail.language")}
+          </p>
           <p className="text-sm text-muted-foreground">
-            {tForms(`languages.${form.language ?? "it"}` as Parameters<typeof tForms>[0])}
+            {t(`forms.languages.${form.language ?? "it"}`)}
           </p>
         </div>
         <div className="col-span-2 space-y-1 md:col-span-4">
-          <p className="text-sm font-medium">{t("instructions")}</p>
+          <p className="text-sm font-medium">
+            {t("dashboard.forms.detail.instructions")}
+          </p>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {form.instructions}
           </p>

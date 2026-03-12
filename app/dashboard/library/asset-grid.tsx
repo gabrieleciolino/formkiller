@@ -14,12 +14,12 @@ function formatBytes(bytes: number) {
 }
 
 function AssetCard({ asset }: { asset: Asset & { url: string } }) {
-  const t = useTranslations("dashboard.library");
+  const t = useTranslations();
   const [isPending, startTransition] = useTransition();
   const { url } = asset;
 
   const handleDelete = () => {
-    if (!confirm(t("confirmDelete"))) return;
+    if (!confirm(t("dashboard.library.confirmDelete"))) return;
     startTransition(async () => {
       await deleteAssetAction({ id: asset.id, fileKey: asset.file_key });
     });
@@ -92,7 +92,7 @@ function AssetCard({ asset }: { asset: Asset & { url: string } }) {
       <button
         onClick={handleDelete}
         className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-background/80 text-muted-foreground opacity-0 transition-all hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 backdrop-blur-sm"
-        title={t("delete")}
+        title={t("dashboard.library.delete")}
       >
         <Trash2 className="size-3.5" />
       </button>
@@ -101,12 +101,14 @@ function AssetCard({ asset }: { asset: Asset & { url: string } }) {
 }
 
 export default function AssetGrid({ assets }: { assets: (Asset & { url: string })[] }) {
-  const t = useTranslations("dashboard.library");
+  const t = useTranslations();
 
   if (assets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border py-16 text-center">
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("dashboard.library.empty")}
+        </p>
       </div>
     );
   }

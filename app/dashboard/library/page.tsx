@@ -11,7 +11,7 @@ export default async function LibraryPage() {
     authenticatedQuery(async ({ supabase, userId }) =>
       getAssetsQuery({ supabase, userId }),
     ),
-    getTranslations("dashboard.library"),
+    getTranslations(),
   ]);
 
   const assetsWithUrls = assets.map((a) => ({
@@ -20,7 +20,7 @@ export default async function LibraryPage() {
   }));
 
   return (
-    <DashboardWrapper title={t("title")}>
+    <DashboardWrapper title={t("dashboard.library.title")}>
       <div className="space-y-6">
         <UploadZone />
         <AssetGrid assets={assetsWithUrls} />

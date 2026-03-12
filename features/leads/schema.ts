@@ -13,19 +13,3 @@ export const createLeadSchema = z.object({
 });
 
 export type CreateLeadType = z.infer<typeof createLeadSchema>;
-
-export function makeCreateLeadSchema(msgs: {
-  minLength2: string;
-  emailInvalid: string;
-  phoneInvalid: string;
-}) {
-  return z.object({
-    name: z.string().min(2, msgs.minLength2),
-    email: z.email(msgs.emailInvalid),
-    phone: z.string().regex(PHONE_REGEX, msgs.phoneInvalid),
-    notes: z.string().optional(),
-    formId: z.string(),
-    sessionId: z.string(),
-    userId: z.string(),
-  });
-}

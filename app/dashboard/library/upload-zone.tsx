@@ -11,7 +11,7 @@ const MAX_SIZE = 20 * 1024 * 1024;
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
 export default function UploadZone() {
-  const t = useTranslations("dashboard.library.upload");
+  const t = useTranslations();
   const router = useRouter();
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -29,7 +29,7 @@ export default function UploadZone() {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error ?? t("errorGeneric"));
+        throw new Error(json.error ?? t("dashboard.library.upload.errorGeneric"));
       }
     },
     [t],
@@ -51,7 +51,11 @@ export default function UploadZone() {
         router.refresh();
         setTimeout(() => setStatus("idle"), 2000);
       } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : t("errorGeneric"));
+        setErrorMsg(
+          err instanceof Error
+            ? err.message
+            : t("dashboard.library.upload.errorGeneric"),
+        );
         setStatus("error");
         setProgress(null);
       }
@@ -92,20 +96,26 @@ export default function UploadZone() {
           <Loader2 className="size-8 animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
             {progress
-              ? `${t("uploading")} ${progress.name}${progress.total > 1 ? ` (${progress.done + 1}/${progress.total})` : ""}`
-              : t("uploading")}
+              ? `${t("dashboard.library.upload.uploading")} ${progress.name}${progress.total > 1 ? ` (${progress.done + 1}/${progress.total})` : ""}`
+              : t("dashboard.library.upload.uploading")}
           </p>
         </>
       ) : status === "success" ? (
         <>
           <CheckCircle2 className="size-8 text-green-500" />
-          <p className="text-sm text-green-600 dark:text-green-400">{t("success")}</p>
+          <p className="text-sm text-green-600 dark:text-green-400">
+            {t("dashboard.library.upload.success")}
+          </p>
         </>
       ) : status === "error" ? (
         <>
           <AlertCircle className="size-8 text-destructive" />
-          <p className="text-sm text-destructive">{errorMsg || t("errorGeneric")}</p>
-          <p className="text-xs text-muted-foreground">{t("dropAgain")}</p>
+          <p className="text-sm text-destructive">
+            {errorMsg || t("dashboard.library.upload.errorGeneric")}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("dashboard.library.upload.dropAgain")}
+          </p>
         </>
       ) : (
         <>
@@ -114,17 +124,25 @@ export default function UploadZone() {
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">
-              {isDragActive ? t("dropNow") : t("dropHint")}
+              {isDragActive
+                ? t("dashboard.library.upload.dropNow")
+                : t("dashboard.library.upload.dropHint")}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">{t("formats")}</p>
-            <p className="text-xs text-muted-foreground/70">{t("maxSize")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("dashboard.library.upload.formats")}
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              {t("dashboard.library.upload.maxSize")}
+            </p>
           </div>
         </>
       )}
 
       {rejectionError && status === "idle" && (
         <p className="text-xs text-destructive mt-1">
-          {rejectionError.code === "file-too-large" ? t("errorTooLarge") : t("errorType")}
+          {rejectionError.code === "file-too-large"
+            ? t("dashboard.library.upload.errorTooLarge")
+            : t("dashboard.library.upload.errorType")}
         </p>
       )}
     </div>

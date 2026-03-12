@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRef } from "react";
 
 export default function AudioPlayer({ url }: { url: string }) {
-  const t = useTranslations("dashboard.leads.detail");
+  const t = useTranslations();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handlePlay = () => {
@@ -19,7 +19,7 @@ export default function AudioPlayer({ url }: { url: string }) {
   return (
     <Button variant="outline" size="sm" onClick={handlePlay}>
       <PlayIcon className="size-3.5" />
-      {t("play")}
+      {t("dashboard.leads.detail.play")}
     </Button>
   );
 }

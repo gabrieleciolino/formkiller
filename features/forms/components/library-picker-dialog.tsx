@@ -7,39 +7,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import type {
+  LibraryPickerAsset,
+  LibraryPickerDialogProps,
+} from "@/features/forms/types";
 import { getAssetsForPickerAction } from "@/features/library/actions";
 import { CheckCircle2, Music, ImageIcon, X, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-type PickerAsset = {
-  id: string;
-  name: string;
-  file_key: string;
-  mime_type: string;
-  type: "image" | "audio" | "video";
-  size: number;
-  url: string;
-};
-
-type Props = {
-  type: "image" | "audio";
-  value: string | null;
-  /** currently selected asset url, for preview (resolved server-side) */
-  previewUrl: string | null;
-  onChange: (key: string | null) => void;
-};
-
-export default function LibraryPickerDialog({ type, value, previewUrl, onChange }: Props) {
-  const t = useTranslations("forms.libraryPicker");
+export default function LibraryPickerDialog({
+  type,
+  value,
+  previewUrl,
+  onChange,
+}: LibraryPickerDialogProps) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   // null = not yet loaded; [] = loaded but empty
-  const [assets, setAssets] = useState<PickerAsset[] | null>(null);
+  const [assets, setAssets] = useState<LibraryPickerAsset[] | null>(null);
 
   useEffect(() => {
     if (!open) return;
     getAssetsForPickerAction({ type }).then(({ data }) => {
-      setAssets((data as PickerAsset[] | undefined) ?? []);
+      setAssets((data as LibraryPickerAsset[] | undefined) ?? []);
     });
   }, [open, type]);
 
@@ -55,7 +46,10 @@ export default function LibraryPickerDialog({ type, value, previewUrl, onChange 
     setOpen(false);
   };
 
-  const label = type === "image" ? t("backgroundImage") : t("backgroundMusic");
+  const label =
+    type === "image"
+      ? t("forms.libraryPicker.backgroundImage")
+      : t("forms.libraryPicker.backgroundMusic");
 
   return (
     <div className="space-y-2">
@@ -89,7 +83,9 @@ export default function LibraryPickerDialog({ type, value, previewUrl, onChange 
             </button>
           </div>
         ) : (
-          <p className="flex-1 text-xs text-muted-foreground">{t("none")}</p>
+          <p className="flex-1 text-xs text-muted-foreground">
+            {t("forms.libraryPicker.none")}
+          </p>
         )}
 
         <Button
@@ -98,7 +94,7 @@ export default function LibraryPickerDialog({ type, value, previewUrl, onChange 
           size="sm"
           onClick={() => handleOpenChange(true)}
         >
-          {t("select")}
+          {t("forms.libraryPicker.select")}
         </Button>
       </div>
 
@@ -119,7 +115,9 @@ export default function LibraryPickerDialog({ type, value, previewUrl, onChange 
               ) : (
                 <Music className="size-8 text-muted-foreground/40" />
               )}
-              <p className="text-sm text-muted-foreground">{t("empty")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("forms.libraryPicker.empty")}
+              </p>
             </div>
           ) : (
             <div className="max-h-[60vh] overflow-y-auto pr-1">

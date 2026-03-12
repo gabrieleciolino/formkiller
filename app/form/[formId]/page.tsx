@@ -1,8 +1,6 @@
-import FormViewer, {
-  type ViewerFormData,
-  type ViewerQuestion,
-} from "@/features/forms/components/form-viewer";
+import FormViewer from "@/features/forms/components/form-viewer";
 import { getFormByIdQuery } from "@/features/forms/queries";
+import type { ViewerFormData, ViewerQuestion } from "@/features/forms/types";
 import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { NextIntlClientProvider } from "next-intl";

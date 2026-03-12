@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
@@ -28,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import {
-  makeCreateFormSchema,
+  createFormSchema,
   CreateFormType,
   FormLanguage,
   formLanguageSchema,
@@ -36,6 +35,7 @@ import {
   formTypeSchema,
 } from "@/features/forms/schema";
 import { createFormAction } from "@/features/forms/actions";
+import { useZodLocale } from "@/hooks/use-zod-locale";
 import { useRouter } from "next/navigation";
 import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
@@ -43,13 +43,11 @@ import { useTranslations } from "next-intl";
 export default function CreateFormSheet() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const t = useTranslations("forms.create");
-  const tTypes = useTranslations("forms.types");
-  const tLangs = useTranslations("forms.languages");
-  const tv = useTranslations("validation");
+  const t = useTranslations();
+  useZodLocale();
 
   const form = useForm<CreateFormType>({
-    resolver: zodResolver(makeCreateFormSchema({ required: tv("required") })),
+    resolver: zodResolver(createFormSchema),
     values: {
       name: "",
       instructions: "",
@@ -71,12 +69,12 @@ export default function CreateFormSheet() {
           throw new Error();
         }
 
-        toast(t("success"));
+        toast(t("forms.create.success"));
         router.push(urls.dashboard.forms.detail(form.id));
       } catch (error) {
         console.log(error);
 
-        toast(t("error"));
+        toast(t("forms.create.error"));
       }
     });
   };
@@ -84,11 +82,13 @@ export default function CreateFormSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="lg">{t("trigger")}</Button>
+        <Button size="lg">{t("forms.create.trigger")}</Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className="text-xl font-black">{t("title")}</SheetTitle>
+          <SheetTitle className="text-xl font-black">
+            {t("forms.create.title")}
+          </SheetTitle>
         </SheetHeader>
         <div className="m-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -97,12 +97,14 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>{t("name")}</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    {t("forms.create.name")}
+                  </FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder={t("namePlaceholder")}
+                    placeholder={t("forms.create.namePlaceholder")}
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -116,12 +118,14 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>{t("instructions")}</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    {t("forms.create.instructions")}
+                  </FieldLabel>
                   <Textarea
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    placeholder={t("instructionsPlaceholder")}
+                    placeholder={t("forms.create.instructionsPlaceholder")}
                     autoComplete="off"
                     className="min-h-[150px]"
                   />
@@ -136,7 +140,7 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>{t("type")}</FieldLabel>
+                  <FieldLabel>{t("forms.create.type")}</FieldLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue />
@@ -144,7 +148,9 @@ export default function CreateFormSheet() {
                     <SelectContent>
                       {(formTypeSchema.options as FormType[]).map((typeKey) => (
                         <SelectItem key={typeKey} value={typeKey}>
-                          {tTypes(typeKey as Parameters<typeof tTypes>[0])}
+                          {t(
+                            `forms.types.${typeKey}` as Parameters<typeof t>[0],
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -157,7 +163,7 @@ export default function CreateFormSheet() {
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>{t("language")}</FieldLabel>
+                  <FieldLabel>{t("forms.create.language")}</FieldLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue />
@@ -165,7 +171,11 @@ export default function CreateFormSheet() {
                     <SelectContent>
                       {(formLanguageSchema.options as FormLanguage[]).map((langKey) => (
                         <SelectItem key={langKey} value={langKey}>
-                          {tLangs(langKey as Parameters<typeof tLangs>[0])}
+                          {t(
+                            `forms.languages.${langKey}` as Parameters<
+                              typeof t
+                            >[0],
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -174,7 +184,7 @@ export default function CreateFormSheet() {
               )}
             />
             <Button type="submit" className="mt-2 w-full">
-              {t("submit")}
+              {t("forms.create.submit")}
             </Button>
           </form>
         </div>

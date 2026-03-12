@@ -4,10 +4,12 @@ import { createLeadSchema } from "@/features/leads/schema";
 import { generateSTT } from "@/lib/deepgram/functions";
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { setZodLocale } from "@/lib/zod/locale";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
 } from "next-safe-action";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 const publicViewerClient = createSafeActionClient({
@@ -18,6 +20,11 @@ const publicViewerClient = createSafeActionClient({
     });
     return DEFAULT_SERVER_ERROR_MESSAGE;
   },
+}).use(async ({ next }) => {
+  const store = await cookies();
+  setZodLocale(store.get("locale")?.value ?? "en");
+
+  return next();
 });
 
 export const startFormSessionAction = publicViewerClient

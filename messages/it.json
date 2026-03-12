@@ -137,6 +137,13 @@
       "empty": "Nessun file in libreria."
     },
     "questions": {
+      "addQuestion": "Aggiungi domanda",
+      "addQuestionTitle": "Nuova domanda",
+      "addQuestionSubmit": "Aggiungi",
+      "addQuestionError": "Aggiunta domanda fallita.",
+      "deleteQuestion": "Elimina domanda",
+      "confirmDeleteQuestion": "Sei sicuro di voler eliminare questa domanda?",
+      "deleteQuestionError": "Eliminazione domanda fallita.",
       "defaultAnswers": "Risposte predefinite",
       "answerPlaceholder": "Risposta {index}",
       "questionLabel": "Domanda {index}",

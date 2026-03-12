@@ -18,28 +18,28 @@ import LocaleSwitcher from "./locale-switcher";
 
 export default async function DashboardSidebar() {
   const [t, currentLocale] = await Promise.all([
-    getTranslations("dashboard.sidebar"),
+    getTranslations(),
     getLocale(),
   ]);
 
   const items = [
     {
-      label: t("forms"),
+      label: t("dashboard.sidebar.forms"),
       icon: Form,
       url: urls.dashboard.forms.index,
     },
     {
-      label: t("leads"),
+      label: t("dashboard.sidebar.leads"),
       icon: PersonStanding,
       url: urls.dashboard.leads.index,
     },
     {
-      label: t("sessions"),
+      label: t("dashboard.sidebar.sessions"),
       icon: Layers,
       url: urls.dashboard.sessions.index,
     },
     {
-      label: t("library"),
+      label: t("dashboard.sidebar.library"),
       icon: LibraryBig,
       url: urls.dashboard.library.index,
     },

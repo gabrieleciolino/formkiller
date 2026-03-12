@@ -9,11 +9,11 @@ export default async function SessionsPage() {
     authenticatedQuery(async ({ supabase, userId }) =>
       getSessionsQuery({ supabase, userId }),
     ),
-    getTranslations("dashboard.sessions"),
+    getTranslations(),
   ]);
 
   return (
-    <DashboardWrapper title={t("title")}>
+    <DashboardWrapper title={t("dashboard.sessions.title")}>
       <SessionsTable data={sessions} />
     </DashboardWrapper>
   );

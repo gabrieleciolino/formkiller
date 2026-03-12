@@ -1,10 +1,12 @@
 import "server-only";
 
+import { setZodLocale } from "@/lib/zod/locale";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
 } from "next-safe-action";
+import { cookies } from "next/headers";
 
 class ActionAccessError extends Error {
   constructor(message: "Unauthorized" | "Forbidden") {
@@ -30,6 +32,9 @@ const baseActionClient = createSafeActionClient({
 });
 
 export const publicActionClient = baseActionClient.use(async ({ next }) => {
+  const store = await cookies();
+  setZodLocale(store.get("locale")?.value ?? "en");
+
   const supabase = await createClient();
 
   return next({ ctx: { supabase } });

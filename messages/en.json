@@ -137,6 +137,13 @@
       "empty": "No files in library."
     },
     "questions": {
+      "addQuestion": "Add question",
+      "addQuestionTitle": "New question",
+      "addQuestionSubmit": "Add",
+      "addQuestionError": "Failed to add question.",
+      "deleteQuestion": "Delete question",
+      "confirmDeleteQuestion": "Are you sure you want to delete this question?",
+      "deleteQuestionError": "Failed to delete question.",
       "defaultAnswers": "Default answers",
       "answerPlaceholder": "Answer {index}",
       "questionLabel": "Question {index}",

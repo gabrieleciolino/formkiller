@@ -10,12 +10,12 @@ export default async function FormsPage() {
     authenticatedQuery(
       async ({ supabase, userId }) => await getFormsQuery({ userId, supabase }),
     ),
-    getTranslations("dashboard.forms"),
+    getTranslations(),
   ]);
 
   return (
     <DashboardWrapper
-      title={t("title")}
+      title={t("dashboard.forms.title")}
       actions={
         <div>
           <CreateFormSheet />

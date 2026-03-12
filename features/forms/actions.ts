@@ -1,8 +1,10 @@
 "use server";
 
 import {
+  addQuestionSchema,
   createFormSchema,
   deleteFormSchema,
+  deleteQuestionSchema,
   editFormSchema,
   editQuestionsSchema,
   FormLanguage,
@@ -179,6 +181,42 @@ export const editQuestionsAction = authenticatedActionClient
     revalidatePath(urls.dashboard.forms.detail(formId));
 
     return questions;
+  });
+
+export const addQuestionAction = authenticatedActionClient
+  .inputSchema(addQuestionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { formId, order, question, answers } = parsedInput;
+
+    const { error } = await supabase.from("question").insert({
+      form_id: formId,
+      user_id: userId,
+      question,
+      order,
+      default_answers: answers.map((answer, i) => ({ answer, order: i })),
+    });
+
+    if (error) throw error;
+
+    revalidatePath(urls.dashboard.forms.detail(formId));
+  });
+
+export const deleteQuestionAction = authenticatedActionClient
+  .inputSchema(deleteQuestionSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId } = ctx;
+    const { questionId, formId } = parsedInput;
+
+    const { error } = await supabase
+      .from("question")
+      .delete()
+      .eq("id", questionId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    revalidatePath(urls.dashboard.forms.detail(formId));
   });
 
 export const deleteFormAction = authenticatedActionClient

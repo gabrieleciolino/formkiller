@@ -7,8 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { makeLoginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
+import { loginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
 import { loginAction } from "@/app/auth/__components/actions";
+import { useZodLocale } from "@/hooks/use-zod-locale";
 import { useRouter, useSearchParams } from "next/navigation";
 import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
@@ -17,13 +18,13 @@ export default function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const t = useTranslations("auth.login");
-  const tv = useTranslations("validation");
+  const t = useTranslations();
+  useZodLocale();
 
   const redirectTo = searchParams.get("redirect_to");
 
   const form = useForm<LoginFormType>({
-    resolver: zodResolver(makeLoginFormSchema({ required: tv("required"), emailInvalid: tv("emailInvalid") })),
+    resolver: zodResolver(loginFormSchema),
     values: {
       email: "",
       password: "",
@@ -40,11 +41,11 @@ export default function LoginForm() {
         }
 
         router.push(redirectTo ? redirectTo : urls.dashboard.index);
-        toast(t("success"));
+        toast(t("auth.login.success"));
       } catch (error) {
         console.log(error);
 
-        toast(t("error"));
+        toast(t("auth.login.error"));
       }
     });
   };
@@ -56,12 +57,12 @@ export default function LoginForm() {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>{t("email")}</FieldLabel>
+            <FieldLabel htmlFor={field.name}>{t("auth.login.email")}</FieldLabel>
             <Input
               {...field}
               id={field.name}
               aria-invalid={fieldState.invalid}
-              placeholder={t("email")}
+              placeholder={t("auth.login.email")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -73,12 +74,14 @@ export default function LoginForm() {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>{t("password")}</FieldLabel>
+            <FieldLabel htmlFor={field.name}>
+              {t("auth.login.password")}
+            </FieldLabel>
             <Input
               {...field}
               id={field.name}
               aria-invalid={fieldState.invalid}
-              placeholder={t("password")}
+              placeholder={t("auth.login.password")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -86,7 +89,7 @@ export default function LoginForm() {
         )}
       />
       <Button type="submit" className="mt-2 w-full">
-        {t("submit")}
+        {t("auth.login.submit")}
       </Button>
     </form>
   );

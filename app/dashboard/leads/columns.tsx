@@ -9,29 +9,29 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 export function useLeadsColumns(): ColumnDef<Lead>[] {
-  const t = useTranslations("dashboard.leads.columns");
+  const t = useTranslations();
 
   return [
     {
       accessorKey: "name",
-      header: t("name"),
+      header: t("dashboard.leads.columns.name"),
     },
     {
       accessorKey: "email",
-      header: t("email"),
+      header: t("dashboard.leads.columns.email"),
     },
     {
       accessorKey: "phone",
-      header: t("phone"),
+      header: t("dashboard.leads.columns.phone"),
     },
     {
       accessorKey: "notes",
-      header: t("notes"),
+      header: t("dashboard.leads.columns.notes"),
       cell: ({ getValue }) => getValue<string | null>() ?? "—",
     },
     {
       id: "form",
-      header: t("form"),
+      header: t("dashboard.leads.columns.form"),
       cell: ({ row }) => {
         const form = row.original.form as { name: string } | null;
         return form?.name ?? "—";
@@ -39,7 +39,7 @@ export function useLeadsColumns(): ColumnDef<Lead>[] {
     },
     {
       accessorKey: "created_at",
-      header: t("createdAt"),
+      header: t("dashboard.leads.columns.createdAt"),
       cell: ({ getValue }) => {
         const value = getValue<string | null>();
         if (!value) return "—";
@@ -51,7 +51,7 @@ export function useLeadsColumns(): ColumnDef<Lead>[] {
       cell: ({ row }) => (
         <Button asChild size="sm" variant="outline">
           <Link href={urls.dashboard.leads.detail(row.original.id)}>
-            {t("view")}
+            {t("dashboard.leads.columns.view")}
           </Link>
         </Button>
       ),
