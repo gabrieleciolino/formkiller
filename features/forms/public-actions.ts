@@ -41,6 +41,20 @@ async function getFormOwnerOrThrow(formId: string) {
   return form;
 }
 
+async function getFormAssignmentOrThrow(assignmentId: string) {
+  const { data: assignment, error } = await supabaseAdmin
+    .from("form_assignment")
+    .select("id, form_id, user_id, active")
+    .eq("id", assignmentId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!assignment) throw new Error("Form assignment not found");
+  if (!assignment.active) throw new Error("Form assignment is not active");
+
+  return assignment;
+}
+
 async function getFormSessionOrThrow(sessionId: string) {
   const { data: session, error } = await supabaseAdmin
     .from("form_session")
@@ -69,19 +83,34 @@ async function getQuestionOrThrow(questionId: string) {
 
 export const startFormSessionAction = publicViewerClient
   .inputSchema(
-    z.object({
-      formId: z.string().uuid(),
-    }),
+    z
+      .object({
+        assignmentId: z.string().uuid().optional(),
+        formId: z.string().uuid().optional(),
+      })
+      .refine(
+        (value) => Boolean(value.assignmentId) || Boolean(value.formId),
+        "assignmentId or formId is required",
+      ),
   )
   .action(async ({ parsedInput }) => {
-    const { formId } = parsedInput;
-    const form = await getFormOwnerOrThrow(formId);
+    const assignment = parsedInput.assignmentId
+      ? await getFormAssignmentOrThrow(parsedInput.assignmentId)
+      : null;
+    const formId = assignment?.form_id ?? parsedInput.formId;
+
+    if (!formId) {
+      throw new Error("Form id missing");
+    }
+
+    const userId =
+      assignment?.user_id ?? (await getFormOwnerOrThrow(formId)).user_id;
 
     const { data, error } = await supabaseAdmin
       .from("form_session")
       .insert({
         form_id: formId,
-        user_id: form.user_id,
+        user_id: userId,
         status: "in_progress",
         current_question_index: 0,
       })
@@ -127,11 +156,6 @@ export const submitAnswerAction = publicViewerClient
     const question = await getQuestionOrThrow(questionId);
     if (question.form_id !== formId) {
       throw new Error("Invalid question/form association");
-    }
-
-    const form = await getFormOwnerOrThrow(formId);
-    if (form.user_id !== session.user_id) {
-      throw new Error("Invalid form ownership");
     }
 
     let fileKey: string | undefined;
@@ -192,10 +216,6 @@ export const createLeadAction = publicViewerClient
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {
       throw new Error("Invalid session/form association");
-    }
-    const form = await getFormOwnerOrThrow(formId);
-    if (form.user_id !== session.user_id) {
-      throw new Error("Invalid form ownership");
     }
 
     if (session.status !== "completed") {

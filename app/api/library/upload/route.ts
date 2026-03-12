@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ext = file.name.split(".").pop() ?? "bin";
-  const fileKey = `library/${userId}/${crypto.randomUUID()}.${ext}`;
+  const fileKey = `library/${Date.now()}-${crypto.randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   await uploadFile({ key: fileKey, body: buffer, contentType: file.type });

@@ -1,4 +1,4 @@
-import { getFormsQuery } from "@/features/forms/queries";
+import { getAdminFormsQuery, getUserFormsQuery } from "@/features/forms/queries";
 import type {
   AddQuestionFormType,
   EditQuestionsType,
@@ -9,7 +9,8 @@ import type {
 import type { CSSProperties, ReactNode } from "react";
 import type { Control } from "react-hook-form";
 
-export type Form = Awaited<ReturnType<typeof getFormsQuery>>[0];
+export type DashboardForm = Awaited<ReturnType<typeof getUserFormsQuery>>[0];
+export type AdminForm = Awaited<ReturnType<typeof getAdminFormsQuery>>[0];
 
 export type AddQuestionFormValues = AddQuestionFormType;
 
@@ -71,6 +72,7 @@ export type ViewerQuestion = {
 
 export type ViewerFormData = {
   id: string;
+  assignmentId: string | null;
   name: string;
   userId: string;
   type: FormType;
@@ -171,7 +173,7 @@ export type FormViewerQuestionPhaseProps = {
 };
 
 export type EditFormSheetProps = {
-  formData: Form;
+  formData: AdminForm;
   backgroundImageUrl: string | null;
   backgroundMusicUrl: string | null;
 };

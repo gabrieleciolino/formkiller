@@ -1,16 +1,13 @@
 import { TypedSupabaseClient } from "@/lib/supabase/types";
 
-export const getUserSessionsQuery = async ({
+export const getAdminUsersQuery = async ({
   supabase,
-  userId,
 }: {
   supabase: TypedSupabaseClient;
-  userId: string;
 }) => {
   const { data, error } = await supabase
-    .from("form_session")
-    .select("*, form:form_id(name, questions:question(id))")
-    .eq("user_id", userId)
+    .from("account")
+    .select("user_id, role, created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -18,16 +15,15 @@ export const getUserSessionsQuery = async ({
   return data;
 };
 
-export const getSessionsQuery = getUserSessionsQuery;
-
-export const getAdminSessionsQuery = async ({
+export const getAssignableUsersQuery = async ({
   supabase,
 }: {
   supabase: TypedSupabaseClient;
 }) => {
   const { data, error } = await supabase
-    .from("form_session")
-    .select("*, form:form_id(name, questions:question(id))")
+    .from("account")
+    .select("user_id, role, created_at")
+    .eq("role", "user")
     .order("created_at", { ascending: false });
 
   if (error) throw error;

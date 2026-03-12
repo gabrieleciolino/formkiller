@@ -202,6 +202,44 @@ export type Database = {
         }
         Relationships: []
       }
+      form_assignment: {
+        Row: {
+          active: boolean
+          assigned_by: string
+          created_at: string | null
+          form_id: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          assigned_by: string
+          created_at?: string | null
+          form_id: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          assigned_by?: string
+          created_at?: string | null
+          form_id?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_assignment_form_id_form_id_fk"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "form"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_session: {
         Row: {
           created_at: string | null

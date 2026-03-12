@@ -1,21 +1,29 @@
 import FormViewer from "@/features/forms/components/form-viewer";
-import { getFormByIdQuery } from "@/features/forms/queries";
+import { getFormAssignmentByIdQuery, getFormByIdQuery } from "@/features/forms/queries";
 import type { ViewerFormData, ViewerQuestion } from "@/features/forms/types";
-import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 
-export default async function FormViewerPage({
+export default async function FormViewerAssignmentPage({
   params,
 }: {
-  params: Promise<{ formId: string }>;
+  params: Promise<{ assignmentId: string }>;
 }) {
-  const { formId } = await params;
+  const { assignmentId } = await params;
 
-  const form = await publicQuery(
-    async ({ supabase }) => await getFormByIdQuery({ formId, supabase }),
-  );
+  const assignment = await getFormAssignmentByIdQuery({
+    assignmentId,
+    supabase: supabaseAdmin,
+  });
+
+  if (!assignment || !assignment.active) notFound();
+
+  const form = await getFormByIdQuery({
+    formId: assignment.form_id,
+    supabase: supabaseAdmin,
+  });
 
   if (!form) notFound();
 
@@ -37,9 +45,9 @@ export default async function FormViewerPage({
 
   const viewerForm: ViewerFormData = {
     id: form.id,
-    assignmentId: null,
+    assignmentId: assignment.id,
     name: form.name,
-    userId: form.user_id,
+    userId: assignment.user_id,
     type: (form.type ?? "mixed") as ViewerFormData["type"],
     theme: (form.theme ?? "dark") as ViewerFormData["theme"],
     language,

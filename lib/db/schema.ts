@@ -1,6 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  boolean,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -9,6 +11,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { authenticatedRole } from "drizzle-orm/supabase";
@@ -170,6 +173,52 @@ export const formTable = pgTable(
   ],
 ).enableRLS();
 
+export const formAssignmentTable = pgTable(
+  "form_assignment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    formId: uuid("form_id")
+      .notNull()
+      .references(() => formTable.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => authUserTable.id, { onDelete: "cascade" }),
+    assignedBy: uuid("assigned_by")
+      .notNull()
+      .references(() => authUserTable.id, { onDelete: "cascade" }),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    unique("form_assignment_form_user_unique").on(t.formId, t.userId),
+    index("form_assignment_form_id_idx").on(t.formId),
+    index("form_assignment_user_id_idx").on(t.userId),
+    index("form_assignment_active_idx").on(t.active),
+    pgPolicy("form_assignment_select_owner_or_admin", {
+      for: "select",
+      to: authenticatedRole,
+      using: isOwnerOrAdminExpr(t.userId),
+    }),
+    pgPolicy("form_assignment_insert_admin", {
+      for: "insert",
+      to: authenticatedRole,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("form_assignment_update_admin", {
+      for: "update",
+      to: authenticatedRole,
+      using: isAdminExpr,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("form_assignment_delete_admin", {
+      for: "delete",
+      to: authenticatedRole,
+      using: isAdminExpr,
+    }),
+  ],
+).enableRLS();
+
 export const questionTable = pgTable(
   "question",
   {
@@ -238,7 +287,7 @@ export const formSessionTable = pgTable(
   "form_session",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    // NB: questo è l'userId dell'utente che ha creato il questionario, non quello del visitatore che lo ha compilato
+    // NB: questo è l'userId dell'account a cui il form è assegnato
     userId: uuid("user_id")
       .notNull()
       .references(() => authUserTable.id, { onDelete: "cascade" }),

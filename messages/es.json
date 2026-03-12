@@ -19,6 +19,7 @@
   "dashboard": {
     "sidebar": {
       "forms": "Formularios",
+      "users": "Usuarios",
       "leads": "Contactos",
       "sessions": "Sesiones",
       "library": "Biblioteca"
@@ -98,6 +99,15 @@
         "createdAt": "Creado el",
         "view": "Ver"
       }
+    },
+    "users": {
+      "title": "Usuarios",
+      "empty": "No se encontraron usuarios.",
+      "columns": {
+        "userId": "User ID",
+        "role": "Rol",
+        "createdAt": "Creado el"
+      }
     }
   },
   "forms": {
@@ -120,6 +130,16 @@
       "select": "Seleccionar de la biblioteca",
       "none": "Ningún archivo seleccionado",
       "empty": "No hay archivos en la biblioteca."
+    },
+    "assignments": {
+      "title": "Asignaciones de usuarios",
+      "description": "Asigna este formulario a usuarios con rol user.",
+      "searchPlaceholder": "Buscar por user id",
+      "noUsers": "No hay usuarios disponibles.",
+      "assigned": "Asignado",
+      "notAssigned": "No asignado",
+      "assign": "Asignar",
+      "unassign": "Quitar"
     },
     "edit": {
       "trigger": "Personalizar",

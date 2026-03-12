@@ -69,9 +69,11 @@ export default function FormViewer({ form }: FormViewerProps) {
   const handleStart = () => {
     startTransition(async () => {
       try {
-        const { data, serverError } = await startFormSessionAction({
-          formId: form.id,
-        });
+        const { data, serverError } = await startFormSessionAction(
+          form.assignmentId
+            ? { assignmentId: form.assignmentId }
+            : { formId: form.id },
+        );
 
         if (serverError || !data) throw new Error();
 

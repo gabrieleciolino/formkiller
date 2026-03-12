@@ -1,14 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { UserLead } from "@/features/leads/types";
+import { AdminLead } from "@/features/leads/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-export function useLeadsColumns(): ColumnDef<UserLead>[] {
+export function useAdminLeadsColumns(): ColumnDef<AdminLead>[] {
   const t = useTranslations();
 
   return [
@@ -28,6 +28,13 @@ export function useLeadsColumns(): ColumnDef<UserLead>[] {
       accessorKey: "notes",
       header: t("dashboard.leads.columns.notes"),
       cell: ({ getValue }) => getValue<string | null>() ?? "—",
+    },
+    {
+      accessorKey: "user_id",
+      header: t("dashboard.users.columns.userId"),
+      cell: ({ getValue }) => (
+        <span className="font-mono text-xs">{getValue<string | null>() ?? "—"}</span>
+      ),
     },
     {
       id: "form",
@@ -50,7 +57,7 @@ export function useLeadsColumns(): ColumnDef<UserLead>[] {
       id: "actions",
       cell: ({ row }) => (
         <Button asChild size="sm" variant="outline">
-          <Link href={urls.dashboard.leads.detail(row.original.id)}>
+          <Link href={urls.admin.leads.detail(row.original.id)}>
             {t("dashboard.leads.columns.view")}
           </Link>
         </Button>

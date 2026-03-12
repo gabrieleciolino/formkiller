@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { deleteFormAction } from "@/features/forms/actions";
-import { Form } from "@/features/forms/types";
+import { AdminForm } from "@/features/forms/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
@@ -36,7 +36,7 @@ function DeleteFormButton({ formId }: { formId: string }) {
   );
 }
 
-export function useAdminFormsColumns(): ColumnDef<Form>[] {
+export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
   const t = useTranslations();
 
   return [

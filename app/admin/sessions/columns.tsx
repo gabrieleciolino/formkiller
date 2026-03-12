@@ -1,17 +1,17 @@
 "use client";
 
-import { UserSession } from "@/features/sessions/types";
+import { AdminSession } from "@/features/sessions/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 
 const STATUS_COLORS: Record<string, string> = {
-  completed: "bg-green-500/15 text-green-400 border-green-500/20",
-  in_progress: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-  pending: "bg-white/5 text-white/40 border-white/10",
+  completed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
+  in_progress: "border-amber-500/30 bg-amber-500/10 text-amber-700",
+  pending: "border-border bg-muted text-muted-foreground",
 };
 
-export function useSessionsColumns(): ColumnDef<UserSession>[] {
+export function useAdminSessionsColumns(): ColumnDef<AdminSession>[] {
   const t = useTranslations();
 
   return [
@@ -24,12 +24,19 @@ export function useSessionsColumns(): ColumnDef<UserSession>[] {
       },
     },
     {
+      accessorKey: "user_id",
+      header: t("dashboard.users.columns.userId"),
+      cell: ({ getValue }) => (
+        <span className="font-mono text-xs">{getValue<string | null>() ?? "—"}</span>
+      ),
+    },
+    {
       accessorKey: "status",
       header: t("dashboard.sessions.columns.status"),
       cell: ({ getValue }) => {
         const status = getValue<string>();
         const colorClass =
-          STATUS_COLORS[status] ?? "bg-white/5 text-white/40 border-white/10";
+          STATUS_COLORS[status] ?? "border-border bg-muted text-muted-foreground";
         return (
           <span
             className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${colorClass}`}

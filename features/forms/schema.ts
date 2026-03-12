@@ -100,3 +100,17 @@ export const generateQuestionTTSSchema = z.object({
 });
 
 export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;
+
+export const assignFormUserSchema = z.object({
+  formId: z.string().uuid(),
+  userId: z.string().uuid(),
+});
+
+export type AssignFormUserType = z.infer<typeof assignFormUserSchema>;
+
+export const unassignFormUserSchema = z.object({
+  formId: z.string().uuid(),
+  userId: z.string().uuid(),
+});
+
+export type UnassignFormUserType = z.infer<typeof unassignFormUserSchema>;

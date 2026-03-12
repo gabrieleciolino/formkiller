@@ -2,12 +2,14 @@
 
 import {
   addQuestionSchema,
+  assignFormUserSchema,
   createFormSchema,
   deleteFormSchema,
   deleteQuestionSchema,
   editFormSchema,
   editQuestionsSchema,
   generateQuestionTTSSchema,
+  unassignFormUserSchema,
 } from "@/features/forms/schema";
 import { adminActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
@@ -178,13 +180,13 @@ export const editQuestionsAction = adminActionClient
       questions.map((question) =>
         supabase
           .from("question")
-            .update({
-              question: question.question,
-              default_answers: question.default_answers,
-            })
-            .eq("id", question.id)
-            .eq("form_id", formId)
-            .throwOnError(),
+          .update({
+            question: question.question,
+            default_answers: question.default_answers,
+          })
+          .eq("id", question.id)
+          .eq("form_id", formId)
+          .throwOnError(),
       ),
     );
 
@@ -330,4 +332,44 @@ export const generateQuestionTTSAction = adminActionClient
     revalidatePath(urls.admin.forms.detail(formId));
 
     return { url };
+  });
+
+export const assignUserToFormAction = adminActionClient
+  .inputSchema(assignFormUserSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase, userId: adminUserId } = ctx;
+    const { formId, userId } = parsedInput;
+
+    await supabase
+      .from("form_assignment")
+      .upsert(
+        {
+          form_id: formId,
+          user_id: userId,
+          assigned_by: adminUserId,
+          active: true,
+        },
+        { onConflict: "form_id,user_id" },
+      )
+      .throwOnError();
+
+    revalidatePath(urls.admin.forms.detail(formId));
+    revalidatePath(urls.dashboard.forms.index);
+  });
+
+export const unassignUserFromFormAction = adminActionClient
+  .inputSchema(unassignFormUserSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase } = ctx;
+    const { formId, userId } = parsedInput;
+
+    await supabase
+      .from("form_assignment")
+      .update({ active: false })
+      .eq("form_id", formId)
+      .eq("user_id", userId)
+      .throwOnError();
+
+    revalidatePath(urls.admin.forms.detail(formId));
+    revalidatePath(urls.dashboard.forms.index);
   });

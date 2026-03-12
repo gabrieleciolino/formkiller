@@ -1,3 +1,4 @@
-import { getLeadsQuery } from "@/features/leads/queries";
+import { getAdminLeadsQuery, getUserLeadsQuery } from "@/features/leads/queries";
 
-export type Lead = Awaited<ReturnType<typeof getLeadsQuery>>[0];
+export type UserLead = Awaited<ReturnType<typeof getUserLeadsQuery>>[0];
+export type AdminLead = Awaited<ReturnType<typeof getAdminLeadsQuery>>[0];

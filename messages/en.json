@@ -19,6 +19,7 @@
   "dashboard": {
     "sidebar": {
       "forms": "Forms",
+      "users": "Users",
       "leads": "Leads",
       "sessions": "Sessions",
       "library": "Library"
@@ -98,6 +99,15 @@
         "createdAt": "Created at",
         "view": "View"
       }
+    },
+    "users": {
+      "title": "Users",
+      "empty": "No users found.",
+      "columns": {
+        "userId": "User ID",
+        "role": "Role",
+        "createdAt": "Created at"
+      }
     }
   },
   "forms": {
@@ -137,6 +147,16 @@
       "select": "Select from library",
       "none": "No file selected",
       "empty": "No files in library."
+    },
+    "assignments": {
+      "title": "User assignments",
+      "description": "Assign this form to users with role user.",
+      "searchPlaceholder": "Search by user id",
+      "noUsers": "No users available.",
+      "assigned": "Assigned",
+      "notAssigned": "Not assigned",
+      "assign": "Assign",
+      "unassign": "Remove"
     },
     "questions": {
       "addQuestion": "Add question",

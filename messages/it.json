@@ -19,6 +19,7 @@
   "dashboard": {
     "sidebar": {
       "forms": "Form",
+      "users": "Utenti",
       "leads": "Lead",
       "sessions": "Sessioni",
       "library": "Libreria"
@@ -98,6 +99,15 @@
         "createdAt": "Creato il",
         "view": "Visualizza"
       }
+    },
+    "users": {
+      "title": "Utenti",
+      "empty": "Nessun utente trovato.",
+      "columns": {
+        "userId": "User ID",
+        "role": "Ruolo",
+        "createdAt": "Creato il"
+      }
     }
   },
   "forms": {
@@ -137,6 +147,16 @@
       "select": "Seleziona dalla libreria",
       "none": "Nessun file selezionato",
       "empty": "Nessun file in libreria."
+    },
+    "assignments": {
+      "title": "Assegnazioni utenti",
+      "description": "Assegna questo form agli utenti con ruolo user.",
+      "searchPlaceholder": "Cerca per user id",
+      "noUsers": "Nessun utente disponibile.",
+      "assigned": "Assegnato",
+      "notAssigned": "Non assegnato",
+      "assign": "Assegna",
+      "unassign": "Rimuovi"
     },
     "questions": {
       "addQuestion": "Aggiungi domanda",

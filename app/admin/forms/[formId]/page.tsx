@@ -1,8 +1,13 @@
 import { Separator } from "@/components/ui/separator";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
+import FormAssignmentsManager from "@/features/forms/components/form-assignments-manager";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
-import { getFormByIdQuery } from "@/features/forms/queries";
+import {
+  getFormAssignmentsForAdminQuery,
+  getFormByIdQuery,
+} from "@/features/forms/queries";
 import { EditQuestionsType } from "@/features/forms/schema";
+import { getAssignableUsersQuery } from "@/features/users/queries";
 import { adminQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { getTranslations } from "next-intl/server";
@@ -15,8 +20,12 @@ export default async function AdminFormDetailPage({
 }) {
   const { formId } = await params;
 
-  const [form, t] = await Promise.all([
+  const [form, assignments, users, t] = await Promise.all([
     adminQuery(async ({ supabase }) => getFormByIdQuery({ formId, supabase })),
+    adminQuery(async ({ supabase }) =>
+      getFormAssignmentsForAdminQuery({ formId, supabase }),
+    ),
+    adminQuery(async ({ supabase }) => getAssignableUsersQuery({ supabase })),
     getTranslations(),
   ]);
 
@@ -80,6 +89,14 @@ export default async function AdminFormDetailPage({
           </p>
         </div>
       </div>
+
+      <Separator />
+
+      <FormAssignmentsManager
+        formId={formId}
+        assignments={assignments}
+        users={users}
+      />
 
       <Separator />
 

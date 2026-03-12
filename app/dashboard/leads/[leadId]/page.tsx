@@ -2,7 +2,7 @@ import DashboardWrapper from "@/app/dashboard/__components/wrapper";
 import AudioPlayer from "@/app/dashboard/leads/[leadId]/audio-player";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { getLeadDetailQuery } from "@/features/leads/queries";
+import { getUserLeadDetailQuery } from "@/features/leads/queries";
 import { authenticatedQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
@@ -18,8 +18,8 @@ export default async function LeadDetailPage({
   const { leadId } = await params;
 
   const [result, t] = await Promise.all([
-    authenticatedQuery(({ supabase }) =>
-      getLeadDetailQuery({ supabase, leadId }),
+    authenticatedQuery(({ supabase, userId }) =>
+      getUserLeadDetailQuery({ supabase, leadId, userId }),
     ),
     getTranslations(),
   ]);
