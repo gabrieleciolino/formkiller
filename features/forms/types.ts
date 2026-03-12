@@ -56,7 +56,7 @@ export type LibraryPickerDialogProps = {
   type: "image" | "audio";
   value: string | null;
   previewUrl: string | null;
-  onChange: (key: string | null) => void;
+  onChange: (key: string | null, previewUrl?: string | null) => void;
 };
 
 export type ViewerQuestion = {
@@ -93,7 +93,6 @@ export type RecordingButtonProps = {
 export type LeadFormProps = {
   sessionId: string;
   formId: string;
-  userId: string;
   onCompleted: () => void;
 };
 

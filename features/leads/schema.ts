@@ -7,9 +7,8 @@ export const createLeadSchema = z.object({
   email: z.email(),
   phone: z.string().regex(PHONE_REGEX),
   notes: z.string().optional(),
-  formId: z.string(),
-  sessionId: z.string(),
-  userId: z.string(),
+  formId: z.string().uuid(),
+  sessionId: z.string().uuid(),
 });
 
 export type CreateLeadType = z.infer<typeof createLeadSchema>;

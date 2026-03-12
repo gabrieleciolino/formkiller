@@ -7,12 +7,12 @@ import {
   deleteQuestionSchema,
   editFormSchema,
   editQuestionsSchema,
-  FormLanguage,
   generateQuestionTTSSchema,
 } from "@/features/forms/schema";
 import { authenticatedActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
+import { deleteFile } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
 
@@ -21,78 +21,117 @@ export const createFormAction = authenticatedActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
     const { name, instructions, type, language } = parsedInput;
+    const generatedTtsKeys: string[] = [];
+    let createdFormId: string | null = null;
 
-    const { data: form, error } = await supabase
-      .from("form")
-      .insert({
-        name,
-        instructions,
-        type,
-        language,
-        user_id: userId,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    const output = await generateForm({ instructions, language });
-
-    if (!output || output.questions.length === 0) {
-      throw new Error("Empty AI output.");
-    }
-
-    const insertPromises = output.questions.map((q) =>
-      supabase
-        .from("question")
+    try {
+      const { data: form, error } = await supabase
+        .from("form")
         .insert({
-          question: q.question,
-          order: q.order,
-          default_answers: q.defaultAnswers,
-          form_id: form.id,
+          name,
+          instructions,
+          type,
+          language,
           user_id: userId,
         })
         .select()
-        .single(),
-    );
+        .single();
 
-    const insertResults = await Promise.all(insertPromises);
-    const insertedQuestions = insertResults.map((r) => r.data!);
+      if (error || !form) {
+        throw error ?? new Error("Form not created");
+      }
 
-    const ttsResults = await Promise.all(
-      insertedQuestions.map((q) =>
-        generateTTS({
-          text: q.question,
-          formId: form.id,
-          language: form.language,
+      createdFormId = form.id;
+
+      const output = await generateForm({ instructions, language });
+      if (!output || output.questions.length === 0) {
+        throw new Error("Empty AI output.");
+      }
+
+      const insertedQuestions = await Promise.all(
+        output.questions.map(async (question) => {
+          const { data, error: insertError } = await supabase
+            .from("question")
+            .insert({
+              question: question.question,
+              order: question.order,
+              default_answers: question.defaultAnswers,
+              form_id: form.id,
+              user_id: userId,
+            })
+            .select()
+            .single();
+
+          if (insertError || !data) {
+            throw insertError ?? new Error("Question not created");
+          }
+
+          return data;
         }),
-      ),
-    );
+      );
 
-    await Promise.all(
-      insertedQuestions.map((q, i) =>
-        supabase
-          .from("question")
-          .update({
-            file_key: ttsResults[i].key,
-            file_generated_at: new Date().toUTCString(),
-          })
-          .eq("id", q.id),
-      ),
-    );
+      const ttsResults = await Promise.all(
+        insertedQuestions.map((question) =>
+          generateTTS({
+            text: question.question,
+            formId: form.id,
+            language: form.language,
+          }),
+        ),
+      );
+      generatedTtsKeys.push(...ttsResults.map((result) => result.key));
 
-    revalidatePath(urls.dashboard.forms.index);
+      await Promise.all(
+        insertedQuestions.map((question, index) =>
+          supabase
+            .from("question")
+            .update({
+              file_key: ttsResults[index].key,
+              file_generated_at: new Date().toUTCString(),
+            })
+            .eq("id", question.id)
+            .throwOnError(),
+        ),
+      );
 
-    return form;
+      revalidatePath(urls.dashboard.forms.index);
+
+      return form;
+    } catch (error) {
+      if (createdFormId) {
+        try {
+          await supabase
+            .from("form")
+            .delete()
+            .eq("id", createdFormId)
+            .eq("user_id", userId)
+            .throwOnError();
+        } catch (cleanupError) {
+          console.log("[create_form_cleanup_error]", cleanupError);
+        }
+      }
+
+      if (generatedTtsKeys.length > 0) {
+        await Promise.allSettled(generatedTtsKeys.map((key) => deleteFile(key)));
+      }
+
+      throw error;
+    }
   });
 
 export const editFormAction = authenticatedActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, formId, type, theme, backgroundImageKey, backgroundMusicKey } = parsedInput;
+    const {
+      name,
+      instructions,
+      formId,
+      type,
+      theme,
+      backgroundImageKey,
+      backgroundMusicKey,
+    } = parsedInput;
 
     const { data: form, error } = await supabase
       .from("form")
@@ -124,7 +163,7 @@ export const editQuestionsAction = authenticatedActionClient
     const { supabase, userId } = ctx;
     const { questions, formId, language } = parsedInput;
 
-    const ids = questions.map((q) => q.id);
+    const ids = questions.map((question) => question.id);
 
     const { data: currentQuestions } = await supabase
       .from("question")
@@ -133,21 +172,23 @@ export const editQuestionsAction = authenticatedActionClient
       .eq("user_id", userId)
       .throwOnError();
 
-    const currentMap = new Map(currentQuestions!.map((q) => [q.id, q]));
+    const currentMap = new Map(
+      (currentQuestions ?? []).map((question) => [question.id, question]),
+    );
 
     const changedQuestions = questions.filter(
-      (q) => currentMap.get(q.id)?.question !== q.question,
+      (question) => currentMap.get(question.id)?.question !== question.question,
     );
 
     await Promise.all(
-      questions.map((q) =>
+      questions.map((question) =>
         supabase
           .from("question")
           .update({
-            question: q.question,
-            default_answers: q.default_answers,
+            question: question.question,
+            default_answers: question.default_answers,
           })
-          .eq("id", q.id)
+          .eq("id", question.id)
           .eq("user_id", userId)
           .throwOnError(),
       ),
@@ -155,24 +196,24 @@ export const editQuestionsAction = authenticatedActionClient
 
     if (changedQuestions.length > 0) {
       const ttsResults = await Promise.all(
-        changedQuestions.map((q) =>
+        changedQuestions.map((question) =>
           generateTTS({
-            text: q.question,
+            text: question.question,
             formId,
-            language: language as FormLanguage,
+            language,
           }),
         ),
       );
 
       await Promise.all(
-        changedQuestions.map((q, i) =>
+        changedQuestions.map((question, index) =>
           supabase
             .from("question")
             .update({
-              file_key: ttsResults[i].key,
+              file_key: ttsResults[index].key,
               file_generated_at: new Date().toUTCString(),
-            } as never)
-            .eq("id", q.id)
+            })
+            .eq("id", question.id)
             .throwOnError(),
         ),
       );
@@ -187,17 +228,33 @@ export const addQuestionAction = authenticatedActionClient
   .inputSchema(addQuestionSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { formId, order, question, answers } = parsedInput;
+    const { formId, question, answers } = parsedInput;
 
-    const { error } = await supabase.from("question").insert({
-      form_id: formId,
-      user_id: userId,
-      question,
-      order,
-      default_answers: answers.map((answer, i) => ({ answer, order: i })),
-    });
+    const { data: lastQuestion } = await supabase
+      .from("question")
+      .select("order")
+      .eq("form_id", formId)
+      .eq("user_id", userId)
+      .order("order", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .throwOnError();
 
-    if (error) throw error;
+    const nextOrder = (lastQuestion?.order ?? -1) + 1;
+
+    await supabase
+      .from("question")
+      .insert({
+        form_id: formId,
+        user_id: userId,
+        question,
+        order: nextOrder,
+        default_answers: answers.map((answer, index) => ({
+          answer,
+          order: index,
+        })),
+      })
+      .throwOnError();
 
     revalidatePath(urls.dashboard.forms.detail(formId));
   });
@@ -255,7 +312,7 @@ export const generateQuestionTTSAction = authenticatedActionClient
     const { url, key } = await generateTTS({
       text: question.question,
       formId,
-      language: language as FormLanguage,
+      language,
     });
 
     await supabase
@@ -263,7 +320,7 @@ export const generateQuestionTTSAction = authenticatedActionClient
       .update({
         file_key: key,
         file_generated_at: new Date().toUTCString(),
-      } as never)
+      })
       .eq("id", questionId)
       .throwOnError();
 

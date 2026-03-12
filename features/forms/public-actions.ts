@@ -1,6 +1,6 @@
 "use server";
 
-import type { FormLanguage } from "@/features/forms/schema";
+import { formLanguageSchema } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
 import { generateSTT } from "@/lib/deepgram/functions";
 import { uploadFile } from "@/lib/r2/functions";
@@ -99,7 +99,7 @@ export const submitAnswerAction = publicViewerClient
       sessionId: z.string().uuid(),
       questionId: z.string().uuid(),
       formId: z.string().uuid(),
-      language: z.string(),
+      language: formLanguageSchema,
       defaultAnswer: z.string().optional(),
       audioBase64: z.string().optional(),
       audioMimeType: z.string().optional(),
@@ -144,11 +144,7 @@ export const submitAnswerAction = publicViewerClient
 
       await uploadFile({ key, body: buffer, contentType: mimeType });
       fileKey = key;
-      stt = await generateSTT({
-        buffer,
-        mimeType,
-        language: language as FormLanguage,
-      });
+      stt = await generateSTT({ buffer, mimeType, language });
     }
 
     await supabaseAdmin
@@ -191,17 +187,12 @@ export const submitAnswerAction = publicViewerClient
 export const createLeadAction = publicViewerClient
   .inputSchema(createLeadSchema)
   .action(async ({ parsedInput }) => {
-    const { sessionId, formId, userId, name, email, phone, notes } =
-      parsedInput;
+    const { sessionId, formId, name, email, phone, notes } = parsedInput;
 
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {
       throw new Error("Invalid session/form association");
     }
-    if (session.user_id !== userId) {
-      throw new Error("Invalid session/user association");
-    }
-
     const form = await getFormOwnerOrThrow(formId);
     if (form.user_id !== session.user_id) {
       throw new Error("Invalid form ownership");

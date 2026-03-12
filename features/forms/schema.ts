@@ -31,9 +31,9 @@ export const formThemeSchema = z.enum(["light", "dark"]);
 export type FormTheme = z.infer<typeof formThemeSchema>;
 
 export const editFormSchema = z.object({
-  formId: z.string(),
-  name: z.string(),
-  instructions: z.string(),
+  formId: z.string().uuid(),
+  name: z.string().min(1),
+  instructions: z.string().min(1),
   type: formTypeSchema,
   theme: formThemeSchema,
   backgroundImageKey: z.string().nullable().optional(),
@@ -43,17 +43,17 @@ export const editFormSchema = z.object({
 export type EditFormType = z.infer<typeof editFormSchema>;
 
 export const editQuestionsSchema = z.object({
-  formId: z.string(),
-  language: z.string(),
+  formId: z.string().uuid(),
+  language: formLanguageSchema,
   questions: z.array(
     z.object({
-      id: z.string(),
-      question: z.string(),
-      order: z.number(),
+      id: z.string().uuid(),
+      question: z.string().min(1),
+      order: z.number().int().nonnegative(),
       default_answers: z.array(
         z.object({
-          answer: z.string(),
-          order: z.number(),
+          answer: z.string().min(1),
+          order: z.number().int().nonnegative(),
         }),
       ),
     }),
@@ -63,8 +63,7 @@ export const editQuestionsSchema = z.object({
 export type EditQuestionsType = z.infer<typeof editQuestionsSchema>;
 
 export const addQuestionSchema = z.object({
-  formId: z.string(),
-  order: z.number(),
+  formId: z.string().uuid(),
   question: z.string().min(1),
   answers: z.array(z.string().min(1)).length(4),
 });
@@ -84,22 +83,22 @@ export const addQuestionFormSchema = z.object({
 export type AddQuestionFormType = z.infer<typeof addQuestionFormSchema>;
 
 export const deleteQuestionSchema = z.object({
-  questionId: z.string(),
-  formId: z.string(),
+  questionId: z.string().uuid(),
+  formId: z.string().uuid(),
 });
 
 export type DeleteQuestionType = z.infer<typeof deleteQuestionSchema>;
 
 export const deleteFormSchema = z.object({
-  formId: z.string(),
+  formId: z.string().uuid(),
 });
 
 export type DeleteFormType = z.infer<typeof deleteFormSchema>;
 
 export const generateQuestionTTSSchema = z.object({
-  questionId: z.string(),
-  formId: z.string(),
-  language: z.string(),
+  questionId: z.string().uuid(),
+  formId: z.string().uuid(),
+  language: formLanguageSchema,
 });
 
 export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;

@@ -37,6 +37,10 @@ export function QuestionPhase({
   const t = useTranslations();
   const currentQuestion = questions[currentIndex];
 
+  if (!currentQuestion) {
+    return null;
+  }
+
   return (
     <div
       className={`relative flex min-h-dvh flex-col ${tk.bg} ${tk.text}`}

@@ -31,6 +31,9 @@ export default async function FormViewerPage({
   };
 
   const rawQuestions = form.questions as unknown as RawQuestion[];
+  if (rawQuestions.length === 0) {
+    notFound();
+  }
 
   const viewerForm: ViewerFormData = {
     id: form.id,

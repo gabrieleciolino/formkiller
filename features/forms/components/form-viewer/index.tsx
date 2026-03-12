@@ -148,7 +148,7 @@ export default function FormViewer({ form }: FormViewerProps) {
   };
 
   const handleAdvance = () => {
-    if (!answer || !sessionId) return;
+    if (!answer || !sessionId || !currentQuestion) return;
 
     startTransition(async () => {
       try {
@@ -225,7 +225,6 @@ export default function FormViewer({ form }: FormViewerProps) {
       <LeadForm
         sessionId={sessionId!}
         formId={form.id}
-        userId={form.userId}
         onCompleted={() => setPhase("completed")}
       />
     );

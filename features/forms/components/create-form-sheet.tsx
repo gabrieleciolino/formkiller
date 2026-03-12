@@ -48,7 +48,7 @@ export default function CreateFormSheet() {
 
   const form = useForm<CreateFormType>({
     resolver: zodResolver(createFormSchema),
-    values: {
+    defaultValues: {
       name: "",
       instructions: "",
       type: "mixed",
@@ -183,7 +183,7 @@ export default function CreateFormSheet() {
                 </Field>
               )}
             />
-            <Button type="submit" className="mt-2 w-full">
+            <Button type="submit" className="mt-2 w-full" disabled={isPending}>
               {t("forms.create.submit")}
             </Button>
           </form>

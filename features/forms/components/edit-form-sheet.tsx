@@ -31,7 +31,7 @@ import type { EditFormSheetProps } from "@/features/forms/types";
 import LibraryPickerDialog from "@/features/forms/components/library-picker-dialog";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -46,10 +46,16 @@ export default function EditFormSheet({
   const [isPending, startTransition] = useTransition();
   const t = useTranslations();
   useZodLocale();
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(
+    background_image_key ? backgroundImageUrl : null,
+  );
+  const [musicPreviewUrl, setMusicPreviewUrl] = useState<string | null>(
+    background_music_key ? backgroundMusicUrl : null,
+  );
 
   const form = useForm<EditFormType>({
     resolver: zodResolver(editFormSchema),
-    values: {
+    defaultValues: {
       name,
       instructions,
       formId: id,
@@ -59,6 +65,31 @@ export default function EditFormSheet({
       backgroundMusicKey: background_music_key ?? null,
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      name,
+      instructions,
+      formId: id,
+      type: (type ?? "mixed") as FormType,
+      theme: (theme ?? "dark") as FormTheme,
+      backgroundImageKey: background_image_key ?? null,
+      backgroundMusicKey: background_music_key ?? null,
+    });
+    setImagePreviewUrl(background_image_key ? backgroundImageUrl : null);
+    setMusicPreviewUrl(background_music_key ? backgroundMusicUrl : null);
+  }, [
+    id,
+    instructions,
+    name,
+    theme,
+    type,
+    backgroundImageUrl,
+    backgroundMusicUrl,
+    background_image_key,
+    background_music_key,
+    form,
+  ]);
 
   const onSubmit = (values: EditFormType) => {
     startTransition(async () => {
@@ -202,8 +233,18 @@ export default function EditFormSheet({
                 <LibraryPickerDialog
                   type="image"
                   value={field.value ?? null}
-                  previewUrl={field.value ? backgroundImageUrl : null}
-                  onChange={field.onChange}
+                  previewUrl={field.value ? imagePreviewUrl : null}
+                  onChange={(nextKey, nextPreview) => {
+                    field.onChange(nextKey);
+                    if (!nextKey) {
+                      setImagePreviewUrl(null);
+                      return;
+                    }
+
+                    if (nextPreview) {
+                      setImagePreviewUrl(nextPreview);
+                    }
+                  }}
                 />
               )}
             />
@@ -214,12 +255,22 @@ export default function EditFormSheet({
                 <LibraryPickerDialog
                   type="audio"
                   value={field.value ?? null}
-                  previewUrl={field.value ? backgroundMusicUrl : null}
-                  onChange={field.onChange}
+                  previewUrl={field.value ? musicPreviewUrl : null}
+                  onChange={(nextKey, nextPreview) => {
+                    field.onChange(nextKey);
+                    if (!nextKey) {
+                      setMusicPreviewUrl(null);
+                      return;
+                    }
+
+                    if (nextPreview) {
+                      setMusicPreviewUrl(nextPreview);
+                    }
+                  }}
                 />
               )}
             />
-            <Button type="submit" className="mt-2 w-full">
+            <Button type="submit" className="mt-2 w-full" disabled={isPending}>
               {t("forms.edit.submit")}
             </Button>
           </form>

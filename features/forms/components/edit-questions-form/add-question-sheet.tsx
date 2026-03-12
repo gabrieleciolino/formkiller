@@ -46,7 +46,6 @@ export default function AddQuestionSheet({
       try {
         const { serverError } = await addQuestionAction({
           formId,
-          order: nextOrder,
           question: values.question,
           answers: [...values.answers],
         });

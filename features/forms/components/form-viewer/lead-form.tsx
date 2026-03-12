@@ -1,8 +1,8 @@
 "use client";
 
+import type { LeadFormProps } from "@/features/forms/types";
 import { createLeadAction } from "@/features/forms/public-actions";
 import { createLeadSchema, type CreateLeadType } from "@/features/leads/schema";
-import type { LeadFormProps } from "@/features/forms/types";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function LeadForm({ sessionId, formId, userId, onCompleted }: LeadFormProps) {
+export function LeadForm({ sessionId, formId, onCompleted }: LeadFormProps) {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations();
 
@@ -22,7 +22,7 @@ export function LeadForm({ sessionId, formId, userId, onCompleted }: LeadFormPro
     formState: { errors },
   } = useForm<CreateLeadType>({
     resolver: zodResolver(createLeadSchema),
-    defaultValues: { sessionId, formId, userId },
+    defaultValues: { sessionId, formId },
   });
 
   const onSubmit = (values: CreateLeadType) => {

@@ -9,7 +9,21 @@ export const createLeadAction = publicActionClient
   .inputSchema(createLeadSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
-    const { name, email, phone, notes, formId, sessionId, userId } = parsedInput;
+    const { name, email, phone, notes, formId, sessionId } = parsedInput;
+
+    const { data: session, error: sessionError } = await supabase
+      .from("form_session")
+      .select("form_id, user_id")
+      .eq("id", sessionId)
+      .maybeSingle();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    if (!session || session.form_id !== formId) {
+      throw new Error("Invalid session/form association");
+    }
 
     const { data, error } = await supabase
       .from("lead")
@@ -19,7 +33,7 @@ export const createLeadAction = publicActionClient
         phone,
         notes: notes ?? null,
         form_id: formId,
-        user_id: userId,
+        user_id: session.user_id,
         form_session_id: sessionId,
       })
       .select()

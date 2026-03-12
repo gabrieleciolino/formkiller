@@ -42,7 +42,12 @@ export default function LibraryPickerDialog({
   const loading = open && assets === null;
 
   const handleSelect = (key: string) => {
-    onChange(key === value ? null : key);
+    const selectedAsset = assets?.find((asset) => asset.file_key === key) ?? null;
+    const isSameSelection = key === value;
+    onChange(
+      isSameSelection ? null : key,
+      isSameSelection ? null : selectedAsset?.url ?? null,
+    );
     setOpen(false);
   };
 
@@ -76,7 +81,7 @@ export default function LibraryPickerDialog({
             </span>
             <button
               type="button"
-              onClick={() => onChange(null)}
+              onClick={() => onChange(null, null)}
               className="shrink-0 text-muted-foreground hover:text-foreground"
             >
               <X className="size-4" />
