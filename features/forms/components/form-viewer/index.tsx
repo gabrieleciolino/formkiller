@@ -210,7 +210,7 @@ export default function FormViewer({ form }: FormViewerProps) {
       }
     : undefined;
 
-  const shouldRenderBackgroundMusic = hasBackgroundMusic && phase !== "completed";
+  const shouldRenderBackgroundMusic = hasBackgroundMusic;
 
   let phaseContent: ReactNode;
 
