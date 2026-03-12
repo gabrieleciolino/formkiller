@@ -44,8 +44,9 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   const isDashboardRoute = pathname.startsWith(urls.dashboard.index);
+  const isAdminRoute = pathname.startsWith(urls.admin.index);
 
-  const isProtectedRoute = isDashboardRoute;
+  const isProtectedRoute = isDashboardRoute || isAdminRoute;
 
   if (!user && isProtectedRoute) {
     // no user, potentially respond by redirecting the user to the login page
@@ -62,6 +63,43 @@ export async function updateSession(request: NextRequest) {
     });
 
     return redirectResponse;
+  }
+
+  if (user && isAdminRoute) {
+    const userId = typeof user.sub === "string" ? user.sub : null;
+
+    if (!userId) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = urls.auth.login;
+      loginUrl.searchParams.set(
+        "redirect_to",
+        `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      );
+
+      const redirectResponse = NextResponse.redirect(loginUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie);
+      });
+
+      return redirectResponse;
+    }
+
+    const { data: account, error: accountError } = await supabase
+      .from("account")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (accountError || account?.role !== "admin") {
+      const redirectResponse = NextResponse.redirect(
+        new URL(urls.dashboard.index, request.url),
+      );
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie);
+      });
+
+      return redirectResponse;
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

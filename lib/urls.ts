@@ -2,6 +2,24 @@ export const urls = {
   auth: {
     login: "/auth/login",
   },
+  admin: {
+    index: "/admin",
+    forms: {
+      index: "/admin/forms",
+      create: "/admin/forms/create",
+      detail: (formId: string) => `/admin/forms/${formId}`,
+    },
+    leads: {
+      index: "/admin/leads",
+      detail: (leadId: string) => `/admin/leads/${leadId}`,
+    },
+    sessions: {
+      index: "/admin/sessions",
+    },
+    library: {
+      index: "/admin/library",
+    },
+  },
   dashboard: {
     index: "/dashboard",
     forms: {
