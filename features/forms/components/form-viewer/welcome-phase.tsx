@@ -24,7 +24,7 @@ export function WelcomePhase({
 
   return (
     <div
-      className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
+      className={`relative flex h-dvh flex-col items-center justify-center overflow-hidden p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
       {hasBackgroundImage && (

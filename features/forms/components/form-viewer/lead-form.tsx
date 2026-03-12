@@ -53,15 +53,15 @@ export function LeadForm({
 
   return (
     <div
-      className="relative flex min-h-dvh flex-col bg-black text-white"
+      className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-black px-6 text-white"
       style={bgStyle}
     >
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${overlayClassName}`} />
       )}
 
-      <div className="relative flex flex-1 flex-col justify-center px-6 py-10">
-        <div className={`mx-auto w-full max-w-md space-y-6 rounded-2xl p-6 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
+      <div className="relative w-full max-w-md">
+        <div className={`w-full space-y-4 rounded-2xl p-6 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
           <div className="space-y-1">
             <h2 className="text-2xl font-black">{t("viewer.leadForm.title")}</h2>
             <p className="text-sm text-white/40">{t("viewer.leadForm.subtitle")}</p>
@@ -99,3 +99,4 @@ export function LeadForm({
     </div>
   );
 }
+

@@ -43,19 +43,19 @@ export function QuestionPhase({
 
   return (
     <div
-      className={`relative flex min-h-dvh flex-col ${tk.bg} ${tk.text}`}
+      className={`relative flex h-dvh flex-col overflow-hidden ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}
 
-      <div className="relative flex items-center gap-3 px-6 pt-8 pb-2">
-        <div className="flex flex-1 gap-1.5">
+      <div className="relative flex shrink-0 items-center gap-3 overflow-hidden px-6 pt-6 pb-2">
+        <div className="flex min-w-0 flex-1 gap-1.5">
           {questions.map((_, i) => (
             <div
               key={i}
-              className={`h-0.5 w-8 rounded-full transition-all duration-500 ${
+              className={`h-0.5 min-w-0 flex-1 rounded-full transition-all duration-500 ${
                 i < currentIndex
                   ? tk.progressActive
                   : i === currentIndex
@@ -86,7 +86,7 @@ export function QuestionPhase({
         )}
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center px-6 py-10">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-4">
         <p className="text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
           {displayedText}
           <span
@@ -96,7 +96,7 @@ export function QuestionPhase({
       </div>
 
       {showRecording && (
-        <div className="relative flex flex-col items-center gap-3 pb-4">
+        <div className="relative flex shrink-0 flex-col items-center gap-2 pb-3">
           {recordState === "idle" && (
             <>
               <button
@@ -140,7 +140,7 @@ export function QuestionPhase({
       )}
 
       <div
-        className={`relative mx-4 mb-10 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/60" : "bg-white/60"}`}
+        className={`relative mx-4 mb-6 shrink-0 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/60" : "bg-white/60"}`}
       >
         {showDefaultAnswers && (
           <>
