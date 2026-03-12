@@ -1,11 +1,7 @@
 import DashboardWrapper from "@/app/dashboard/__components/wrapper";
 import { Separator } from "@/components/ui/separator";
-import EditFormSheet from "@/features/forms/components/edit-form-sheet";
-import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
-import { getFormByIdQuery } from "@/features/forms/queries";
-import { EditQuestionsType } from "@/features/forms/schema";
+import { getUserFormByIdQuery } from "@/features/forms/queries";
 import { authenticatedQuery } from "@/lib/queries";
-import { getFileUrl } from "@/lib/r2/functions";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -17,40 +13,26 @@ export default async function FormsDetailPage({
   const { formId } = await params;
 
   const [form, t] = await Promise.all([
-    authenticatedQuery(async ({ supabase }) =>
-      getFormByIdQuery({ formId, supabase }),
+    authenticatedQuery(async ({ supabase, userId }) =>
+      getUserFormByIdQuery({ formId, userId, supabase }),
     ),
     getTranslations(),
   ]);
 
   if (!form) notFound();
 
-  type QuestionRaw = EditQuestionsType["questions"][0] & {
-    file_key?: string | null;
+  type QuestionRaw = {
+    id: string;
+    question: string;
+    order: number;
+    default_answers: { answer: string; order: number }[];
   };
-  const questionsRaw = form.questions as unknown as QuestionRaw[];
-  const initialFileUrls: Record<string, string | null> = Object.fromEntries(
-    questionsRaw.map((q) => [q.id, q.file_key ? getFileUrl(q.file_key) : null]),
+  const questions = [...(form.questions as unknown as QuestionRaw[])].sort(
+    (a, b) => a.order - b.order,
   );
 
-  const backgroundImageUrl = form.background_image_key
-    ? getFileUrl(form.background_image_key)
-    : null;
-  const backgroundMusicUrl = form.background_music_key
-    ? getFileUrl(form.background_music_key)
-    : null;
-
   return (
-    <DashboardWrapper
-      title={form.name}
-      actions={
-        <EditFormSheet
-          formData={form}
-          backgroundImageUrl={backgroundImageUrl}
-          backgroundMusicUrl={backgroundMusicUrl}
-        />
-      }
-    >
+    <DashboardWrapper title={form.name}>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">
           <p className="text-sm font-medium">
@@ -84,14 +66,36 @@ export default async function FormsDetailPage({
         </div>
       </div>
       <Separator />
-      <EditQuestionsForm
-        questionsData={
-          questionsRaw as unknown as EditQuestionsType["questions"]
-        }
-        formId={formId}
-        language={form.language}
-        initialFileUrls={initialFileUrls}
-      />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {questions.map((question, index) => (
+          <div key={question.id} className="space-y-3 rounded-md border p-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {t("forms.questions.questionLabel", { index: index + 1 })}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {question.question}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {t("forms.questions.defaultAnswers")}
+              </p>
+              <ul className="space-y-1">
+                {[...question.default_answers]
+                  .sort((a, b) => a.order - b.order)
+                  .map((answer) => (
+                    <li key={`${question.id}-${answer.order}`}>
+                      <span className="inline-flex rounded-full bg-secondary px-3 py-1 text-sm">
+                        {answer.answer}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
     </DashboardWrapper>
   );
 }

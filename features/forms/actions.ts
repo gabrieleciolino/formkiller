@@ -9,14 +9,14 @@ import {
   editQuestionsSchema,
   generateQuestionTTSSchema,
 } from "@/features/forms/schema";
-import { authenticatedActionClient } from "@/lib/actions";
+import { adminActionClient } from "@/lib/actions";
 import { generateForm } from "@/lib/ai/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
 
-export const createFormAction = authenticatedActionClient
+export const createFormAction = adminActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
@@ -95,6 +95,7 @@ export const createFormAction = authenticatedActionClient
       );
 
       revalidatePath(urls.dashboard.forms.index);
+      revalidatePath(urls.admin.forms.index);
 
       return form;
     } catch (error) {
@@ -119,10 +120,10 @@ export const createFormAction = authenticatedActionClient
     }
   });
 
-export const editFormAction = authenticatedActionClient
+export const editFormAction = adminActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { formId, type, theme, backgroundImageKey, backgroundMusicKey } =
       parsedInput;
 
@@ -135,7 +136,6 @@ export const editFormAction = authenticatedActionClient
         background_music_key: backgroundMusicKey ?? null,
       })
       .eq("id", formId)
-      .eq("user_id", userId)
       .select()
       .single();
 
@@ -143,15 +143,18 @@ export const editFormAction = authenticatedActionClient
       throw error;
     }
 
+    revalidatePath(urls.dashboard.forms.index);
     revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.index);
+    revalidatePath(urls.admin.forms.detail(formId));
 
     return form;
   });
 
-export const editQuestionsAction = authenticatedActionClient
+export const editQuestionsAction = adminActionClient
   .inputSchema(editQuestionsSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { questions, formId, language } = parsedInput;
 
     const ids = questions.map((question) => question.id);
@@ -160,7 +163,7 @@ export const editQuestionsAction = authenticatedActionClient
       .from("question")
       .select("id, question")
       .in("id", ids)
-      .eq("user_id", userId)
+      .eq("form_id", formId)
       .throwOnError();
 
     const currentMap = new Map(
@@ -175,13 +178,13 @@ export const editQuestionsAction = authenticatedActionClient
       questions.map((question) =>
         supabase
           .from("question")
-          .update({
-            question: question.question,
-            default_answers: question.default_answers,
-          })
-          .eq("id", question.id)
-          .eq("user_id", userId)
-          .throwOnError(),
+            .update({
+              question: question.question,
+              default_answers: question.default_answers,
+            })
+            .eq("id", question.id)
+            .eq("form_id", formId)
+            .throwOnError(),
       ),
     );
 
@@ -205,27 +208,35 @@ export const editQuestionsAction = authenticatedActionClient
               file_generated_at: new Date().toUTCString(),
             })
             .eq("id", question.id)
+            .eq("form_id", formId)
             .throwOnError(),
         ),
       );
     }
 
     revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.detail(formId));
 
     return questions;
   });
 
-export const addQuestionAction = authenticatedActionClient
+export const addQuestionAction = adminActionClient
   .inputSchema(addQuestionSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { formId, question, answers } = parsedInput;
+
+    const { data: form } = await supabase
+      .from("form")
+      .select("user_id")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
 
     const { data: lastQuestion } = await supabase
       .from("question")
       .select("order")
       .eq("form_id", formId)
-      .eq("user_id", userId)
       .order("order", { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -237,7 +248,7 @@ export const addQuestionAction = authenticatedActionClient
       .from("question")
       .insert({
         form_id: formId,
-        user_id: userId,
+        user_id: form.user_id,
         question,
         order: nextOrder,
         default_answers: answers.map((answer, index) => ({
@@ -248,53 +259,52 @@ export const addQuestionAction = authenticatedActionClient
       .throwOnError();
 
     revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.detail(formId));
   });
 
-export const deleteQuestionAction = authenticatedActionClient
+export const deleteQuestionAction = adminActionClient
   .inputSchema(deleteQuestionSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { questionId, formId } = parsedInput;
 
     const { error } = await supabase
       .from("question")
       .delete()
       .eq("id", questionId)
-      .eq("user_id", userId);
+      .eq("form_id", formId);
 
     if (error) throw error;
 
     revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.detail(formId));
   });
 
-export const deleteFormAction = authenticatedActionClient
+export const deleteFormAction = adminActionClient
   .inputSchema(deleteFormSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { formId } = parsedInput;
 
-    const { error } = await supabase
-      .from("form")
-      .delete()
-      .eq("id", formId)
-      .eq("user_id", userId);
+    const { error } = await supabase.from("form").delete().eq("id", formId);
 
     if (error) throw error;
 
     revalidatePath(urls.dashboard.forms.index);
+    revalidatePath(urls.admin.forms.index);
   });
 
-export const generateQuestionTTSAction = authenticatedActionClient
+export const generateQuestionTTSAction = adminActionClient
   .inputSchema(generateQuestionTTSSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
+    const { supabase } = ctx;
     const { questionId, formId, language } = parsedInput;
 
     const { data: question } = await supabase
       .from("question")
       .select("question")
       .eq("id", questionId)
-      .eq("user_id", userId)
+      .eq("form_id", formId)
       .single()
       .throwOnError();
 
@@ -313,7 +323,11 @@ export const generateQuestionTTSAction = authenticatedActionClient
         file_generated_at: new Date().toUTCString(),
       })
       .eq("id", questionId)
+      .eq("form_id", formId)
       .throwOnError();
+
+    revalidatePath(urls.dashboard.forms.detail(formId));
+    revalidatePath(urls.admin.forms.detail(formId));
 
     return { url };
   });

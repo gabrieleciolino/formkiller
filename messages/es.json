@@ -61,6 +61,7 @@
         "name": "Nombre",
         "type": "Tipo",
         "language": "Idioma",
+        "owner": "Propietario",
         "createdAt": "Creado el",
         "actions": "Acciones",
         "view": "Ver",

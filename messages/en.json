@@ -61,6 +61,7 @@
         "name": "Name",
         "type": "Type",
         "language": "Language",
+        "owner": "Owner",
         "createdAt": "Created at",
         "actions": "Actions",
         "view": "View",

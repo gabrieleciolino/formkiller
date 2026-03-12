@@ -29,7 +29,11 @@ import { useRouter } from "next/navigation";
 import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
 
-export default function CreateFormForm() {
+export default function CreateFormForm({
+  detailPathPrefix = urls.dashboard.forms.index,
+}: {
+  detailPathPrefix?: string;
+} = {}) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const t = useTranslations();
@@ -59,7 +63,7 @@ export default function CreateFormForm() {
         }
 
         toast(t("forms.create.success"));
-        router.push(urls.dashboard.forms.detail(form.id));
+        router.push(`${detailPathPrefix.replace(/\/$/, "")}/${form.id}`);
       } catch (error) {
         console.log(error);
 

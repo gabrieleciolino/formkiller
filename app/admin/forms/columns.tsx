@@ -1,14 +1,42 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { deleteFormAction } from "@/features/forms/actions";
 import { Form } from "@/features/forms/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTransition } from "react";
 
-export function useFormsColumns(): ColumnDef<Form>[] {
+function DeleteFormButton({ formId }: { formId: string }) {
+  const t = useTranslations();
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    if (!confirm(t("dashboard.forms.columns.confirmDelete"))) return;
+    startTransition(async () => {
+      await deleteFormAction({ formId });
+    });
+  };
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      onClick={handleDelete}
+      disabled={isPending}
+      title={t("dashboard.forms.columns.delete")}
+    >
+      <Trash2 className="size-4" />
+    </Button>
+  );
+}
+
+export function useAdminFormsColumns(): ColumnDef<Form>[] {
   const t = useTranslations();
 
   return [
@@ -35,6 +63,13 @@ export function useFormsColumns(): ColumnDef<Form>[] {
       },
     },
     {
+      accessorKey: "user_id",
+      header: t("dashboard.forms.columns.owner"),
+      cell: ({ getValue }) => {
+        return getValue<string | null>() ?? "—";
+      },
+    },
+    {
       accessorKey: "created_at",
       header: t("dashboard.forms.columns.createdAt"),
       cell: ({ getValue }) => {
@@ -49,7 +84,7 @@ export function useFormsColumns(): ColumnDef<Form>[] {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline">
-            <Link href={urls.dashboard.forms.detail(row.original.id)}>
+            <Link href={urls.admin.forms.detail(row.original.id)}>
               {t("dashboard.forms.columns.view")}
             </Link>
           </Button>
@@ -58,6 +93,7 @@ export function useFormsColumns(): ColumnDef<Form>[] {
               {t("dashboard.forms.columns.open")}
             </Link>
           </Button>
+          <DeleteFormButton formId={row.original.id} />
         </div>
       ),
     },
