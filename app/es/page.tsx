@@ -1,6 +1,8 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
+import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
 export const dynamic = "force-dynamic";
+export const metadata = getHomeMetadata("es");
 
 const content: LandingContent = {
   nav: {
