@@ -19,7 +19,7 @@ import {
   submitAnswerAction,
 } from "@/features/forms/public-actions";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 export default function FormViewer({ form }: FormViewerProps) {
@@ -67,6 +67,11 @@ export default function FormViewer({ form }: FormViewerProps) {
   }, [currentIndex, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = () => {
+    if (hasBackgroundMusic && bgMusicRef.current) {
+      bgMusicRef.current.volume = 0.15;
+      void bgMusicRef.current.play().catch(() => {});
+    }
+
     startTransition(async () => {
       try {
         const { data, serverError } = await startFormSessionAction(
@@ -77,12 +82,12 @@ export default function FormViewer({ form }: FormViewerProps) {
 
         setSessionId(data.id);
         setPhase("question");
-
-        if (hasBackgroundMusic && bgMusicRef.current) {
-          bgMusicRef.current.volume = 0.15;
-          bgMusicRef.current.play().catch(() => {});
-        }
       } catch {
+        if (bgMusicRef.current) {
+          bgMusicRef.current.pause();
+          bgMusicRef.current.currentTime = 0;
+        }
+
         toast(t("viewer.errors.cannotStart"));
       }
     });
@@ -195,20 +200,13 @@ export default function FormViewer({ form }: FormViewerProps) {
       }
     : undefined;
 
-  const bgAudio = hasBackgroundMusic ? (
-    <audio
-      ref={bgMusicRef}
-      src={form.backgroundMusicUrl ?? undefined}
-      loop
-      preload="auto"
-      className="hidden"
-    />
-  ) : null;
+  const shouldRenderBackgroundMusic = hasBackgroundMusic && phase !== "completed";
+
+  let phaseContent: ReactNode;
 
   if (phase === "welcome") {
-    return (
+    phaseContent = (
       <WelcomePhase
-        bgAudio={bgAudio}
         bgStyle={bgStyle}
         formName={form.name}
         hasBackgroundImage={hasBackgroundImage}
@@ -221,10 +219,8 @@ export default function FormViewer({ form }: FormViewerProps) {
         tk={tk}
       />
     );
-  }
-
-  if (phase === "lead-form") {
-    return (
+  } else if (phase === "lead-form") {
+    phaseContent = (
       <LeadForm
         sessionId={sessionId!}
         formId={form.id}
@@ -235,10 +231,8 @@ export default function FormViewer({ form }: FormViewerProps) {
         onCompleted={() => setPhase("completed")}
       />
     );
-  }
-
-  if (phase === "completed") {
-    return (
+  } else if (phase === "completed") {
+    phaseContent = (
       <CompletedPhase
         bgStyle={bgStyle}
         endMessage={form.endMessage}
@@ -248,33 +242,47 @@ export default function FormViewer({ form }: FormViewerProps) {
         tk={tk}
       />
     );
+  } else {
+    phaseContent = (
+      <QuestionPhase
+        answer={answer}
+        autoStopped={autoStopped}
+        bgStyle={bgStyle}
+        currentIndex={currentIndex}
+        displayedText={displayedText}
+        hasBackgroundImage={hasBackgroundImage}
+        hasBackgroundMusic={hasBackgroundMusic}
+        isDark={isDark}
+        isLast={isLast}
+        isMuted={isMuted}
+        isPending={isPending}
+        onAdvance={handleAdvance}
+        onResetRecording={resetRecording}
+        onSelectDefault={handleSelectDefault}
+        onStartRecording={startRecording}
+        onStopRecording={stopRecording}
+        onToggleMute={toggleMute}
+        questions={questions}
+        recordState={recordState}
+        showDefaultAnswers={showDefaultAnswers}
+        showRecording={showRecording}
+        tk={tk}
+      />
+    );
   }
 
   return (
-    <QuestionPhase
-      answer={answer}
-      autoStopped={autoStopped}
-      bgAudio={bgAudio}
-      bgStyle={bgStyle}
-      currentIndex={currentIndex}
-      displayedText={displayedText}
-      hasBackgroundImage={hasBackgroundImage}
-      hasBackgroundMusic={hasBackgroundMusic}
-      isDark={isDark}
-      isLast={isLast}
-      isMuted={isMuted}
-      isPending={isPending}
-      onAdvance={handleAdvance}
-      onResetRecording={resetRecording}
-      onSelectDefault={handleSelectDefault}
-      onStartRecording={startRecording}
-      onStopRecording={stopRecording}
-      onToggleMute={toggleMute}
-      questions={questions}
-      recordState={recordState}
-      showDefaultAnswers={showDefaultAnswers}
-      showRecording={showRecording}
-      tk={tk}
-    />
+    <>
+      {shouldRenderBackgroundMusic && (
+        <audio
+          ref={bgMusicRef}
+          src={form.backgroundMusicUrl ?? undefined}
+          loop
+          preload="auto"
+          className="hidden"
+        />
+      )}
+      {phaseContent}
+    </>
   );
 }

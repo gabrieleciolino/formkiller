@@ -13,7 +13,6 @@ import { useTranslations } from "next-intl";
 export function QuestionPhase({
   answer,
   autoStopped,
-  bgAudio,
   bgStyle,
   currentIndex,
   displayedText,
@@ -47,7 +46,6 @@ export function QuestionPhase({
       className={`relative flex min-h-dvh flex-col ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
-      {bgAudio}
       {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
 
       <div className="relative flex items-center gap-3 px-6 pt-8 pb-2">

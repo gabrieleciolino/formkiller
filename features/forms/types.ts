@@ -6,7 +6,7 @@ import type {
   FormTheme,
   FormType,
 } from "@/features/forms/schema";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import type { Control } from "react-hook-form";
 
 export type DashboardForm = Awaited<ReturnType<typeof getUserFormsQuery>>[0];
@@ -138,7 +138,6 @@ export type FormViewerThemeTokens = {
 export type FormViewerBackgroundStyle = CSSProperties | undefined;
 
 export type FormViewerWelcomePhaseProps = {
-  bgAudio: ReactNode;
   bgStyle: FormViewerBackgroundStyle;
   formName: string;
   hasBackgroundImage: boolean;
@@ -163,7 +162,6 @@ export type FormViewerCompletedPhaseProps = {
 export type FormViewerQuestionPhaseProps = {
   answer: FormViewerAnswerState;
   autoStopped: boolean;
-  bgAudio: ReactNode;
   bgStyle: FormViewerBackgroundStyle;
   currentIndex: number;
   displayedText: string;

@@ -5,7 +5,6 @@ import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function WelcomePhase({
-  bgAudio,
   bgStyle,
   formName,
   hasBackgroundImage,
@@ -28,7 +27,6 @@ export function WelcomePhase({
       className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
-      {bgAudio}
       {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
 
       <div className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/80" : "bg-white/80"}`}>
