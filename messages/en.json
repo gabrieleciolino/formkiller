@@ -113,8 +113,8 @@
       "error": "Form creation failed."
     },
     "edit": {
-      "trigger": "Edit Form",
-      "title": "Edit Form",
+      "trigger": "Customize",
+      "title": "Customize form",
       "name": "Name",
       "namePlaceholder": "Name",
       "instructions": "Instructions",

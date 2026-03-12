@@ -113,8 +113,8 @@
       "error": "Creazione form fallita."
     },
     "edit": {
-      "trigger": "Modifica Form",
-      "title": "Modifica Form",
+      "trigger": "Personalizza",
+      "title": "Personalizza form",
       "name": "Nome",
       "namePlaceholder": "Nome",
       "instructions": "Istruzioni",

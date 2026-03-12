@@ -120,8 +120,8 @@
       "empty": "No hay archivos en la biblioteca."
     },
     "edit": {
-      "trigger": "Editar formulario",
-      "title": "Editar formulario",
+      "trigger": "Personalizar",
+      "title": "Personalizar formulario",
       "name": "Nombre",
       "namePlaceholder": "Nombre",
       "instructions": "Instrucciones",
