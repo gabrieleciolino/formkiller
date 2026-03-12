@@ -15,6 +15,7 @@ import { Controller, useFieldArray } from "react-hook-form";
 export default function DefaultAnswersFields({
   control,
   questionIndex,
+  readOnly = false,
 }: DefaultAnswersFieldsProps) {
   const t = useTranslations();
   const { fields } = useFieldArray({
@@ -37,6 +38,7 @@ export default function DefaultAnswersFields({
                   <Input
                     {...answerField}
                     id={answerField.name}
+                    readOnly={readOnly}
                     aria-invalid={fieldState.invalid}
                     placeholder={t("forms.questions.answerPlaceholder", {
                       index: answerIndex + 1,

@@ -13,6 +13,7 @@ export default function QuestionTTSControls({
   formId,
   language,
   initialFileUrl,
+  readOnly = false,
 }: QuestionTTSControlsProps) {
   const t = useTranslations();
   const [fileUrl, setFileUrl] = useState<string | null>(initialFileUrl);
@@ -71,24 +72,30 @@ export default function QuestionTTSControls({
 
   return (
     <div className="flex items-center gap-2">
+      {!readOnly && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleGenerate}
+          disabled={isPending}
+        >
+          <WandSparklesIcon />
+          {isPending
+            ? t("forms.questions.generating")
+            : t("forms.questions.generateTts")}
+        </Button>
+      )}
       <Button
         type="button"
         variant="outline"
         size="sm"
-        onClick={handleGenerate}
-        disabled={isPending}
+        onClick={handlePlay}
+        disabled={!fileUrl}
       >
-        <WandSparklesIcon />
-        {isPending
-          ? t("forms.questions.generating")
-          : t("forms.questions.generateTts")}
+        <PlayIcon />
+        {t("forms.questions.play")}
       </Button>
-      {fileUrl && (
-        <Button type="button" variant="outline" size="sm" onClick={handlePlay}>
-          <PlayIcon />
-          {t("forms.questions.play")}
-        </Button>
-      )}
     </div>
   );
 }

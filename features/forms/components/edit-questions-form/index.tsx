@@ -25,6 +25,7 @@ export default function EditQuestionsForm({
   formId,
   language,
   initialFileUrls,
+  readOnly = false,
 }: EditQuestionsFormProps) {
   const t = useTranslations();
   const [isPending, startTransition] = useTransition();
@@ -47,6 +48,10 @@ export default function EditQuestionsForm({
     }, -1) + 1;
 
   const onSubmit = (values: EditQuestionsType) => {
+    if (readOnly) {
+      return;
+    }
+
     startTransition(async () => {
       try {
         const { data, serverError, validationErrors } =
@@ -62,10 +67,21 @@ export default function EditQuestionsForm({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="flex justify-end">
-        <AddQuestionSheet formId={formId} nextOrder={nextOrder} />
-      </div>
+    <form
+      onSubmit={
+        readOnly
+          ? (event) => {
+              event.preventDefault();
+            }
+          : form.handleSubmit(onSubmit)
+      }
+      className="space-y-4"
+    >
+      {!readOnly && (
+        <div className="flex justify-end">
+          <AddQuestionSheet formId={formId} nextOrder={nextOrder} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {questionFields.map((questionField, questionIndex) => (
@@ -87,6 +103,7 @@ export default function EditQuestionsForm({
                     <Input
                       {...field}
                       id={field.name}
+                      readOnly={readOnly}
                       aria-invalid={fieldState.invalid}
                       autoComplete="off"
                     />
@@ -96,17 +113,20 @@ export default function EditQuestionsForm({
                   </Field>
                 )}
               />
-              <div className="mt-5 shrink-0">
-                <DeleteQuestionButton
-                  questionId={questionField.id}
-                  formId={formId}
-                />
-              </div>
+              {!readOnly && (
+                <div className="mt-5 shrink-0">
+                  <DeleteQuestionButton
+                    questionId={questionField.id}
+                    formId={formId}
+                  />
+                </div>
+              )}
             </div>
 
             <DefaultAnswersFields
               control={form.control}
               questionIndex={questionIndex}
+              readOnly={readOnly}
             />
 
             <QuestionTTSControls
@@ -114,18 +134,21 @@ export default function EditQuestionsForm({
               formId={formId}
               language={language}
               initialFileUrl={initialFileUrls[questionField.id] ?? null}
+              readOnly={readOnly}
             />
           </div>
         ))}
       </div>
 
-      <Button
-        type="submit"
-        className="mt-2 w-full md:w-auto"
-        disabled={isPending}
-      >
-        {t("forms.questions.submit")}
-      </Button>
+      {!readOnly && (
+        <Button
+          type="submit"
+          className="mt-2 w-full md:w-auto"
+          disabled={isPending}
+        >
+          {t("forms.questions.submit")}
+        </Button>
+      )}
     </form>
   );
 }

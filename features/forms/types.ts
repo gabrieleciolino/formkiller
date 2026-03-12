@@ -26,6 +26,7 @@ export type DeleteQuestionButtonProps = {
 export type DefaultAnswersFieldsProps = {
   control: Control<EditQuestionsType>;
   questionIndex: number;
+  readOnly?: boolean;
 };
 
 export type QuestionTTSControlsProps = {
@@ -33,6 +34,7 @@ export type QuestionTTSControlsProps = {
   formId: string;
   language: FormLanguage;
   initialFileUrl: string | null;
+  readOnly?: boolean;
 };
 
 export type EditQuestionsFormProps = {
@@ -40,6 +42,7 @@ export type EditQuestionsFormProps = {
   formId: string;
   language: FormLanguage;
   initialFileUrls: Record<string, string | null>;
+  readOnly?: boolean;
 };
 
 export type LibraryPickerAsset = {
