@@ -81,12 +81,6 @@ export default function LandingPage({ content }: LandingPageProps) {
           <nav className="flex items-center gap-3">
             <Link
               href={urls.auth.login}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {content.nav.signIn}
-            </Link>
-            <Link
-              href={urls.auth.login}
               className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-80"
             >
               {content.nav.getStarted}
