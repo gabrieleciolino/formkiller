@@ -105,6 +105,7 @@
       "empty": "No users found.",
       "columns": {
         "userId": "User ID",
+        "email": "Email",
         "role": "Role",
         "createdAt": "Created at"
       },
@@ -166,7 +167,7 @@
     "assignments": {
       "title": "User assignments",
       "description": "Assign this form to users with role user.",
-      "searchPlaceholder": "Search by user id",
+      "searchPlaceholder": "Search by user id or email",
       "noUsers": "No users available.",
       "assigned": "Assigned",
       "notAssigned": "Not assigned",

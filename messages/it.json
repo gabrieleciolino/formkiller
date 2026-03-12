@@ -105,6 +105,7 @@
       "empty": "Nessun utente trovato.",
       "columns": {
         "userId": "User ID",
+        "email": "Email",
         "role": "Ruolo",
         "createdAt": "Creato il"
       },
@@ -166,7 +167,7 @@
     "assignments": {
       "title": "Assegnazioni utenti",
       "description": "Assegna questo form agli utenti con ruolo user.",
-      "searchPlaceholder": "Cerca per user id",
+      "searchPlaceholder": "Cerca per user id o email",
       "noUsers": "Nessun utente disponibile.",
       "assigned": "Assegnato",
       "notAssigned": "Non assegnato",

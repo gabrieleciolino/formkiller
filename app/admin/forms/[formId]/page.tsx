@@ -25,7 +25,7 @@ export default async function AdminFormDetailPage({
     adminQuery(async ({ supabase }) =>
       getFormAssignmentsForAdminQuery({ formId, supabase }),
     ),
-    adminQuery(async ({ supabase }) => getAssignableUsersQuery({ supabase })),
+    adminQuery(async () => getAssignableUsersQuery()),
     getTranslations(),
   ]);
 

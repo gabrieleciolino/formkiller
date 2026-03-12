@@ -31,6 +31,7 @@ export default async function AdminUsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead>{t("dashboard.users.columns.userId")}</TableHead>
+              <TableHead>{t("dashboard.users.columns.email")}</TableHead>
               <TableHead>{t("dashboard.users.columns.role")}</TableHead>
               <TableHead>{t("dashboard.users.columns.createdAt")}</TableHead>
             </TableRow>
@@ -40,7 +41,7 @@ export default async function AdminUsersPage() {
               <TableRow>
                 <TableCell
                   className="text-muted-foreground"
-                  colSpan={3}
+                  colSpan={4}
                 >
                   {t("dashboard.users.empty")}
                 </TableCell>
@@ -49,6 +50,7 @@ export default async function AdminUsersPage() {
               users.map((user) => (
                 <TableRow key={user.user_id}>
                   <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
+                  <TableCell>{user.email ?? "—"}</TableCell>
                   <TableCell>
                     {t(
                       `dashboard.users.roles.${user.role}` as Parameters<

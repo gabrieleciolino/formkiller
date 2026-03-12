@@ -6,12 +6,15 @@ import {
   assignUserToFormAction,
   unassignUserFromFormAction,
 } from "@/features/forms/actions";
+import { urls } from "@/lib/urls";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
 type AssignableUser = {
   user_id: string;
+  email: string | null;
   role: "admin" | "user";
   created_at: string | null;
 };
@@ -38,12 +41,12 @@ export default function FormAssignmentsManager({
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const activeAssignedUserIds = useMemo(
+  const activeAssignmentsByUserId = useMemo(
     () =>
-      new Set(
+      new Map(
         assignments
           .filter((assignment) => assignment.active)
-          .map((assignment) => assignment.user_id),
+          .map((assignment) => [assignment.user_id, assignment.id] as const),
       ),
     [assignments],
   );
@@ -53,9 +56,12 @@ export default function FormAssignmentsManager({
 
     if (!normalizedQuery) return users;
 
-    return users.filter((user) =>
-      user.user_id.toLowerCase().includes(normalizedQuery),
-    );
+    return users.filter((user) => {
+      const userIdMatch = user.user_id.toLowerCase().includes(normalizedQuery);
+      const emailMatch = (user.email ?? "").toLowerCase().includes(normalizedQuery);
+
+      return userIdMatch || emailMatch;
+    });
   }, [query, users]);
 
   const handleToggle = (userId: string, isAssigned: boolean) => {
@@ -95,7 +101,8 @@ export default function FormAssignmentsManager({
           </p>
         ) : (
           filteredUsers.map((user) => {
-            const isAssigned = activeAssignedUserIds.has(user.user_id);
+            const assignmentId = activeAssignmentsByUserId.get(user.user_id);
+            const isAssigned = Boolean(assignmentId);
 
             return (
               <div
@@ -106,6 +113,11 @@ export default function FormAssignmentsManager({
                   <p className="truncate font-mono text-xs text-foreground">
                     {user.user_id}
                   </p>
+                  {user.email ? (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  ) : null}
                   <p className="text-xs text-muted-foreground">
                     {isAssigned
                       ? t("forms.assignments.assigned")
@@ -113,17 +125,30 @@ export default function FormAssignmentsManager({
                   </p>
                 </div>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={isAssigned ? "outline" : "default"}
-                  disabled={isPending}
-                  onClick={() => handleToggle(user.user_id, isAssigned)}
-                >
-                  {isAssigned
-                    ? t("forms.assignments.unassign")
-                    : t("forms.assignments.assign")}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {assignmentId ? (
+                    <Button asChild type="button" size="sm" variant="outline">
+                      <Link
+                        href={urls.form(assignmentId)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("dashboard.forms.columns.open")}
+                      </Link>
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isAssigned ? "outline" : "default"}
+                    disabled={isPending}
+                    onClick={() => handleToggle(user.user_id, isAssigned)}
+                  >
+                    {isAssigned
+                      ? t("forms.assignments.unassign")
+                      : t("forms.assignments.assign")}
+                  </Button>
+                </div>
               </div>
             );
           })
