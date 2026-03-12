@@ -1,6 +1,8 @@
 import type { FormViewerThemeTokens } from "@/features/forms/types";
 
-export function getFormViewerThemeTokens(isDark: boolean): FormViewerThemeTokens {
+export function getFormViewerThemeTokens(
+  isDark: boolean,
+): FormViewerThemeTokens {
   if (isDark) {
     return {
       bg: "bg-black",
@@ -19,7 +21,7 @@ export function getFormViewerThemeTokens(isDark: boolean): FormViewerThemeTokens
       progressInactive: "bg-white/10",
       progressText: "text-white/30",
       muteBtn: "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white",
-      overlay: "bg-black/60",
+      overlay: "bg-black/20",
       recordIdle:
         "border-white/10 bg-white/5 text-white/50 hover:border-white/25 hover:bg-white/10 hover:text-white/80",
       recordHint: "text-white/30",
