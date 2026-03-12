@@ -14,6 +14,21 @@ const authUserTable = pgSchema("auth").table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
 });
 
+export const accountRoleEnum = pgEnum("account_role", ["admin", "user"]);
+
+export const accountTable = pgTable("account", {
+  userId: uuid("user_id")
+    .references(() => authUserTable.id, {
+      onDelete: "cascade",
+    })
+    .primaryKey(),
+
+  role: accountRoleEnum("role").notNull().default("user"),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
 export const assetTypeEnum = pgEnum("asset_type", ["image", "video", "audio"]);
 export const formThemeEnum = pgEnum("form_theme", ["light", "dark"]);
 

@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      account: {
+        Row: {
+          created_at: string | null
+          role: Database["public"]["Enums"]["account_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       answer: {
         Row: {
           created_at: string | null
@@ -328,6 +349,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      account_role: "admin" | "user"
       asset_type: "image" | "video" | "audio"
       form_language: "en" | "it" | "es"
       form_session_status: "pending" | "in_progress" | "completed"
@@ -463,6 +485,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      account_role: ["admin", "user"],
       asset_type: ["image", "video", "audio"],
       form_language: ["en", "it", "es"],
       form_session_status: ["pending", "in_progress", "completed"],

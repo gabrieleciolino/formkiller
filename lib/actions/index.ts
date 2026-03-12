@@ -58,3 +58,22 @@ export const authenticatedActionClient = publicActionClient.use(
     return next({ ctx: { ...ctx, userId } });
   },
 );
+
+export const adminActionClient = authenticatedActionClient.use(
+  async ({ next, ctx }) => {
+    const { supabase, userId } = ctx;
+
+    const { data: account } = await supabase
+      .from("account")
+      .select()
+      .eq("user_id", userId)
+      .single()
+      .throwOnError();
+
+    if (account.role !== "admin") {
+      throw new ActionAccessError("Unauthorized");
+    }
+
+    return next({ ctx: { ...ctx, userId } });
+  },
+);

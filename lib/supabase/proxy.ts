@@ -48,18 +48,6 @@ export async function updateSession(request: NextRequest) {
   const isProtectedRoute = isDashboardRoute;
 
   if (!user && isProtectedRoute) {
-    // if (isProtectedApiRoute) {
-    //   const unauthorizedResponse = NextResponse.json(
-    //     { message: "Unauthorized" },
-    //     { status: 401 },
-    //   );
-    //   supabaseResponse.cookies.getAll().forEach((cookie) => {
-    //     unauthorizedResponse.cookies.set(cookie);
-    //   });
-
-    //   return unauthorizedResponse;
-    // }
-
     // no user, potentially respond by redirecting the user to the login page
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = urls.auth.login;

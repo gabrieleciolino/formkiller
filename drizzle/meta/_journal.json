@@ -92,6 +92,13 @@
       "when": 1773231520579,
       "tag": "0012_aberrant_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1773297258805,
+      "tag": "0013_fancy_strong_guy",
+      "breakpoints": true
     }
   ]
 }

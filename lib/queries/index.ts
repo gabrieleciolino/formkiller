@@ -31,3 +31,29 @@ export async function authenticatedQuery<T>(
 
   return fn({ supabase, userId: data.claims.sub });
 }
+
+export async function adminQuery<T>(
+  fn: (ctx: AuthenticatedQueryContext) => Promise<T>,
+): Promise<T> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+
+  if (error || !data?.claims?.sub) {
+    throw new Error("Unauthorized");
+  }
+
+  const userId = data.claims.sub;
+
+  const { data: account } = await supabase
+    .from("account")
+    .select()
+    .eq("user_id", userId)
+    .single()
+    .throwOnError();
+
+  if (account.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  return fn({ supabase, userId: data.claims.sub });
+}
