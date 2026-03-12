@@ -46,7 +46,9 @@ export function QuestionPhase({
       className={`relative flex min-h-dvh flex-col ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
-      {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
+      {hasBackgroundImage && (
+        <div className={`absolute inset-0 ${tk.overlay}`} />
+      )}
 
       <div className="relative flex items-center gap-3 px-6 pt-8 pb-2">
         <div className="flex flex-1 gap-1.5">
@@ -93,12 +95,15 @@ export function QuestionPhase({
         </p>
       </div>
 
-      <div className={`relative mx-4 mb-10 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
+      <div
+        className={`relative mx-4 mb-10 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/60" : "bg-white/60"}`}
+      >
         {showDefaultAnswers && (
           <div className="grid grid-cols-2 gap-2">
             {currentQuestion.defaultAnswers.map((defaultAnswer, index) => {
               const isSelected =
-                answer?.type === "default" && answer.text === defaultAnswer.answer;
+                answer?.type === "default" &&
+                answer.text === defaultAnswer.answer;
 
               return (
                 <button
@@ -166,7 +171,11 @@ export function QuestionPhase({
           disabled={!answer || isPending}
           className={`w-full rounded-2xl py-4 text-sm font-semibold transition-all hover:opacity-90 active:scale-95 ${tk.cta} ${tk.ctaDisabled}`}
         >
-          {isPending ? "..." : isLast ? t("viewer.question.finish") : t("viewer.question.next")}
+          {isPending
+            ? "..."
+            : isLast
+              ? t("viewer.question.finish")
+              : t("viewer.question.next")}
         </button>
       </div>
     </div>

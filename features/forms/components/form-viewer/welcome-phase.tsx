@@ -27,16 +27,22 @@ export function WelcomePhase({
       className={`relative flex min-h-dvh flex-col items-center justify-center p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
-      {hasBackgroundImage && <div className={`absolute inset-0 ${tk.overlay}`} />}
+      {hasBackgroundImage && (
+        <div className={`absolute inset-0 ${tk.overlay}`} />
+      )}
 
-      <div className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/80" : "bg-white/80"}`}>
-        <p className={`text-xs uppercase tracking-widest ${tk.textHint}`}>{formName}</p>
+      <div
+        className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${isDark ? "bg-black/60" : "bg-white/60"}`}
+      >
+        <p className={`text-xs uppercase tracking-widest ${tk.textHint}`}>
+          {formName}
+        </p>
 
-        <h1 className="text-5xl font-black tracking-tight">
-          {resolvedTitle}
-        </h1>
+        <h1 className="text-5xl font-black tracking-tight">{resolvedTitle}</h1>
 
-        <p className={`text-sm leading-relaxed whitespace-pre-line ${tk.textSecondary}`}>
+        <p
+          className={`text-sm leading-relaxed whitespace-pre-line ${tk.textSecondary}`}
+        >
           {resolvedMessage}
         </p>
 
