@@ -184,7 +184,7 @@ export const submitAnswerAction = publicViewerClient
 export const createLeadAction = publicViewerClient
   .inputSchema(createLeadSchema)
   .action(async ({ parsedInput }) => {
-    const { sessionId, formId, name, email, phone, notes } = parsedInput;
+    const { sessionId, formId, name, email, phone } = parsedInput;
 
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {
@@ -204,7 +204,6 @@ export const createLeadAction = publicViewerClient
         name,
         email,
         phone,
-        notes: notes ?? null,
       })
       .select()
       .single();

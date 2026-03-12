@@ -336,7 +336,6 @@ export const leadTable = pgTable(
     name: text("name").notNull(),
     email: text("email").notNull(),
     phone: text("phone").notNull(),
-    notes: text("notes"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

@@ -70,14 +70,6 @@ export default async function LeadDetailPage({
             </p>
             <p className="text-sm">{form?.name ?? "—"}</p>
           </div>
-          {lead.notes && (
-            <div className="col-span-2 space-y-1 md:col-span-4">
-              <p className="text-xs font-medium text-muted-foreground">
-                {t("dashboard.leads.columns.notes")}
-              </p>
-              <p className="text-sm">{lead.notes}</p>
-            </div>
-          )}
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">
               {t("dashboard.leads.detail.submittedAt")}

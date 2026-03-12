@@ -25,11 +25,6 @@ export function useAdminLeadsColumns(): ColumnDef<AdminLead>[] {
       header: t("dashboard.leads.columns.phone"),
     },
     {
-      accessorKey: "notes",
-      header: t("dashboard.leads.columns.notes"),
-      cell: ({ getValue }) => getValue<string | null>() ?? "—",
-    },
-    {
       accessorKey: "user_id",
       header: t("dashboard.users.columns.userId"),
       cell: ({ getValue }) => (

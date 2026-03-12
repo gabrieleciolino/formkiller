@@ -9,7 +9,7 @@ export const createLeadAction = publicActionClient
   .inputSchema(createLeadSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
-    const { name, email, phone, notes, formId, sessionId } = parsedInput;
+    const { name, email, phone, formId, sessionId } = parsedInput;
 
     const { data: session, error: sessionError } = await supabase
       .from("form_session")
@@ -31,7 +31,6 @@ export const createLeadAction = publicActionClient
         name,
         email,
         phone,
-        notes: notes ?? null,
         form_id: formId,
         user_id: session.user_id,
         form_session_id: sessionId,

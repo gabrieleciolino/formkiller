@@ -49,7 +49,6 @@ export function LeadForm({
     { key: "name" as const, label: t("viewer.leadForm.name"), type: "text" },
     { key: "email" as const, label: t("viewer.leadForm.email"), type: "email" },
     { key: "phone" as const, label: t("viewer.leadForm.phone"), type: "tel" },
-    { key: "notes" as const, label: t("viewer.leadForm.notes"), type: "text" },
   ];
 
   return (

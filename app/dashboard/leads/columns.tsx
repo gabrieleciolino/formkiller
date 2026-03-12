@@ -25,11 +25,6 @@ export function useLeadsColumns(): ColumnDef<UserLead>[] {
       header: t("dashboard.leads.columns.phone"),
     },
     {
-      accessorKey: "notes",
-      header: t("dashboard.leads.columns.notes"),
-      cell: ({ getValue }) => getValue<string | null>() ?? "—",
-    },
-    {
       id: "form",
       header: t("dashboard.leads.columns.form"),
       cell: ({ row }) => {
