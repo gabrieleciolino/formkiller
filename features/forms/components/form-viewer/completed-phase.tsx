@@ -2,7 +2,7 @@
 
 import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { FormViewerCompletedPhaseProps } from "@/features/forms/types";
-import { CheckCircleIcon } from "lucide-react";
+import { CheckCircleIcon, LoaderCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
@@ -12,6 +12,7 @@ export function CompletedPhase({
   endTitle,
   analysisText,
   analysisAudioUrl,
+  isAnalyzing,
   hasBackgroundImage,
   showLandingContactTechBackground,
   isDark,
@@ -21,6 +22,7 @@ export function CompletedPhase({
   const resolvedTitle = endTitle?.trim() || t("viewer.completed.title");
   const analysisMessage = analysisText?.trim();
   const resolvedMessage = endMessage?.trim() || t("viewer.completed.message");
+  const analysisLoadingMessage = t("viewer.completed.analysisLoading");
   const analysisAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -61,6 +63,13 @@ export function CompletedPhase({
         </div>
 
         <h1 className="text-4xl font-black">{resolvedTitle}</h1>
+
+        {isAnalyzing && (
+          <div className={`flex items-center gap-2 text-sm ${tk.textSecondary}`}>
+            <LoaderCircleIcon className="size-4 animate-spin" />
+            <span>{analysisLoadingMessage}</span>
+          </div>
+        )}
 
         {analysisMessage && (
           <p className={`text-md ${tk.textSecondary}`}>{analysisMessage}</p>

@@ -171,6 +171,7 @@ export type FormViewerCompletedPhaseProps = {
   endMessage: string | null;
   analysisText: string | null;
   analysisAudioUrl: string | null;
+  isAnalyzing: boolean;
   hasBackgroundImage: boolean;
   showLandingContactTechBackground: boolean;
   isDark: boolean;

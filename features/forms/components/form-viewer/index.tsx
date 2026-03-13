@@ -69,6 +69,7 @@ export default function FormViewer({ form }: FormViewerProps) {
       analysisText: null,
       analysisAudioUrl: null,
     });
+  const [isCompletionAnalyzing, setIsCompletionAnalyzing] = useState(false);
   const [autoStopped, setAutoStopped] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -213,6 +214,7 @@ export default function FormViewer({ form }: FormViewerProps) {
           analysisText: null,
           analysisAudioUrl: null,
         });
+        setIsCompletionAnalyzing(false);
         setPhase("question");
         enteredQuestionPhase = true;
 
@@ -513,6 +515,7 @@ export default function FormViewer({ form }: FormViewerProps) {
             analysisText: null,
             analysisAudioUrl: null,
           });
+          setIsCompletionAnalyzing(true);
           setPhase("completed");
         }}
         onSubmitError={() => {
@@ -520,10 +523,12 @@ export default function FormViewer({ form }: FormViewerProps) {
             analysisText: null,
             analysisAudioUrl: null,
           });
+          setIsCompletionAnalyzing(false);
           setPhase("lead-form");
         }}
         onCompleted={(payload) => {
           setCompletionPayload(payload);
+          setIsCompletionAnalyzing(false);
           setPhase("completed");
         }}
       />
@@ -536,6 +541,7 @@ export default function FormViewer({ form }: FormViewerProps) {
         endTitle={form.endTitle}
         analysisText={completionPayload.analysisText}
         analysisAudioUrl={completionPayload.analysisAudioUrl}
+        isAnalyzing={isCompletionAnalyzing}
         hasBackgroundImage={hasBackgroundImage}
         showLandingContactTechBackground={isLandingContactForm}
         isDark={isDark}

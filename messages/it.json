@@ -284,7 +284,8 @@
     "completed": {
       "title": "Grazie!",
       "message": "Le tue risposte sono state registrate correttamente.",
-      "audioLabel": "Ascolta analisi"
+      "audioLabel": "Ascolta analisi",
+      "analysisLoading": "Stiamo elaborando la tua analisi..."
     },
     "errors": {
       "cannotStart": "Impossibile avviare il questionario.",
