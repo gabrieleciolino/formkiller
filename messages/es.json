@@ -290,7 +290,8 @@
       "cannotStart": "No se puede iniciar el cuestionario.",
       "micAccess": "No se puede acceder al micrófono.",
       "saveAnswer": "Error al guardar la respuesta.",
-      "securityCheck": "La verificación de seguridad falló. Inténtalo de nuevo."
+      "securityCheck": "La verificación de seguridad falló. Inténtalo de nuevo.",
+      "securityCheckInAppBrowser": "La verificación de seguridad no funciona bien en navegadores integrados. Abre este enlace en Safari o Chrome y vuelve a intentarlo."
     }
   }
 }

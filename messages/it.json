@@ -290,7 +290,8 @@
       "cannotStart": "Impossibile avviare il questionario.",
       "micAccess": "Impossibile accedere al microfono.",
       "saveAnswer": "Errore durante il salvataggio della risposta.",
-      "securityCheck": "Verifica di sicurezza non riuscita. Riprova."
+      "securityCheck": "Verifica di sicurezza non riuscita. Riprova.",
+      "securityCheckInAppBrowser": "La verifica di sicurezza non funziona nei browser in-app. Apri il link in Safari o Chrome e riprova."
     }
   }
 }

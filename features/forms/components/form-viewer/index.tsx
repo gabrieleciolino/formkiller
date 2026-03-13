@@ -1,5 +1,6 @@
 "use client";
 
+import { isLikelyInAppBrowser } from "@/features/forms/components/form-viewer/browser-utils";
 import { CompletedPhase } from "@/features/forms/components/form-viewer/completed-phase";
 import { QuestionPhase } from "@/features/forms/components/form-viewer/question-phase";
 import { getFormViewerThemeTokens } from "@/features/forms/components/form-viewer/theme-tokens";
@@ -25,6 +26,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
@@ -85,6 +87,19 @@ export default function FormViewer({ form }: FormViewerProps) {
     action: PUBLIC_FORM_TURNSTILE_ACTION,
   });
   const t = useTranslations();
+  const isInAppBrowser = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return isLikelyInAppBrowser(navigator.userAgent);
+  }, []);
+  const showSecurityCheckError = useCallback(() => {
+    toast(
+      t(
+        isInAppBrowser
+          ? "viewer.errors.securityCheckInAppBrowser"
+          : "viewer.errors.securityCheck",
+      ),
+    );
+  }, [isInAppBrowser, t]);
 
   const questions = form.questions;
   const currentQuestion = questions[currentIndex];
@@ -167,28 +182,23 @@ export default function FormViewer({ form }: FormViewerProps) {
       let startActionMs = 0;
       let retriedAfterTurnstileFailure = false;
       let enteredQuestionPhase = false;
+      const rollbackToWelcome = () => {
+        if (!enteredQuestionPhase) return;
+        enteredQuestionPhase = false;
+        setPhase("welcome");
+        setSessionId(null);
+        setCurrentIndex(0);
+        setAnswer(null);
+        setRecordState("idle");
+        setAutoStopped(false);
+      };
 
       try {
         if (!isTurnstileConfigured) {
-          toast(t("viewer.errors.securityCheck"));
+          showSecurityCheckError();
           console.log("[viewer_start_timing]", {
             status: "failed",
             reason: "turnstile_not_configured",
-            totalClientMs: roundMs(performance.now() - flowStartAt),
-          });
-          return;
-        }
-
-        const tokenStartAt = performance.now();
-        let turnstileToken = await getStartTurnstileToken();
-        getTokenMs = performance.now() - tokenStartAt;
-        if (!turnstileToken) {
-          toast(t("viewer.errors.securityCheck"));
-          primeTurnstileToken();
-          console.log("[viewer_start_timing]", {
-            status: "failed",
-            reason: "turnstile_token_missing",
-            getTokenMs: roundMs(getTokenMs),
             totalClientMs: roundMs(performance.now() - flowStartAt),
           });
           return;
@@ -206,6 +216,22 @@ export default function FormViewer({ form }: FormViewerProps) {
         setPhase("question");
         enteredQuestionPhase = true;
 
+        const tokenStartAt = performance.now();
+        let turnstileToken = await getStartTurnstileToken();
+        getTokenMs = performance.now() - tokenStartAt;
+        if (!turnstileToken) {
+          rollbackToWelcome();
+          showSecurityCheckError();
+          primeTurnstileToken();
+          console.log("[viewer_start_timing]", {
+            status: "failed",
+            reason: "turnstile_token_missing",
+            getTokenMs: roundMs(getTokenMs),
+            totalClientMs: roundMs(performance.now() - flowStartAt),
+          });
+          return;
+        }
+
         const actionStartAt = performance.now();
         let { data, serverError } = await startFormSessionAction({
           assignmentId: form.assignmentId,
@@ -221,7 +247,8 @@ export default function FormViewer({ form }: FormViewerProps) {
           getTokenMs += performance.now() - retryTokenStartAt;
 
           if (!turnstileToken) {
-            toast(t("viewer.errors.securityCheck"));
+            rollbackToWelcome();
+            showSecurityCheckError();
             primeTurnstileToken();
             console.log("[viewer_start_timing]", {
               status: "failed",
@@ -240,6 +267,21 @@ export default function FormViewer({ form }: FormViewerProps) {
             turnstileToken,
           }));
           startActionMs += performance.now() - retryActionStartAt;
+        }
+
+        if (serverError === "TURNSTILE_FAILED") {
+          rollbackToWelcome();
+          showSecurityCheckError();
+          primeTurnstileToken();
+          console.log("[viewer_start_timing]", {
+            status: "failed",
+            reason: "turnstile_verification_failed",
+            retriedAfterTurnstileFailure,
+            getTokenMs: roundMs(getTokenMs),
+            startActionMs: roundMs(startActionMs),
+            totalClientMs: roundMs(performance.now() - flowStartAt),
+          });
+          return;
         }
 
         if (serverError || !data) {
@@ -271,14 +313,7 @@ export default function FormViewer({ form }: FormViewerProps) {
           bgMusicRef.current.currentTime = 0;
         }
 
-        if (enteredQuestionPhase) {
-          setPhase("welcome");
-          setSessionId(null);
-          setCurrentIndex(0);
-          setAnswer(null);
-          setRecordState("idle");
-          setAutoStopped(false);
-        }
+        rollbackToWelcome();
 
         primeTurnstileToken();
         toast(t("viewer.errors.cannotStart"));
@@ -473,6 +508,20 @@ export default function FormViewer({ form }: FormViewerProps) {
         overlayClassName={tk.overlay}
         isDark={isDark}
         getTurnstileToken={getTurnstileToken}
+        onSubmitStart={() => {
+          setCompletionPayload({
+            analysisText: null,
+            analysisAudioUrl: null,
+          });
+          setPhase("completed");
+        }}
+        onSubmitError={() => {
+          setCompletionPayload({
+            analysisText: null,
+            analysisAudioUrl: null,
+          });
+          setPhase("lead-form");
+        }}
         onCompleted={(payload) => {
           setCompletionPayload(payload);
           setPhase("completed");

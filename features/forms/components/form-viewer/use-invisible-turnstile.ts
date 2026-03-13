@@ -6,6 +6,7 @@ const TURNSTILE_SCRIPT_ID = "cf-turnstile-script";
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const TURNSTILE_TOKEN_TIMEOUT_MS = 10_000;
+const TURNSTILE_SCRIPT_LOAD_TIMEOUT_MS = 8_000;
 
 type TurnstileRenderOptions = {
   sitekey: string;
@@ -33,52 +34,81 @@ declare global {
 
 async function loadTurnstileApi(): Promise<TurnstileApi> {
   if (window.turnstile) return window.turnstile;
-  if (window.__turnstileLoaderPromise) return window.__turnstileLoaderPromise;
+  if (!window.__turnstileLoaderPromise) {
+    window.__turnstileLoaderPromise = new Promise<TurnstileApi>(
+      (resolve, reject) => {
+        const existingScript = document.getElementById(
+          TURNSTILE_SCRIPT_ID,
+        ) as HTMLScriptElement | null;
+        const script = existingScript ?? document.createElement("script");
+        let finished = false;
 
-  window.__turnstileLoaderPromise = new Promise<TurnstileApi>(
-    (resolve, reject) => {
-      const existingScript = document.getElementById(
-        TURNSTILE_SCRIPT_ID,
-      ) as HTMLScriptElement | null;
+        const cleanup = () => {
+          window.clearTimeout(timeoutId);
+          script.removeEventListener("load", onLoad);
+          script.removeEventListener("error", onError);
+        };
 
-      const resolveTurnstile = () => {
-        if (window.turnstile) {
+        const rejectWith = (message: string) => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          reject(new Error(message));
+        };
+
+        const resolveTurnstile = () => {
+          if (finished) return;
+
+          if (!window.turnstile) {
+            rejectWith("TURNSTILE_API_UNAVAILABLE");
+            return;
+          }
+
+          finished = true;
+          cleanup();
           resolve(window.turnstile);
+        };
+
+        const onLoad = () => {
+          resolveTurnstile();
+        };
+
+        const onError = () => {
+          rejectWith("TURNSTILE_SCRIPT_LOAD_FAILED");
+        };
+
+        const timeoutId = window.setTimeout(() => {
+          rejectWith("TURNSTILE_SCRIPT_LOAD_TIMEOUT");
+        }, TURNSTILE_SCRIPT_LOAD_TIMEOUT_MS);
+
+        if (!existingScript) {
+          script.id = TURNSTILE_SCRIPT_ID;
+          script.src = TURNSTILE_SCRIPT_SRC;
+          script.async = true;
+          script.defer = true;
+          document.head.appendChild(script);
+        }
+
+        script.addEventListener("load", onLoad, { once: true });
+        script.addEventListener("error", onError, { once: true });
+
+        if (window.turnstile) {
+          resolveTurnstile();
           return;
         }
 
-        reject(new Error("TURNSTILE_API_UNAVAILABLE"));
-      };
-
-      const rejectLoad = () => {
-        reject(new Error("TURNSTILE_SCRIPT_LOAD_FAILED"));
-      };
-
-      if (existingScript) {
-        if (window.turnstile) {
-          resolve(window.turnstile);
-          return;
+        const readyState = (
+          script as HTMLScriptElement & { readyState?: string }
+        ).readyState;
+        if (readyState === "complete" || readyState === "loaded") {
+          window.setTimeout(resolveTurnstile, 0);
         }
-
-        existingScript.addEventListener("load", resolveTurnstile, {
-          once: true,
-        });
-        existingScript.addEventListener("error", rejectLoad, {
-          once: true,
-        });
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.id = TURNSTILE_SCRIPT_ID;
-      script.src = TURNSTILE_SCRIPT_SRC;
-      script.async = true;
-      script.defer = true;
-      script.addEventListener("load", resolveTurnstile, { once: true });
-      script.addEventListener("error", rejectLoad, { once: true });
-      document.head.appendChild(script);
-    },
-  );
+      },
+    ).catch((error) => {
+      window.__turnstileLoaderPromise = undefined;
+      throw error;
+    });
+  }
 
   return window.__turnstileLoaderPromise;
 }
@@ -141,7 +171,17 @@ export function useInvisibleTurnstile({ action }: { action: string }) {
       });
     })();
 
-    await widgetRenderPromiseRef.current;
+    try {
+      await widgetRenderPromiseRef.current;
+    } catch (error) {
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+      }
+
+      widgetIdRef.current = null;
+      widgetRenderPromiseRef.current = null;
+      throw error;
+    }
   }, [action, rejectCurrentToken, resolveCurrentToken, siteKey]);
 
   const getToken = useCallback(async () => {

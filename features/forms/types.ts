@@ -112,6 +112,8 @@ export type LeadFormProps = {
   sessionId: string;
   formId: string;
   getTurnstileToken: () => Promise<string>;
+  onSubmitStart: () => void;
+  onSubmitError: () => void;
   onCompleted: (payload: FormViewerCompletionPayload) => void;
   bgStyle: FormViewerBackgroundStyle;
   hasBackgroundImage: boolean;

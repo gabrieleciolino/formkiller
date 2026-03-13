@@ -290,7 +290,8 @@
       "cannotStart": "Unable to start the questionnaire.",
       "micAccess": "Unable to access microphone.",
       "saveAnswer": "Error saving answer.",
-      "securityCheck": "Security verification failed. Please try again."
+      "securityCheck": "Security verification failed. Please try again.",
+      "securityCheckInAppBrowser": "Security verification does not work reliably in in-app browsers. Open this link in Safari or Chrome and try again."
     }
   }
 }

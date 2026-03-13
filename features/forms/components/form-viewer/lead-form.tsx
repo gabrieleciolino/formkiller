@@ -1,5 +1,6 @@
 "use client";
 
+import { isLikelyInAppBrowser } from "@/features/forms/components/form-viewer/browser-utils";
 import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { LeadFormProps } from "@/features/forms/types";
 import { createLeadAction } from "@/features/forms/public-actions";
@@ -7,7 +8,7 @@ import { createLeadSchema, type CreateLeadType } from "@/features/leads/schema";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -15,6 +16,8 @@ export function LeadForm({
   sessionId,
   formId,
   getTurnstileToken,
+  onSubmitStart,
+  onSubmitError,
   onCompleted,
   bgStyle,
   hasBackgroundImage,
@@ -28,6 +31,19 @@ export function LeadForm({
     null,
   );
   const t = useTranslations();
+  const isInAppBrowser = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return isLikelyInAppBrowser(navigator.userAgent);
+  }, []);
+  const showSecurityCheckError = useCallback(() => {
+    toast(
+      t(
+        isInAppBrowser
+          ? "viewer.errors.securityCheckInAppBrowser"
+          : "viewer.errors.securityCheck",
+      ),
+    );
+  }, [isInAppBrowser, t]);
 
   useZodLocale();
 
@@ -85,32 +101,61 @@ export function LeadForm({
 
   const onSubmit = (values: CreateLeadType) => {
     startTransition(async () => {
+      let transitionedToCompleted = false;
+      const rollbackLeadPhase = () => {
+        if (!transitionedToCompleted) return;
+        transitionedToCompleted = false;
+        onSubmitError();
+      };
+
       try {
-        const turnstileToken = await getSubmitTurnstileToken();
+        let turnstileToken = await getSubmitTurnstileToken();
         if (!turnstileToken) {
-          toast(t("viewer.errors.securityCheck"));
+          showSecurityCheckError();
           primeTurnstileToken();
           return;
         }
 
-        const { data, serverError } = await createLeadAction({
+        onSubmitStart();
+        transitionedToCompleted = true;
+
+        let { data, serverError } = await createLeadAction({
           ...values,
           turnstileToken,
         });
 
         if (serverError === "TURNSTILE_FAILED") {
-          toast(t("viewer.errors.securityCheck"));
-          primeTurnstileToken();
-          return;
+          turnstileToken = await getTurnstileToken().catch(() => null);
+
+          if (!turnstileToken) {
+            rollbackLeadPhase();
+            showSecurityCheckError();
+            primeTurnstileToken();
+            return;
+          }
+
+          ({ data, serverError } = await createLeadAction({
+            ...values,
+            turnstileToken,
+          }));
         }
 
-        if (serverError || !data) throw new Error();
+        if (serverError || !data) {
+          rollbackLeadPhase();
+          if (serverError === "TURNSTILE_FAILED") {
+            showSecurityCheckError();
+            primeTurnstileToken();
+            return;
+          }
+          throw new Error();
+        }
 
         onCompleted({
           analysisText: data.analysisText ?? null,
           analysisAudioUrl: data.analysisAudioUrl ?? null,
         });
       } catch {
+        rollbackLeadPhase();
         toast(t("viewer.leadForm.error"));
         primeTurnstileToken();
       }
