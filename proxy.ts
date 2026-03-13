@@ -4,13 +4,14 @@ import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const allowSameOriginFraming = pathname.startsWith("/form/");
 
   if (pathname === "/") {
     return applySecurityHeaders(NextResponse.redirect(new URL("/it", request.url)));
   }
 
   const response = await updateSession(request);
-  return applySecurityHeaders(response);
+  return applySecurityHeaders(response, { allowSameOriginFraming });
 }
 
 export const config = {

@@ -1,8 +1,8 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
-export const dynamic = "force-dynamic";
 export const metadata = getHomeMetadata("es");
+const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
 
 const content: LandingContent = {
   nav: {
@@ -144,6 +144,5 @@ const content: LandingContent = {
 };
 
 export default function HomePageES() {
-  const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
   return <LandingPage content={content} contactFormId={contactFormId} />;
 }

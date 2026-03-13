@@ -86,6 +86,7 @@ export default function LandingPage({
             alt="FormKiller"
             width={140}
             height={36}
+            priority
             className="h-8 w-auto"
           />
           <nav className="flex items-center gap-3">
@@ -99,8 +100,9 @@ export default function LandingPage({
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-primary px-6 pb-24 pt-32 text-primary-foreground">
+      <main>
+        {/* Hero */}
+        <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-primary px-6 pb-24 pt-32 text-primary-foreground">
         {/* grid pattern overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -174,10 +176,10 @@ export default function LandingPage({
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Stats */}
-      <section className="border-b border-border bg-muted/30 py-16">
+        {/* Stats */}
+        <section className="border-b border-border bg-muted/30 py-16">
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
           {content.stats.map((s) => (
             <div key={s.label} className="text-center">
@@ -188,10 +190,10 @@ export default function LandingPage({
             </div>
           ))}
         </div>
-      </section>
+        </section>
 
-      {/* Features */}
-      <section className="py-24">
+        {/* Features */}
+        <section className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-16 max-w-xl">
             <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -224,10 +226,10 @@ export default function LandingPage({
             })}
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="bg-muted/30 py-24">
+        {/* How it works */}
+        <section id="how-it-works" className="bg-muted/30 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-16 max-w-xl">
             <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -246,7 +248,7 @@ export default function LandingPage({
                 {i < content.steps.length - 1 && (
                   <div className="absolute left-full top-5 hidden h-px w-full -translate-y-0.5 border-t border-dashed border-border lg:block" />
                 )}
-                <p className="font-roboto text-4xl font-black text-border">
+                <p className="font-roboto text-4xl font-black text-muted-foreground">
                   {step.number}
                 </p>
                 <h3 className="mt-3 font-roboto text-lg font-black">
@@ -259,10 +261,10 @@ export default function LandingPage({
             ))}
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Form modes comparison */}
-      <section className="py-24">
+        {/* Form modes comparison */}
+        <section className="py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col gap-12 lg:flex-row lg:items-center">
             <div className="max-w-md shrink-0">
@@ -315,13 +317,13 @@ export default function LandingPage({
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section
-        id="contact-form"
-        className="scroll-mt-24 bg-primary py-24 text-primary-foreground"
-      >
+        {/* CTA */}
+        <section
+          id="contact-form"
+          className="scroll-mt-24 bg-primary py-24 text-primary-foreground"
+        >
         <div className="mx-auto max-w-6xl px-6 text-center">
           <h2 className="font-roboto text-4xl font-black leading-tight tracking-tight sm:text-5xl md:text-6xl">
             {content.ctaSectionH2Line1}
@@ -347,7 +349,8 @@ export default function LandingPage({
             )}
           </div>
         </div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border py-8">

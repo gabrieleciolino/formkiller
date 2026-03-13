@@ -4,6 +4,7 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -16,6 +17,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
   title: "FormKiller",
   description:
     "Voice-first conversational forms with multilingual support, AI TTS, STT and lead capture.",

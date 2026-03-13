@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getAbsoluteUrl } from "@/lib/seo/site-url";
 
 type HomeLocale = "en" | "it" | "es";
 
@@ -45,6 +46,7 @@ const HOME_KEYWORDS = [
 
 export function getHomeMetadata(locale: HomeLocale): Metadata {
   const localized = HOME_METADATA_BY_LOCALE[locale];
+  const canonicalUrl = getAbsoluteUrl(localized.path);
 
   return {
     title: localized.title,
@@ -52,12 +54,12 @@ export function getHomeMetadata(locale: HomeLocale): Metadata {
     keywords: HOME_KEYWORDS,
     category: "technology",
     alternates: {
-      canonical: localized.path,
+      canonical: canonicalUrl,
       languages: {
-        en: "/",
-        it: "/it",
-        es: "/es",
-        "x-default": "/it",
+        en: getAbsoluteUrl("/"),
+        it: getAbsoluteUrl("/it"),
+        es: getAbsoluteUrl("/es"),
+        "x-default": getAbsoluteUrl("/it"),
       },
     },
     openGraph: {
@@ -66,7 +68,7 @@ export function getHomeMetadata(locale: HomeLocale): Metadata {
       title: localized.title,
       description: localized.description,
       locale: localized.ogLocale,
-      url: localized.path,
+      url: canonicalUrl,
     },
     twitter: {
       card: "summary_large_image",
