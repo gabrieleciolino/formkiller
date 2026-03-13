@@ -1,11 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { urls } from "@/lib/urls";
+import {
+  endAdminTrace,
+  startAdminTrace,
+  traceAdminStep,
+} from "@/lib/observability/admin-trace";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+  const pathname = request.nextUrl.pathname;
+  const isDashboardRoute = pathname.startsWith(urls.dashboard.index);
+  const isAdminRoute = pathname.startsWith(urls.admin.index);
+  const trace = isAdminRoute
+    ? startAdminTrace("proxy.updateSession", { pathname })
+    : null;
+  const finish = (reason: string, extra?: Record<string, unknown>) => {
+    endAdminTrace(trace, {
+      pathname,
+      reason,
+      ...extra,
+    });
+  };
 
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
@@ -38,14 +56,11 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: If you remove getClaims() and you use server-side rendering
   // with the Supabase client, your users may be randomly logged out.
-  const { data } = await supabase.auth.getClaims();
+  const { data } = await traceAdminStep(trace, "auth.getClaims", () =>
+    supabase.auth.getClaims(),
+  );
 
-  const pathname = request.nextUrl.pathname;
   const user = data?.claims;
-
-  const isDashboardRoute = pathname.startsWith(urls.dashboard.index);
-  const isAdminRoute = pathname.startsWith(urls.admin.index);
-
   const isProtectedRoute = isDashboardRoute || isAdminRoute;
 
   if (!user && isProtectedRoute) {
@@ -62,6 +77,7 @@ export async function updateSession(request: NextRequest) {
       redirectResponse.cookies.set(cookie);
     });
 
+    finish("redirect_login_no_user");
     return redirectResponse;
   }
 
@@ -81,14 +97,21 @@ export async function updateSession(request: NextRequest) {
         redirectResponse.cookies.set(cookie);
       });
 
+      finish("redirect_login_missing_sub");
       return redirectResponse;
     }
 
-    const { data: account, error: accountError } = await supabase
-      .from("account")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const { data: account, error: accountError } = await traceAdminStep(
+      trace,
+      "db.accountRole",
+      () =>
+        supabase
+          .from("account")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle(),
+      { userId },
+    );
 
     if (accountError || account?.role !== "admin") {
       const redirectResponse = NextResponse.redirect(
@@ -98,6 +121,10 @@ export async function updateSession(request: NextRequest) {
         redirectResponse.cookies.set(cookie);
       });
 
+      finish("redirect_dashboard_non_admin", {
+        hasError: Boolean(accountError),
+        role: account?.role ?? null,
+      });
       return redirectResponse;
     }
   }
@@ -115,5 +142,6 @@ export async function updateSession(request: NextRequest) {
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
 
+  finish("ok");
   return supabaseResponse;
 }

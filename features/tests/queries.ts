@@ -3,6 +3,11 @@ import {
   TEST_PROFILES_COUNT,
   testAnswerSchema,
 } from "@/features/tests/schema";
+import {
+  endAdminTrace,
+  startAdminTrace,
+  traceAdminStep,
+} from "@/lib/observability/admin-trace";
 import { TypedSupabaseClient } from "@/lib/supabase/types";
 
 export type AdminTestListItem = {
@@ -150,20 +155,33 @@ export async function getAdminTestsQuery({
 }: {
   supabase: TypedSupabaseClient;
 }): Promise<AdminTestListItem[]> {
-  const { data, error } = await supabase
-    .from("test")
-    .select("id, name, slug, language, status, created_at")
-    .order("created_at", { ascending: false });
+  const trace = startAdminTrace("tests.getAdminTestsQuery");
+  let rowCount = 0;
+  let status = "ok";
 
-  if (error) {
-    throw error;
+  try {
+    const { data, error } = await traceAdminStep(trace, "db.select.test", () =>
+      supabase
+        .from("test")
+        .select("id, name, slug, language, status, created_at")
+        .order("created_at", { ascending: false }),
+    );
+
+    if (error) {
+      status = "error";
+      throw error;
+    }
+
+    if (!Array.isArray(data)) {
+      rowCount = 0;
+      return [];
+    }
+
+    rowCount = data.length;
+    return data as AdminTestListItem[];
+  } finally {
+    endAdminTrace(trace, { status, rowCount });
   }
-
-  if (!Array.isArray(data)) {
-    return [];
-  }
-
-  return data as AdminTestListItem[];
 }
 
 export async function getAdminTestByIdQuery({

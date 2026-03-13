@@ -1,4 +1,9 @@
 import { TypedSupabaseClient } from "@/lib/supabase/types";
+import {
+  endAdminTrace,
+  startAdminTrace,
+  traceAdminStep,
+} from "@/lib/observability/admin-trace";
 
 export const getUserFormsQuery = async ({
   userId,
@@ -46,14 +51,28 @@ export const getAdminFormsQuery = async ({
 }: {
   supabase: TypedSupabaseClient;
 }) => {
-  const { data, error } = await supabase
-    .from("form")
-    .select("*, questions:question(*)")
-    .order("created_at", { ascending: false });
+  const trace = startAdminTrace("forms.getAdminFormsQuery");
+  let rowCount = 0;
+  let status = "ok";
 
-  if (error) throw error;
+  try {
+    const { data, error } = await traceAdminStep(trace, "db.select.form", () =>
+      supabase
+        .from("form")
+        .select("*, questions:question(*)")
+        .order("created_at", { ascending: false }),
+    );
 
-  return data;
+    if (error) {
+      status = "error";
+      throw error;
+    }
+
+    rowCount = data?.length ?? 0;
+    return data;
+  } finally {
+    endAdminTrace(trace, { status, rowCount });
+  }
 };
 
 export const getFormByIdQuery = async ({

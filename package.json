@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:trace": "FORMKILLER_ADMIN_TRACE=1 pnpm dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
