@@ -1,14 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { applySecurityHeaders } from "@/lib/security/headers";
 import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/") {
-    return NextResponse.redirect(new URL("/it", request.url));
+    return applySecurityHeaders(NextResponse.redirect(new URL("/it", request.url)));
   }
 
-  return updateSession(request);
+  const response = await updateSession(request);
+  return applySecurityHeaders(response);
 }
 
 export const config = {

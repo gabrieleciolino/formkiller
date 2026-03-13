@@ -9,8 +9,9 @@ const TURNSTILE_TOKEN_TIMEOUT_MS = 10_000;
 
 type TurnstileRenderOptions = {
   sitekey: string;
-  size: "invisible";
   action: string;
+  execution: "execute";
+  appearance: "execute";
   callback: (token: string) => void;
   "error-callback": () => void;
   "expired-callback": () => void;
@@ -125,8 +126,9 @@ export function useInvisibleTurnstile({ action }: { action: string }) {
 
       widgetIdRef.current = turnstile.render(container, {
         sitekey: siteKey,
-        size: "invisible",
         action,
+        execution: "execute",
+        appearance: "execute",
         callback: (token) => {
           resolveCurrentToken(token);
         },
@@ -175,14 +177,6 @@ export function useInvisibleTurnstile({ action }: { action: string }) {
       turnstile.execute(widgetId);
     });
   }, [ensureWidgetRendered, rejectCurrentToken]);
-
-  useEffect(() => {
-    if (!siteKey) return;
-
-    void ensureWidgetRendered().catch(() => {
-      // The caller handles challenge errors before each submit.
-    });
-  }, [ensureWidgetRendered, siteKey]);
 
   useEffect(
     () => () => {
