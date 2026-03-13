@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   Mic,
   BarChart3,
@@ -11,6 +12,7 @@ import {
   ImageIcon,
   Globe,
 } from "lucide-react";
+import CookieBanner from "@/app/_components/cookie-banner";
 import { urls } from "@/lib/urls";
 
 export interface LandingContent {
@@ -58,9 +60,19 @@ export interface LandingContent {
   ctaSectionDescription: string;
   ctaSectionFormTitle: string;
   ctaSectionFormUnavailable: string;
+  cookieBanner: {
+    title: string;
+    description: string;
+    accept: string;
+    reject: string;
+  };
   footer: {
     copyright: string;
     signIn: string;
+    cookiePolicyLabel: string;
+    cookiePolicyHref: string;
+    privacyPolicyLabel: string;
+    privacyPolicyHref: string;
   };
 }
 
@@ -353,18 +365,48 @@ export default function LandingPage({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
-          <Image
-            src="/logo.png"
-            alt="FormKiller"
-            width={120}
-            height={31}
-            className="h-7 w-auto"
-          />
-          <p>{content.footer.copyright}</p>
+      <footer className="border-t border-border">
+        <div className="mx-auto grid max-w-6xl items-center gap-4 px-6 py-8 text-sm text-muted-foreground md:grid-cols-[1fr_auto_1fr]">
+          <div className="flex justify-center md:justify-start">
+            <Image
+              src="/logo.png"
+              alt="FormKiller"
+              width={120}
+              height={31}
+              className="h-7 w-auto"
+            />
+          </div>
+          <nav className="flex items-center justify-center gap-4">
+            <Link
+              href={content.footer.cookiePolicyHref}
+              className="transition-colors hover:text-foreground"
+            >
+              {content.footer.cookiePolicyLabel}
+            </Link>
+            <span aria-hidden="true" className="text-border">
+              /
+            </span>
+            <Link
+              href={content.footer.privacyPolicyHref}
+              className="transition-colors hover:text-foreground"
+            >
+              {content.footer.privacyPolicyLabel}
+            </Link>
+          </nav>
+          <p className="text-center md:text-right">{content.footer.copyright}</p>
         </div>
       </footer>
+
+      <CookieBanner
+        title={content.cookieBanner.title}
+        description={content.cookieBanner.description}
+        acceptLabel={content.cookieBanner.accept}
+        rejectLabel={content.cookieBanner.reject}
+        privacyPolicyLabel={content.footer.privacyPolicyLabel}
+        privacyPolicyHref={content.footer.privacyPolicyHref}
+        cookiePolicyLabel={content.footer.cookiePolicyLabel}
+        cookiePolicyHref={content.footer.cookiePolicyHref}
+      />
     </div>
   );
 }

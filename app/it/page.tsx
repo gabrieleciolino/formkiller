@@ -137,9 +137,20 @@ const content: LandingContent = {
   ctaSectionFormTitle: "Form di contatto FormKiller",
   ctaSectionFormUnavailable:
     "Imposta CONTACT_FORM_ID per mostrare il form di contatto incorporato.",
+  cookieBanner: {
+    title: "Questo sito utilizza cookie",
+    description:
+      "Usiamo cookie tecnici per mantenere il sito sicuro e funzionante e, con il tuo consenso, cookie analitici per migliorare l'esperienza.",
+    accept: "Accetta",
+    reject: "Rifiuta",
+  },
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. Tutti i diritti riservati.`,
     signIn: "Accedi →",
+    cookiePolicyLabel: "Cookie Policy",
+    cookiePolicyHref: "/it/cookie-policy",
+    privacyPolicyLabel: "Privacy Policy",
+    privacyPolicyHref: "/it/privacy-policy",
   },
 };
 

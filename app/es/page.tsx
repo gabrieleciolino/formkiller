@@ -137,9 +137,20 @@ const content: LandingContent = {
   ctaSectionFormTitle: "Formulario de contacto de FormKiller",
   ctaSectionFormUnavailable:
     "Configura CONTACT_FORM_ID para mostrar el formulario de contacto embebido.",
+  cookieBanner: {
+    title: "Este sitio utiliza cookies",
+    description:
+      "Usamos cookies tecnicas para mantener el sitio seguro y funcional y, con tu consentimiento, cookies analiticas para mejorar la experiencia.",
+    accept: "Aceptar",
+    reject: "Rechazar",
+  },
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. Todos los derechos reservados.`,
     signIn: "Iniciar sesión →",
+    cookiePolicyLabel: "Politica de Cookies",
+    cookiePolicyHref: "/es/cookie-policy",
+    privacyPolicyLabel: "Politica de Privacidad",
+    privacyPolicyHref: "/es/privacy-policy",
   },
 };
 

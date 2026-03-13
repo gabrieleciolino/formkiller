@@ -129,9 +129,20 @@ const content: LandingContent = {
   ctaSectionFormTitle: "FormKiller contact form",
   ctaSectionFormUnavailable:
     "Set CONTACT_FORM_ID to display the embedded contact form.",
+  cookieBanner: {
+    title: "This site uses cookies",
+    description:
+      "We use essential cookies to keep the site secure and functional and, with your consent, analytics cookies to improve the experience.",
+    accept: "Accept",
+    reject: "Reject",
+  },
   footer: {
     copyright: `© ${new Date().getFullYear()} FormKiller. All rights reserved.`,
     signIn: "Sign in →",
+    cookiePolicyLabel: "Cookie Policy",
+    cookiePolicyHref: "/cookie-policy",
+    privacyPolicyLabel: "Privacy Policy",
+    privacyPolicyHref: "/privacy-policy",
   },
 };
 
