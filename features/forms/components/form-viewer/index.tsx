@@ -1,7 +1,6 @@
 "use client";
 
 import { CompletedPhase } from "@/features/forms/components/form-viewer/completed-phase";
-import { LeadForm } from "@/features/forms/components/form-viewer/lead-form";
 import { QuestionPhase } from "@/features/forms/components/form-viewer/question-phase";
 import { getFormViewerThemeTokens } from "@/features/forms/components/form-viewer/theme-tokens";
 import { useInvisibleTurnstile } from "@/features/forms/components/form-viewer/use-invisible-turnstile";
@@ -20,9 +19,31 @@ import {
   startFormSessionAction,
   submitAnswerAction,
 } from "@/features/forms/public-actions";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+
+const LeadForm = dynamic(
+  () =>
+    import("@/features/forms/components/form-viewer/lead-form").then(
+      (mod) => mod.LeadForm,
+    ),
+  {
+    loading: () => null,
+  },
+);
+
+function getAudioFileExtension(mimeType: string) {
+  const subtype = mimeType.split("/")[1]?.trim().toLowerCase();
+  if (!subtype) return "webm";
+  if (subtype.includes("mp4")) return "m4a";
+  if (subtype.includes("mpeg")) return "mp3";
+  if (subtype.includes("ogg")) return "ogg";
+  if (subtype.includes("wav")) return "wav";
+  if (subtype.includes("webm")) return "webm";
+  return "webm";
+}
 
 export default function FormViewer({ form }: FormViewerProps) {
   const [phase, setPhase] = useState<FormViewerPhase>("welcome");
@@ -143,7 +164,25 @@ export default function FormViewer({ form }: FormViewerProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const preferredMimeTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+      ] as const;
+      const supportedMimeType = preferredMimeTypes.find((mimeType) =>
+        MediaRecorder.isTypeSupported(mimeType),
+      );
+      const recorderOptions = supportedMimeType
+        ? { mimeType: supportedMimeType, audioBitsPerSecond: 32_000 }
+        : { audioBitsPerSecond: 32_000 };
+      let recorder: MediaRecorder;
+
+      try {
+        recorder = new MediaRecorder(stream, recorderOptions);
+      } catch {
+        recorder = new MediaRecorder(stream);
+      }
+
       const chunks: Blob[] = [];
 
       recorder.ondataavailable = (event) => {
@@ -151,7 +190,8 @@ export default function FormViewer({ form }: FormViewerProps) {
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
+        const recordedMimeType = recorder.mimeType || supportedMimeType || "audio/webm";
+        const blob = new Blob(chunks, { type: recordedMimeType });
         setAnswer({ type: "custom", blob });
         setRecordState("done");
         stream.getTracks().forEach((track) => track.stop());
@@ -202,10 +242,12 @@ export default function FormViewer({ form }: FormViewerProps) {
 
         if (answer.type === "custom") {
           const formData = new FormData();
+          const fileMimeType = answer.blob.type || "audio/webm";
+          const fileExtension = getAudioFileExtension(fileMimeType);
           formData.append(
             "file",
             answer.blob,
-            `answer-${Date.now()}.${answer.blob.type.includes("webm") ? "webm" : "bin"}`,
+            `answer-${Date.now()}.${fileExtension}`,
           );
           formData.append("formId", form.id);
           formData.append("sessionId", sessionId);

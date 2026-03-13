@@ -31,7 +31,12 @@ export default async function FormViewerAssignmentPage({
   if (!form) notFound();
 
   const language = form.language ?? "it";
-  const messages = (await import(`@/messages/${language}.json`)).default;
+  const allMessages = (await import(`@/messages/${language}.json`)).default as {
+    viewer?: Record<string, unknown>;
+  };
+  const messages = {
+    viewer: allMessages.viewer ?? {},
+  };
 
   type RawQuestion = {
     id: string;

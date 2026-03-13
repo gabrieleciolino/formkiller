@@ -10,10 +10,12 @@ export async function uploadFile({
   key,
   body,
   contentType,
+  cacheControl = "public, max-age=31536000, immutable",
 }: {
   key: string;
   body: Buffer | Uint8Array | Blob | ReadableStream;
   contentType: string;
+  cacheControl?: string;
 }) {
   await r2.send(
     new PutObjectCommand({
@@ -21,6 +23,7 @@ export async function uploadFile({
       Key: key,
       Body: body,
       ContentType: contentType,
+      CacheControl: cacheControl,
     }),
   );
 

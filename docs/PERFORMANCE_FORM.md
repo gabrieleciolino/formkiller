@@ -193,10 +193,17 @@ Riferimenti:
 
 La pagina pubblica carica anche traduzioni non necessarie al viewer.
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta:
 
 - inviare al viewer solo namespace i18n necessari
 - code-splitting della fase lead (react-hook-form/zod) per alleggerire il primo render
+
+Implementato:
+
+- la pagina `/form/[assignmentId]` passa al provider i18n solo il namespace `viewer`
+- `LeadForm` è caricato con import dinamico (lazy chunk) invece che nel bundle iniziale del viewer
 
 Impatto atteso: bundle iniziale più leggero, miglior rendering su device low-end.
 
@@ -210,11 +217,19 @@ Riferimenti:
 
 Asset audio/immagine impattano molto su reti mobili.
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta:
 
 - impostare `Cache-Control` adeguato su upload
 - usare naming versionato per invalidazione
 - ottimizzare bitrate/durata asset audio
+
+Implementato:
+
+- `uploadFile` imposta ora `Cache-Control: public, max-age=31536000, immutable` (overrideabile)
+- naming già versionato con timestamp/uuid mantenuto per cache busting naturale
+- registrazione audio client con `audioBitsPerSecond` ridotto per contenere il peso dei file
 
 Impatto atteso: minor tempo di caricamento asset e meno ricarichi ripetuti.
 
@@ -240,7 +255,7 @@ Riferimenti:
 
 - STT asincrono (queue/worker) [completato con Trigger.dev]
 - AI analysis + TTS asincroni post-lead
-- tuning cache e ottimizzazione media
+- tuning cache e ottimizzazione media [completato]
 
 ## Piano di rollout
 
