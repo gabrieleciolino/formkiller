@@ -20,11 +20,23 @@ I form pubblici sono il punto centrale di conversione dell'applicazione. La prio
 
 Oggi la verifica avviene su start sessione, submit risposta e submit lead. La validazione su ogni risposta aggiunge latenza fissa a ogni avanzamento.
 
+Stato: ✅ Implementato parzialmente il 2026-03-13.
+
 Proposta:
 
 - validazione forte su start sessione
 - validazione su submit lead
 - tra i due step: session token firmato + rate limit lato server
+
+Implementato:
+
+- rimossa la verifica Turnstile nel submit di ogni risposta (`submitAnswerAction`)
+- mantenuta la verifica Turnstile su start sessione e submit lead
+
+Ancora aperto:
+
+- session token firmato tra start e lead submit
+- rate limit lato server sul flusso pubblico
 
 Impatto atteso: riduzione netta della latenza per domanda e migliore fluidità del flusso.
 
@@ -38,11 +50,19 @@ Riferimenti:
 
 In `submitAnswerAction`, upload file audio e trascrizione Deepgram bloccano il passaggio alla domanda successiva.
 
+Stato: ✅ Implementato il 2026-03-13 con Trigger.dev.
+
 Proposta:
 
 - salvare subito la risposta audio (o puntatore all'asset)
 - ritornare risposta success immediata
 - eseguire STT in background (job/queue/worker)
+
+Implementato:
+
+- `submitAnswerAction` inserisce subito la risposta e continua il flow senza attendere STT
+- trascrizione delegata al task Trigger.dev `form-answer-stt`
+- task background: lettura audio da R2, trascrizione Deepgram, update di `answer.stt`
 
 Impatto atteso: grande riduzione del tempo "click Avanti -> prossima domanda".
 
@@ -173,7 +193,7 @@ Riferimenti:
 ### Blocco A (quick wins: 0.5 - 1 giorno)
 
 - monitoring KPI baseline (TTFB, tempo avanzamento domanda, completion latency)
-- riduzione verifiche Turnstile per step
+- riduzione verifiche Turnstile per step (parziale: fatto per submit answer)
 - bypass middleware auth sulle route pubbliche `/form/*`
 
 ### Blocco B (1 - 2 giorni)
@@ -184,7 +204,7 @@ Riferimenti:
 
 ### Blocco C (2 - 3 giorni)
 
-- STT asincrono (queue/worker)
+- STT asincrono (queue/worker) [completato con Trigger.dev]
 - AI analysis + TTS asincroni post-lead
 - tuning cache e ottimizzazione media
 

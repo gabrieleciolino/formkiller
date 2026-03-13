@@ -4,7 +4,6 @@ import { PUBLIC_FORM_TURNSTILE_ACTION } from "@/features/forms/constants";
 import { formLanguageSchema, turnstileTokenSchema } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
 import { generateCompletionAnalysis } from "@/lib/ai/functions";
-import { generateSTT } from "@/lib/deepgram/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -18,6 +17,7 @@ import {
   createSafeActionClient,
 } from "next-safe-action";
 import { cookies } from "next/headers";
+import { tasks } from "@trigger.dev/sdk/v3";
 import { z } from "zod";
 
 const publicViewerClient = createSafeActionClient({
@@ -149,7 +149,7 @@ export const submitAnswerAction = publicViewerClient
     }
 
     let fileKey: string | undefined;
-    let stt: string | undefined;
+    let resolvedAudioMimeType: string | undefined;
 
     if (audioBase64) {
       const buffer = Buffer.from(audioBase64, "base64");
@@ -158,22 +158,45 @@ export const submitAnswerAction = publicViewerClient
 
       await uploadFile({ key, body: buffer, contentType: mimeType });
       fileKey = key;
-      stt = await generateSTT({ buffer, mimeType, language });
+      resolvedAudioMimeType = mimeType;
     }
 
-    await supabaseAdmin
+    const { data: insertedAnswer } = await supabaseAdmin
       .from("answer")
       .insert({
         form_session_id: session.id,
         question_id: question.id,
         form_id: session.form_id,
         user_id: session.user_id,
-        stt: stt ?? null,
+        stt: null,
         file_key: fileKey ?? null,
         file_generated_at: fileKey ? new Date().toISOString() : null,
         ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
       } as never)
+      .select("id")
+      .single()
       .throwOnError();
+
+    if (fileKey) {
+      try {
+        await tasks.trigger("form-answer-stt", {
+          answerId: insertedAnswer.id,
+          fileKey,
+          language,
+          audioMimeType: resolvedAudioMimeType,
+        });
+      } catch (enqueueError) {
+        console.log("[enqueue_answer_stt_failed]", {
+          answerId: insertedAnswer.id,
+          formId,
+          sessionId,
+          message:
+            enqueueError instanceof Error
+              ? enqueueError.message
+              : String(enqueueError),
+        });
+      }
+    }
 
     const { count, error: questionsCountError } = await supabaseAdmin
       .from("question")

@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
@@ -37,6 +38,22 @@ export async function deleteFile(key: string) {
 
 export function getFileUrl(key: string) {
   return `${R2_PUBLIC_URL}/${key}`;
+}
+
+export async function getFileBuffer(key: string) {
+  const { Body } = await r2.send(
+    new GetObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: key,
+    }),
+  );
+
+  if (!Body) {
+    throw new Error("File not found");
+  }
+
+  const bytes = await Body.transformToByteArray();
+  return Buffer.from(bytes);
 }
 
 export async function listFiles(prefix?: string) {

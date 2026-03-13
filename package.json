@@ -10,7 +10,9 @@
     "ui:add": "pnpm dlx shadcn@latest add",
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate && supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts",
-    "db:types": "supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts"
+    "db:types": "supabase gen types --lang typescript --linked > ./lib/db/supabase.types.ts",
+    "trigger:dev": "pnpm dlx trigger.dev@latest dev",
+    "trigger:deploy": "pnpm dlx trigger.dev@latest deploy"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
