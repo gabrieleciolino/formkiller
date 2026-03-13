@@ -178,6 +178,19 @@ export function useInvisibleTurnstile({ action }: { action: string }) {
     });
   }, [ensureWidgetRendered, rejectCurrentToken]);
 
+  useEffect(() => {
+    if (!siteKey) return;
+
+    // Warm up script + widget during welcome phase to reduce click latency.
+    const timeoutId = window.setTimeout(() => {
+      void ensureWidgetRendered().catch(() => {});
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [ensureWidgetRendered, siteKey]);
+
   useEffect(
     () => () => {
       if (window.turnstile && widgetIdRef.current) {

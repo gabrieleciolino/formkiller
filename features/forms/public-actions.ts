@@ -136,7 +136,7 @@ export const startFormSessionAction = publicViewerClient
         status: "in_progress",
         current_question_index: 0,
       })
-      .select()
+      .select("id")
       .single();
 
     if (error) throw error;
