@@ -21,7 +21,14 @@ import {
 } from "@/features/forms/public-actions";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
 
 const LeadForm = dynamic(
@@ -45,6 +52,10 @@ function getAudioFileExtension(mimeType: string) {
   return "webm";
 }
 
+function roundMs(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
 export default function FormViewer({ form }: FormViewerProps) {
   const [phase, setPhase] = useState<FormViewerPhase>("welcome");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -59,6 +70,10 @@ export default function FormViewer({ form }: FormViewerProps) {
   const [autoStopped, setAutoStopped] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const prefetchedTurnstileTokenRef = useRef<string | null>(null);
+  const prefetchTurnstileTokenPromiseRef = useRef<Promise<string | null> | null>(
+    null,
+  );
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -106,42 +121,149 @@ export default function FormViewer({ form }: FormViewerProps) {
     };
   }, [currentIndex, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const primeTurnstileToken = useCallback(() => {
+    if (prefetchedTurnstileTokenRef.current || prefetchTurnstileTokenPromiseRef.current) {
+      return;
+    }
+
+    prefetchTurnstileTokenPromiseRef.current = getTurnstileToken()
+      .then((token) => {
+        prefetchedTurnstileTokenRef.current = token;
+        return token;
+      })
+      .catch(() => null)
+      .finally(() => {
+        prefetchTurnstileTokenPromiseRef.current = null;
+      });
+  }, [getTurnstileToken]);
+
+  useEffect(() => {
+    if (phase !== "welcome" || !isTurnstileConfigured) return;
+    primeTurnstileToken();
+  }, [isTurnstileConfigured, phase, primeTurnstileToken]);
+
+  const getStartTurnstileToken = useCallback(async () => {
+    if (prefetchedTurnstileTokenRef.current) {
+      const token = prefetchedTurnstileTokenRef.current;
+      prefetchedTurnstileTokenRef.current = null;
+      return token;
+    }
+
+    if (prefetchTurnstileTokenPromiseRef.current) {
+      const token = await prefetchTurnstileTokenPromiseRef.current;
+      if (token) {
+        prefetchedTurnstileTokenRef.current = null;
+        return token;
+      }
+    }
+
+    return getTurnstileToken().catch(() => null);
+  }, [getTurnstileToken]);
+
   const handleStart = () => {
     startTransition(async () => {
+      const flowStartAt = performance.now();
+      let getTokenMs = 0;
+      let startActionMs = 0;
+      let retriedAfterTurnstileFailure = false;
+      let enteredQuestionPhase = false;
+
       try {
         if (!isTurnstileConfigured) {
           toast(t("viewer.errors.securityCheck"));
+          console.log("[viewer_start_timing]", {
+            status: "failed",
+            reason: "turnstile_not_configured",
+            totalClientMs: roundMs(performance.now() - flowStartAt),
+          });
           return;
         }
 
-        const turnstileToken = await getTurnstileToken().catch(() => null);
+        const tokenStartAt = performance.now();
+        let turnstileToken = await getStartTurnstileToken();
+        getTokenMs = performance.now() - tokenStartAt;
         if (!turnstileToken) {
           toast(t("viewer.errors.securityCheck"));
+          primeTurnstileToken();
+          console.log("[viewer_start_timing]", {
+            status: "failed",
+            reason: "turnstile_token_missing",
+            getTokenMs: roundMs(getTokenMs),
+            totalClientMs: roundMs(performance.now() - flowStartAt),
+          });
           return;
         }
-
-        const { data, serverError } = await startFormSessionAction({
-          assignmentId: form.assignmentId,
-          turnstileToken,
-        });
-
-        if (serverError === "TURNSTILE_FAILED") {
-          toast(t("viewer.errors.securityCheck"));
-          return;
-        }
-
-        if (serverError || !data) throw new Error();
 
         if (hasBackgroundMusic && bgMusicRef.current) {
           bgMusicRef.current.volume = 0.15;
           void bgMusicRef.current.play().catch(() => {});
         }
 
-        setSessionId(data.id);
-        setPhase("question");
         setCompletionPayload({
           analysisText: null,
           analysisAudioUrl: null,
+        });
+        setPhase("question");
+        enteredQuestionPhase = true;
+
+        const actionStartAt = performance.now();
+        let { data, serverError } = await startFormSessionAction({
+          assignmentId: form.assignmentId,
+          turnstileToken,
+        });
+        startActionMs = performance.now() - actionStartAt;
+
+        if (serverError === "TURNSTILE_FAILED") {
+          retriedAfterTurnstileFailure = true;
+
+          const retryTokenStartAt = performance.now();
+          turnstileToken = await getTurnstileToken().catch(() => null);
+          getTokenMs += performance.now() - retryTokenStartAt;
+
+          if (!turnstileToken) {
+            toast(t("viewer.errors.securityCheck"));
+            primeTurnstileToken();
+            console.log("[viewer_start_timing]", {
+              status: "failed",
+              reason: "turnstile_retry_token_missing",
+              retriedAfterTurnstileFailure,
+              getTokenMs: roundMs(getTokenMs),
+              startActionMs: roundMs(startActionMs),
+              totalClientMs: roundMs(performance.now() - flowStartAt),
+            });
+            return;
+          }
+
+          const retryActionStartAt = performance.now();
+          ({ data, serverError } = await startFormSessionAction({
+            assignmentId: form.assignmentId,
+            turnstileToken,
+          }));
+          startActionMs += performance.now() - retryActionStartAt;
+        }
+
+        if (serverError || !data) {
+          primeTurnstileToken();
+          console.log("[viewer_start_timing]", {
+            status: "failed",
+            reason: "start_action_error",
+            retriedAfterTurnstileFailure,
+            getTokenMs: roundMs(getTokenMs),
+            startActionMs: roundMs(startActionMs),
+            totalClientMs: roundMs(performance.now() - flowStartAt),
+          });
+          throw new Error();
+        }
+
+        setSessionId(data.id);
+
+        console.log("[viewer_start_timing]", {
+          status: "ok",
+          retriedAfterTurnstileFailure,
+          getTokenMs: roundMs(getTokenMs),
+          startActionMs: roundMs(startActionMs),
+          totalClientMs: roundMs(performance.now() - flowStartAt),
+          serverTimings: data.timings ?? null,
         });
       } catch {
         if (bgMusicRef.current) {
@@ -149,6 +271,16 @@ export default function FormViewer({ form }: FormViewerProps) {
           bgMusicRef.current.currentTime = 0;
         }
 
+        if (enteredQuestionPhase) {
+          setPhase("welcome");
+          setSessionId(null);
+          setCurrentIndex(0);
+          setAnswer(null);
+          setRecordState("idle");
+          setAutoStopped(false);
+        }
+
+        primeTurnstileToken();
         toast(t("viewer.errors.cannotStart"));
       }
     });

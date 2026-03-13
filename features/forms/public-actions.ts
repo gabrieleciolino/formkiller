@@ -119,15 +119,22 @@ export const startFormSessionAction = publicViewerClient
     }),
   )
   .action(async ({ parsedInput }) => {
+    const actionStartAt = Date.now();
+
+    const turnstileVerifyStartAt = Date.now();
     await verifyTurnstileToken({
       token: parsedInput.turnstileToken,
       expectedAction: PUBLIC_FORM_TURNSTILE_ACTION,
     });
+    const turnstileVerifyMs = Date.now() - turnstileVerifyStartAt;
 
+    const assignmentLookupStartAt = Date.now();
     const assignment = await getFormAssignmentOrThrow(parsedInput.assignmentId);
+    const assignmentLookupMs = Date.now() - assignmentLookupStartAt;
     const formId = assignment.form_id;
     const userId = assignment.user_id;
 
+    const insertSessionStartAt = Date.now();
     const { data, error } = await supabaseAdmin
       .from("form_session")
       .insert({
@@ -138,10 +145,24 @@ export const startFormSessionAction = publicViewerClient
       })
       .select("id")
       .single();
+    const insertSessionMs = Date.now() - insertSessionStartAt;
 
     if (error) throw error;
 
-    return data;
+    const totalMs = Date.now() - actionStartAt;
+    const timings = {
+      totalMs,
+      turnstileVerifyMs,
+      assignmentLookupMs,
+      insertSessionMs,
+    };
+
+    console.log("[public_viewer_start_session_timing]", timings);
+
+    return {
+      id: data.id,
+      timings,
+    };
   });
 
 export const submitAnswerAction = publicViewerClient
