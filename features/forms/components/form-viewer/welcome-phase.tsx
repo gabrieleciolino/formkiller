@@ -42,7 +42,7 @@ export function WelcomePhase({
 
         {resolvedMessage ? (
           <p
-            className={`text-md leading-relaxed whitespace-pre-line ${tk.textSecondary}`}
+            className={`text-base leading-relaxed whitespace-pre-line ${tk.textSecondary}`}
           >
             {resolvedMessage}
           </p>
