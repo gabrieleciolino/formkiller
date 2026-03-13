@@ -85,10 +85,16 @@ export function LeadForm({
       )}
 
       <div className="relative w-full max-w-md">
-        <div className={`w-full space-y-4 rounded-2xl p-6 ${isDark ? "bg-black/80" : "bg-white/80"}`}>
+        <div
+          className={`w-full space-y-4 rounded-2xl p-6 ${isDark ? "bg-black/90" : "bg-white/90"}`}
+        >
           <div className="space-y-1">
-            <h2 className="text-2xl font-black">{t("viewer.leadForm.title")}</h2>
-            <p className={`text-sm ${isDark ? "text-white/40" : "text-foreground/55"}`}>
+            <h2 className="text-2xl font-black">
+              {t("viewer.leadForm.title")}
+            </h2>
+            <p
+              className={`text-sm ${isDark ? "text-white/40" : "text-foreground/55"}`}
+            >
               {t("viewer.leadForm.subtitle")}
             </p>
           </div>
@@ -126,10 +132,14 @@ export function LeadForm({
               type="submit"
               disabled={isPending}
               className={`mt-2 w-full rounded-2xl py-4 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-40 ${
-                isDark ? "bg-white text-black" : "bg-primary text-primary-foreground"
+                isDark
+                  ? "bg-white text-black"
+                  : "bg-primary text-primary-foreground"
               }`}
             >
-              {isPending ? t("viewer.leadForm.loading") : t("viewer.leadForm.submit")}
+              {isPending
+                ? t("viewer.leadForm.loading")
+                : t("viewer.leadForm.submit")}
             </button>
           </form>
         </div>

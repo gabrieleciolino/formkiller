@@ -52,7 +52,7 @@ export function CompletedPhase({
       )}
 
       <div
-        className={`relative flex w-full max-w-md flex-col items-center gap-6 rounded-2xl p-8 text-center ${isDark ? "bg-black/80" : "bg-white/80"}`}
+        className={`relative flex w-full max-w-md flex-col items-center gap-6 rounded-2xl p-8 text-center ${isDark ? "bg-black/90" : "bg-white/90"}`}
       >
         <div
           className={`flex size-20 items-center justify-center rounded-full ${isDark ? "bg-white/10" : "bg-black/10"}`}

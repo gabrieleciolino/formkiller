@@ -105,7 +105,7 @@ export function QuestionPhase({
             <>
               <button
                 onClick={onStartRecording}
-                className={`flex size-20 items-center justify-center rounded-full border-2 transition-all active:scale-95 ${tk.recordIdle}`}
+                className={`flex size-20 items-center justify-center rounded-full border-2 transition-all active:scale-95  ${tk.recordIdle}`}
               >
                 <MicIcon className="size-8" />
               </button>
@@ -144,7 +144,7 @@ export function QuestionPhase({
       )}
 
       <div
-        className={`relative mx-4 mb-6 shrink-0 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/60" : "bg-white/60"}`}
+        className={`relative mx-4 mb-6 shrink-0 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/90" : "bg-white/90"}`}
       >
         {showDefaultAnswers && (
           <>

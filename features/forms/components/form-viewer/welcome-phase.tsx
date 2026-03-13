@@ -32,7 +32,7 @@ export function WelcomePhase({
       )}
 
       <div
-        className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${!showLandingContactTechBackground ? (isDark ? "bg-black/60" : "bg-white/60") : ""}`}
+        className={`relative flex w-full max-w-md flex-col items-center gap-8 rounded-2xl p-8 text-center ${!showLandingContactTechBackground ? (isDark ? "bg-black/90" : "bg-white/90") : ""}`}
       >
         {resolvedTitle ? (
           <h1 className="text-5xl font-black tracking-tight">
