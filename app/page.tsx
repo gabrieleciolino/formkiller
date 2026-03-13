@@ -20,6 +20,10 @@ const content: LandingContent = {
   },
   heroPrimary: "Request a tailored demo",
   heroSecondary: "See how it works",
+  videoPreview: {
+    muteLabel: "Mute video audio",
+    unmuteLabel: "Unmute video audio",
+  },
   mockForm: {
     stepLabel: "Step 2 / 5",
     question: "What is the main goal you want to achieve this quarter?",

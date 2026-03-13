@@ -13,6 +13,7 @@ import {
   Globe,
 } from "lucide-react";
 import CookieBanner from "@/app/_components/cookie-banner";
+import HeroFlowVideo from "@/app/_components/hero-flow-video";
 import { urls } from "@/lib/urls";
 
 export interface LandingContent {
@@ -31,6 +32,10 @@ export interface LandingContent {
   };
   heroPrimary: string;
   heroSecondary: string;
+  videoPreview: {
+    muteLabel: string;
+    unmuteLabel: string;
+  };
   mockForm: {
     stepLabel: string;
     question: string;
@@ -162,32 +167,11 @@ export default function LandingPage({
           </div>
         </div>
 
-        {/* Mock form card */}
-        <div className="relative mx-auto mt-20 w-full max-w-sm">
-          <div className="rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5 p-6 backdrop-blur-sm">
-            <p className="mb-2 text-xs uppercase tracking-widest text-primary-foreground/40">
-              {content.mockForm.stepLabel}
-            </p>
-            <p className="text-xl font-semibold leading-snug text-primary-foreground">
-              {content.mockForm.question}
-            </p>
-            <div className="mt-6 flex justify-center">
-              <div className="flex size-16 items-center justify-center rounded-full border-2 border-primary-foreground/30 bg-primary-foreground/10">
-                <Mic className="size-7 text-primary-foreground/70" />
-              </div>
-            </div>
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              {content.mockForm.buttons.map((label) => (
-                <button
-                  key={label}
-                  className="rounded-lg border border-primary-foreground/20 bg-primary-foreground/5 px-3 py-2 text-sm text-primary-foreground/70"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Product flow preview */}
+        <HeroFlowVideo
+          muteLabel={content.videoPreview.muteLabel}
+          unmuteLabel={content.videoPreview.unmuteLabel}
+        />
         </section>
 
         {/* Stats */}

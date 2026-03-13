@@ -19,6 +19,10 @@ const content: LandingContent = {
   },
   heroPrimary: "Richiedi una demo su misura",
   heroSecondary: "Scopri come funziona",
+  videoPreview: {
+    muteLabel: "Disattiva audio video",
+    unmuteLabel: "Attiva audio video",
+  },
   mockForm: {
     stepLabel: "Fase 2 / 5",
     question:
