@@ -198,17 +198,6 @@ export default function FormViewer({ form }: FormViewerProps) {
 
     startTransition(async () => {
       try {
-        if (!isTurnstileConfigured) {
-          toast(t("viewer.errors.securityCheck"));
-          return;
-        }
-
-        const turnstileToken = await getTurnstileToken().catch(() => null);
-        if (!turnstileToken) {
-          toast(t("viewer.errors.securityCheck"));
-          return;
-        }
-
         let audioBase64: string | undefined;
         let audioMimeType: string | undefined;
 
@@ -225,13 +214,7 @@ export default function FormViewer({ form }: FormViewerProps) {
           defaultAnswer: answer.type === "default" ? answer.text : undefined,
           audioBase64,
           audioMimeType,
-          turnstileToken,
         });
-
-        if (serverError === "TURNSTILE_FAILED") {
-          toast(t("viewer.errors.securityCheck"));
-          return;
-        }
 
         if (serverError || !data) throw new Error();
 

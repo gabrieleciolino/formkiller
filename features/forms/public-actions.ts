@@ -122,7 +122,6 @@ export const submitAnswerAction = publicViewerClient
       defaultAnswer: z.string().optional(),
       audioBase64: z.string().optional(),
       audioMimeType: z.string().optional(),
-      turnstileToken: turnstileTokenSchema,
     }),
   )
   .action(async ({ parsedInput }) => {
@@ -134,13 +133,7 @@ export const submitAnswerAction = publicViewerClient
       defaultAnswer,
       audioBase64,
       audioMimeType,
-      turnstileToken,
     } = parsedInput;
-
-    await verifyTurnstileToken({
-      token: turnstileToken,
-      expectedAction: PUBLIC_FORM_TURNSTILE_ACTION,
-    });
 
     const session = await getFormSessionOrThrow(sessionId);
     if (session.form_id !== formId) {
