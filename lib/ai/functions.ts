@@ -127,14 +127,14 @@ export const generateCompletionAnalysis = async ({
   language,
   formName,
   analysisInstructions,
-  lead,
   answers,
+  lead,
 }: {
   language: FormLanguage;
   formName: string;
   analysisInstructions: string;
-  lead: { name: string; email: string; phone: string };
   answers: Array<{ order: number; question: string; response: string }>;
+  lead?: { name: string; email: string; phone: string };
 }): Promise<GenerateCompletionAnalysisOutputType["analysis"]> => {
   const normalizedAnalysisInstructions =
     normalizeAnalysisPrompt(analysisInstructions);
@@ -146,6 +146,9 @@ export const generateCompletionAnalysis = async ({
         `${index + 1}. Domanda: ${answer.question}\nRisposta utente: ${answer.response}`,
     )
     .join("\n\n");
+  const leadContext = lead
+    ? `${lead.name} (${lead.email}, ${lead.phone})`
+    : "Non disponibile";
 
   const { output } = await generateText({
     model: openai("gpt-5-mini"),
@@ -157,7 +160,7 @@ export const generateCompletionAnalysis = async ({
 
         Lingua: ${getLanguageName(language)}.
         Istruzione di analisi: ${normalizedAnalysisInstructions}
-        Utente: ${lead.name} (${lead.email}, ${lead.phone})
+        Utente: ${leadContext}
         Risposte: ${answersText}
     `,
     output: Output.object({

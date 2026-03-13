@@ -162,6 +162,13 @@
       "when": 1773390000000,
       "tag": "0022_keen_status_enum_cast",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1773400340188,
+      "tag": "0023_thin_gladiator",
+      "breakpoints": true
     }
   ]
 }

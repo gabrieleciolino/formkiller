@@ -302,6 +302,11 @@ export const formSessionTable = pgTable(
 
     status: formSessionStatusEnum("status").notNull().default("pending"),
     currentQuestionIndex: integer("current_question_index").notNull().default(0),
+    completionAnalysisStatus: text("completion_analysis_status")
+      .notNull()
+      .default("idle"),
+    completionAnalysisText: text("completion_analysis_text"),
+    completionAnalysisAudioUrl: text("completion_analysis_audio_url"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

@@ -12,6 +12,7 @@ export function CompletedPhase({
   endTitle,
   analysisText,
   analysisAudioUrl,
+  analysisStatus,
   isAnalyzing,
   hasBackgroundImage,
   showLandingContactTechBackground,
@@ -23,6 +24,9 @@ export function CompletedPhase({
   const analysisMessage = analysisText?.trim();
   const resolvedMessage = endMessage?.trim() || t("viewer.completed.message");
   const analysisLoadingMessage = t("viewer.completed.analysisLoading");
+  const analysisErrorFallbackMessage = t("viewer.completed.analysisErrorFallback");
+  const shouldShowAnalysisErrorFallback =
+    analysisStatus !== "processing" && !analysisMessage && !analysisAudioUrl;
   const analysisAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -73,6 +77,12 @@ export function CompletedPhase({
 
         {analysisMessage && (
           <p className={`text-md ${tk.textSecondary}`}>{analysisMessage}</p>
+        )}
+
+        {shouldShowAnalysisErrorFallback && (
+          <p className={`text-md ${tk.textSecondary}`}>
+            {analysisErrorFallbackMessage}
+          </p>
         )}
 
         <p className={`text-sm font-bold ${tk.textSecondary}`}>

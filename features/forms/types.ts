@@ -1,6 +1,7 @@
 import { getAdminFormsQuery, getUserFormsQuery } from "@/features/forms/queries";
 import type {
   AddQuestionFormType,
+  CompletionAnalysisStatus,
   CreateFormType,
   EditQuestionsType,
   FormLanguage,
@@ -101,6 +102,7 @@ export type FormViewerPhase = "welcome" | "question" | "lead-form" | "completed"
 export type FormViewerCompletionPayload = {
   analysisText: string | null;
   analysisAudioUrl: string | null;
+  analysisStatus: CompletionAnalysisStatus;
 };
 
 export type RecordingButtonProps = {
@@ -171,6 +173,7 @@ export type FormViewerCompletedPhaseProps = {
   endMessage: string | null;
   analysisText: string | null;
   analysisAudioUrl: string | null;
+  analysisStatus: CompletionAnalysisStatus;
   isAnalyzing: boolean;
   hasBackgroundImage: boolean;
   showLandingContactTechBackground: boolean;

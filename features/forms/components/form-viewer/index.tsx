@@ -17,6 +17,7 @@ import {
   type FormViewerRecordState,
 } from "@/features/forms/types";
 import {
+  getCompletionAnalysisAction,
   startFormSessionAction,
   submitAnswerAction,
 } from "@/features/forms/public-actions";
@@ -68,8 +69,8 @@ export default function FormViewer({ form }: FormViewerProps) {
     useState<FormViewerCompletionPayload>({
       analysisText: null,
       analysisAudioUrl: null,
+      analysisStatus: "idle",
     });
-  const [isCompletionAnalyzing, setIsCompletionAnalyzing] = useState(false);
   const [autoStopped, setAutoStopped] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -213,8 +214,8 @@ export default function FormViewer({ form }: FormViewerProps) {
         setCompletionPayload({
           analysisText: null,
           analysisAudioUrl: null,
+          analysisStatus: "idle",
         });
-        setIsCompletionAnalyzing(false);
         setPhase("question");
         enteredQuestionPhase = true;
 
@@ -471,6 +472,63 @@ export default function FormViewer({ form }: FormViewerProps) {
     });
   };
 
+  useEffect(() => {
+    if (phase !== "completed" || !sessionId) return;
+    if (completionPayload.analysisStatus !== "processing") return;
+
+    let isActive = true;
+    let timeoutId: number | null = null;
+
+    const schedulePoll = (delayMs: number) => {
+      timeoutId = window.setTimeout(() => {
+        void pollAnalysis();
+      }, delayMs);
+    };
+
+    const pollAnalysis = async () => {
+      const { data, serverError } = await getCompletionAnalysisAction({
+        sessionId,
+        formId: form.id,
+      });
+
+      if (!isActive) return;
+
+      if (serverError || !data) {
+        schedulePoll(2_000);
+        return;
+      }
+
+      setCompletionPayload((prev) => {
+        if (
+          prev.analysisStatus === data.analysisStatus &&
+          prev.analysisText === data.analysisText &&
+          prev.analysisAudioUrl === data.analysisAudioUrl
+        ) {
+          return prev;
+        }
+
+        return {
+          analysisStatus: data.analysisStatus,
+          analysisText: data.analysisText,
+          analysisAudioUrl: data.analysisAudioUrl,
+        };
+      });
+
+      if (data.analysisStatus === "processing") {
+        schedulePoll(2_000);
+      }
+    };
+
+    schedulePoll(1_200);
+
+    return () => {
+      isActive = false;
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [completionPayload.analysisStatus, form.id, phase, sessionId]);
+
   const bgStyle: FormViewerBackgroundStyle = hasBackgroundImage
     ? {
         backgroundImage: `url(${form.backgroundImageUrl})`,
@@ -514,21 +572,20 @@ export default function FormViewer({ form }: FormViewerProps) {
           setCompletionPayload({
             analysisText: null,
             analysisAudioUrl: null,
+            analysisStatus: "processing",
           });
-          setIsCompletionAnalyzing(true);
           setPhase("completed");
         }}
         onSubmitError={() => {
           setCompletionPayload({
             analysisText: null,
             analysisAudioUrl: null,
+            analysisStatus: "idle",
           });
-          setIsCompletionAnalyzing(false);
           setPhase("lead-form");
         }}
         onCompleted={(payload) => {
           setCompletionPayload(payload);
-          setIsCompletionAnalyzing(false);
           setPhase("completed");
         }}
       />
@@ -541,7 +598,8 @@ export default function FormViewer({ form }: FormViewerProps) {
         endTitle={form.endTitle}
         analysisText={completionPayload.analysisText}
         analysisAudioUrl={completionPayload.analysisAudioUrl}
-        isAnalyzing={isCompletionAnalyzing}
+        analysisStatus={completionPayload.analysisStatus}
+        isAnalyzing={completionPayload.analysisStatus === "processing"}
         hasBackgroundImage={hasBackgroundImage}
         showLandingContactTechBackground={isLandingContactForm}
         isDark={isDark}

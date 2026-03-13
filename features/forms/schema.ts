@@ -19,6 +19,17 @@ export const FORM_TYPE_LABELS: Record<FormType, string> = {
 export const formLanguageSchema = z.enum(["en", "it", "es"]);
 export type FormLanguage = z.infer<typeof formLanguageSchema>;
 
+export const completionAnalysisStatusSchema = z.enum([
+  "idle",
+  "processing",
+  "completed",
+  "failed",
+  "unavailable",
+]);
+export type CompletionAnalysisStatus = z.infer<
+  typeof completionAnalysisStatusSchema
+>;
+
 export const turnstileTokenSchema = z.string().trim().min(1);
 export type TurnstileToken = z.infer<typeof turnstileTokenSchema>;
 

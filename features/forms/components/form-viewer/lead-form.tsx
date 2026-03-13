@@ -153,6 +153,7 @@ export function LeadForm({
         onCompleted({
           analysisText: data.analysisText ?? null,
           analysisAudioUrl: data.analysisAudioUrl ?? null,
+          analysisStatus: data.analysisStatus ?? "idle",
         });
       } catch {
         rollbackLeadPhase();

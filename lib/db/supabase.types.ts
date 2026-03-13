@@ -257,6 +257,9 @@ export type Database = {
       }
       form_session: {
         Row: {
+          completion_analysis_audio_url: string | null
+          completion_analysis_status: string
+          completion_analysis_text: string | null
           created_at: string | null
           current_question_index: number
           form_id: string
@@ -266,6 +269,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completion_analysis_audio_url?: string | null
+          completion_analysis_status?: string
+          completion_analysis_text?: string | null
           created_at?: string | null
           current_question_index?: number
           form_id: string
@@ -275,6 +281,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completion_analysis_audio_url?: string | null
+          completion_analysis_status?: string
+          completion_analysis_text?: string | null
           created_at?: string | null
           current_question_index?: number
           form_id?: string

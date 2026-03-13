@@ -285,7 +285,8 @@
       "title": "Thank you!",
       "message": "Your answers have been recorded correctly.",
       "audioLabel": "Listen to analysis",
-      "analysisLoading": "We are preparing your analysis..."
+      "analysisLoading": "We are preparing your analysis...",
+      "analysisErrorFallback": "There were issues while processing your results. But don't worry: your results were saved and you will be contacted."
     },
     "errors": {
       "cannotStart": "Unable to start the questionnaire.",

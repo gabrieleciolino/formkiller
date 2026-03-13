@@ -285,7 +285,8 @@
       "title": "Grazie!",
       "message": "Le tue risposte sono state registrate correttamente.",
       "audioLabel": "Ascolta analisi",
-      "analysisLoading": "Stiamo elaborando la tua analisi..."
+      "analysisLoading": "Stiamo elaborando la tua analisi...",
+      "analysisErrorFallback": "Ci sono stati problemi nell'elaborazione dei risultati. Ma non preoccuparti: i tuoi risultati sono stati salvati e verrai ricontattato."
     },
     "errors": {
       "cannotStart": "Impossibile avviare il questionario.",
