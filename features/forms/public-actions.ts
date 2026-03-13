@@ -3,6 +3,7 @@
 import { PUBLIC_FORM_TURNSTILE_ACTION } from "@/features/forms/constants";
 import { formLanguageSchema, turnstileTokenSchema } from "@/features/forms/schema";
 import { createLeadSchema } from "@/features/leads/schema";
+import { formAnswerSttTask } from "@/trigger/form-answer-stt";
 import { generateCompletionAnalysis } from "@/lib/ai/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
 import { uploadFile } from "@/lib/r2/functions";
@@ -17,7 +18,6 @@ import {
   createSafeActionClient,
 } from "next-safe-action";
 import { cookies } from "next/headers";
-import { tasks } from "@trigger.dev/sdk/v3";
 import { z } from "zod";
 
 const publicViewerClient = createSafeActionClient({
@@ -38,6 +38,52 @@ const publicViewerClient = createSafeActionClient({
 
   return next();
 });
+
+const submitAnswerRpcResultSchema = z.object({
+  answerId: z.string().uuid(),
+  completed: z.boolean(),
+});
+
+type SubmitAnswerRpcResult = z.infer<typeof submitAnswerRpcResultSchema>;
+
+async function submitPublicFormAnswerRpc({
+  sessionId,
+  questionId,
+  formId,
+  defaultAnswer,
+  fileKey,
+  fileGeneratedAt,
+}: {
+  sessionId: string;
+  questionId: string;
+  formId: string;
+  defaultAnswer?: string;
+  fileKey?: string;
+  fileGeneratedAt?: string;
+}): Promise<SubmitAnswerRpcResult> {
+  const rpcClient = supabaseAdmin as unknown as {
+    rpc: (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  };
+
+  const { data, error } = await rpcClient.rpc("submit_public_form_answer", {
+    p_session_id: sessionId,
+    p_question_id: questionId,
+    p_form_id: formId,
+    p_default_answer: defaultAnswer ?? null,
+    p_file_key: fileKey ?? null,
+    p_file_generated_at: fileGeneratedAt ?? null,
+    p_stt: null,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return submitAnswerRpcResultSchema.parse(data);
+}
 
 async function getFormAssignmentOrThrow(assignmentId: string) {
   const { data: assignment, error } = await supabaseAdmin
@@ -64,19 +110,6 @@ async function getFormSessionOrThrow(sessionId: string) {
   if (!session) throw new Error("Form session not found");
 
   return session;
-}
-
-async function getQuestionOrThrow(questionId: string) {
-  const { data: question, error } = await supabaseAdmin
-    .from("question")
-    .select("id, form_id")
-    .eq("id", questionId)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!question) throw new Error("Question not found");
-
-  return question;
 }
 
 export const startFormSessionAction = publicViewerClient
@@ -135,21 +168,9 @@ export const submitAnswerAction = publicViewerClient
       audioMimeType,
     } = parsedInput;
 
-    const session = await getFormSessionOrThrow(sessionId);
-    if (session.form_id !== formId) {
-      throw new Error("Invalid session/form association");
-    }
-    if (session.status === "completed") {
-      throw new Error("Session already completed");
-    }
-
-    const question = await getQuestionOrThrow(questionId);
-    if (question.form_id !== formId) {
-      throw new Error("Invalid question/form association");
-    }
-
     let fileKey: string | undefined;
     let resolvedAudioMimeType: string | undefined;
+    let fileGeneratedAt: string | undefined;
 
     if (audioBase64) {
       const buffer = Buffer.from(audioBase64, "base64");
@@ -159,35 +180,29 @@ export const submitAnswerAction = publicViewerClient
       await uploadFile({ key, body: buffer, contentType: mimeType });
       fileKey = key;
       resolvedAudioMimeType = mimeType;
+      fileGeneratedAt = new Date().toISOString();
     }
 
-    const { data: insertedAnswer } = await supabaseAdmin
-      .from("answer")
-      .insert({
-        form_session_id: session.id,
-        question_id: question.id,
-        form_id: session.form_id,
-        user_id: session.user_id,
-        stt: null,
-        file_key: fileKey ?? null,
-        file_generated_at: fileKey ? new Date().toISOString() : null,
-        ...(defaultAnswer ? { default_answer: defaultAnswer } : {}),
-      } as never)
-      .select("id")
-      .single()
-      .throwOnError();
+    const submitResult = await submitPublicFormAnswerRpc({
+      sessionId,
+      questionId,
+      formId,
+      defaultAnswer,
+      fileKey,
+      fileGeneratedAt,
+    });
 
     if (fileKey) {
       try {
-        await tasks.trigger("form-answer-stt", {
-          answerId: insertedAnswer.id,
+        await formAnswerSttTask.trigger({
+          answerId: submitResult.answerId,
           fileKey,
           language,
           audioMimeType: resolvedAudioMimeType,
         });
       } catch (enqueueError) {
         console.log("[enqueue_answer_stt_failed]", {
-          answerId: insertedAnswer.id,
+          answerId: submitResult.answerId,
           formId,
           sessionId,
           message:
@@ -198,27 +213,7 @@ export const submitAnswerAction = publicViewerClient
       }
     }
 
-    const { count, error: questionsCountError } = await supabaseAdmin
-      .from("question")
-      .select("id", { count: "exact", head: true })
-      .eq("form_id", formId);
-
-    if (questionsCountError) throw questionsCountError;
-    if (!count || count <= 0) throw new Error("Form has no questions");
-
-    const nextQuestionIndex = (session.current_question_index ?? 0) + 1;
-    const isLast = nextQuestionIndex >= count;
-
-    await supabaseAdmin
-      .from("form_session")
-      .update({
-        current_question_index: nextQuestionIndex,
-        status: isLast ? "completed" : "in_progress",
-      })
-      .eq("id", session.id)
-      .throwOnError();
-
-    return { completed: isLast };
+    return { completed: submitResult.completed };
   });
 
 export const createLeadAction = publicViewerClient

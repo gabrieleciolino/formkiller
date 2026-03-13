@@ -141,6 +141,13 @@
       "when": 1773337461591,
       "tag": "0019_colossal_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1773382000000,
+      "tag": "0020_novel_submit_answer_rpc",
+      "breakpoints": true
     }
   ]
 }

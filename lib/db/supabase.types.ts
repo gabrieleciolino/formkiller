@@ -396,7 +396,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_public_form_answer: {
+        Args: {
+          p_default_answer?: string
+          p_file_generated_at?: string
+          p_file_key?: string
+          p_form_id: string
+          p_question_id: string
+          p_session_id: string
+          p_stt?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       account_role: "admin" | "user"

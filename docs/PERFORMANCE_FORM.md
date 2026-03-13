@@ -91,10 +91,18 @@ Riferimenti:
 
 `submitAnswerAction` esegue più query sequenziali (sessione, domanda, insert answer, count domande, update sessione).
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta:
 
 - unificare in RPC transazionale unica
 - validazione associazioni + insert + avanzamento indice in un solo passaggio
+
+Implementato:
+
+- nuova funzione DB `submit_public_form_answer(...)` in transazione (PL/pgSQL)
+- validazione sessione/domanda, insert risposta e update stato sessione in un solo call server->DB
+- `submitAnswerAction` rifattorizzata per usare la RPC e mantenere enqueue STT in background
 
 Impatto atteso: minore latenza server e minore variabilità p95/p99.
 
@@ -124,10 +132,18 @@ Riferimenti:
 
 La pipeline middleware esegue gestione sessione/auth anche per route pubbliche.
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta:
 
 - short-circuit per `/form/*` mantenendo solo header security
 - mantenere comportamento attuale su dashboard/admin
+
+Implementato:
+
+- route `/form/*` escluse da `updateSession` nel middleware
+- mantenuti gli header di sicurezza, incluso `allowSameOriginFraming` per embed same-origin
+- nessuna modifica al comportamento di dashboard/admin
 
 Impatto atteso: riduzione TTFB lato edge/server per traffico pubblico.
 
@@ -194,12 +210,12 @@ Riferimenti:
 
 - monitoring KPI baseline (TTFB, tempo avanzamento domanda, completion latency)
 - riduzione verifiche Turnstile per step (parziale: fatto per submit answer)
-- bypass middleware auth sulle route pubbliche `/form/*`
+- bypass middleware auth sulle route pubbliche `/form/*` [completato]
 
 ### Blocco B (1 - 2 giorni)
 
 - rimozione base64 e passaggio a upload binario
-- riduzione roundtrip DB nel submit answer (RPC transazionale)
+- riduzione roundtrip DB nel submit answer (RPC transazionale) [completato]
 - indici DB query hot
 
 ### Blocco C (2 - 3 giorni)
