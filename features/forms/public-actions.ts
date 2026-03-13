@@ -6,7 +6,6 @@ import { createLeadSchema } from "@/features/leads/schema";
 import { formAnswerSttTask } from "@/trigger/form-answer-stt";
 import { generateCompletionAnalysis } from "@/lib/ai/functions";
 import { generateTTS } from "@/lib/elevenlabs/functions";
-import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
   TurnstileVerificationError,
@@ -153,7 +152,7 @@ export const submitAnswerAction = publicViewerClient
       formId: z.string().uuid(),
       language: formLanguageSchema,
       defaultAnswer: z.string().optional(),
-      audioBase64: z.string().optional(),
+      audioFileKey: z.string().optional(),
       audioMimeType: z.string().optional(),
     }),
   )
@@ -164,24 +163,13 @@ export const submitAnswerAction = publicViewerClient
       formId,
       language,
       defaultAnswer,
-      audioBase64,
+      audioFileKey,
       audioMimeType,
     } = parsedInput;
 
-    let fileKey: string | undefined;
-    let resolvedAudioMimeType: string | undefined;
-    let fileGeneratedAt: string | undefined;
-
-    if (audioBase64) {
-      const buffer = Buffer.from(audioBase64, "base64");
-      const mimeType = audioMimeType ?? "audio/webm";
-      const key = `stt/${formId}/${sessionId}/${Date.now()}.webm`;
-
-      await uploadFile({ key, body: buffer, contentType: mimeType });
-      fileKey = key;
-      resolvedAudioMimeType = mimeType;
-      fileGeneratedAt = new Date().toISOString();
-    }
+    const fileKey = audioFileKey?.trim() ? audioFileKey : undefined;
+    const resolvedAudioMimeType = audioMimeType?.trim() ? audioMimeType : undefined;
+    const fileGeneratedAt = fileKey ? new Date().toISOString() : undefined;
 
     const submitResult = await submitPublicFormAnswerRpc({
       sessionId,

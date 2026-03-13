@@ -75,16 +75,24 @@ Riferimenti:
 
 La conversione `Blob -> base64` aumenta dimensione payload e costo CPU/memoria client/server.
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta:
 
 - upload binario diretto verso storage (presigned URL o endpoint dedicato)
 - inviare solo metadati e `fileKey` all'action
 
+Implementato:
+
+- upload audio dal viewer tramite endpoint pubblico `/api/form/audio-upload` (multipart/form-data)
+- `submitAnswerAction` ora riceve `audioFileKey` e non più `audioBase64`
+- mantenuto l’enqueue STT in background con chiave file già caricata su R2
+
 Impatto atteso: payload più piccoli, minore GC pressure su mobile, minor tempo serializzazione/deserializzazione.
 
 Riferimenti:
 
-- `features/forms/components/form-viewer/blob-to-base64.ts`
+- `app/api/form/audio-upload/route.ts`
 - `features/forms/components/form-viewer/index.tsx`
 
 ### 4) Ridurre roundtrip DB nel submit risposta
@@ -141,7 +149,7 @@ Proposta:
 
 Implementato:
 
-- route `/form/*` escluse da `updateSession` nel middleware
+- route `/form/*` e `/api/form/*` escluse da `updateSession` nel middleware
 - mantenuti gli header di sicurezza, incluso `allowSameOriginFraming` per embed same-origin
 - nessuna modifica al comportamento di dashboard/admin
 
@@ -156,12 +164,22 @@ Riferimenti:
 
 Le query più frequenti in runtime pubblico devono avere indici specifici.
 
+Stato: ✅ Implementato il 2026-03-13.
+
 Proposta iniziale:
 
 - `question(form_id, order)`
 - `question(form_id)`
 - `answer(form_session_id)`
 - opzionale: `answer(form_id, created_at)` per analytics
+
+Implementato:
+
+- migration SQL con indici:
+- `question_form_id_order_idx`
+- `question_form_id_idx`
+- `answer_form_session_id_idx`
+- `answer_form_id_created_at_idx`
 
 Impatto atteso: miglior p95 query e maggiore scalabilità sotto carico.
 
@@ -214,9 +232,9 @@ Riferimenti:
 
 ### Blocco B (1 - 2 giorni)
 
-- rimozione base64 e passaggio a upload binario
+- rimozione base64 e passaggio a upload binario [completato]
 - riduzione roundtrip DB nel submit answer (RPC transazionale) [completato]
-- indici DB query hot
+- indici DB query hot [completato]
 
 ### Blocco C (2 - 3 giorni)
 

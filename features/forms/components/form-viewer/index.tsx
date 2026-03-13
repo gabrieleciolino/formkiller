@@ -1,6 +1,5 @@
 "use client";
 
-import { blobToBase64 } from "@/features/forms/components/form-viewer/blob-to-base64";
 import { CompletedPhase } from "@/features/forms/components/form-viewer/completed-phase";
 import { LeadForm } from "@/features/forms/components/form-viewer/lead-form";
 import { QuestionPhase } from "@/features/forms/components/form-viewer/question-phase";
@@ -198,12 +197,40 @@ export default function FormViewer({ form }: FormViewerProps) {
 
     startTransition(async () => {
       try {
-        let audioBase64: string | undefined;
+        let audioFileKey: string | undefined;
         let audioMimeType: string | undefined;
 
         if (answer.type === "custom") {
-          audioBase64 = await blobToBase64(answer.blob);
-          audioMimeType = answer.blob.type;
+          const formData = new FormData();
+          formData.append(
+            "file",
+            answer.blob,
+            `answer-${Date.now()}.${answer.blob.type.includes("webm") ? "webm" : "bin"}`,
+          );
+          formData.append("formId", form.id);
+          formData.append("sessionId", sessionId);
+          formData.append("questionId", currentQuestion.id);
+
+          const uploadResponse = await fetch("/api/form/audio-upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error("AUDIO_UPLOAD_FAILED");
+          }
+
+          const uploadPayload = (await uploadResponse.json()) as {
+            fileKey?: string;
+            mimeType?: string;
+          };
+
+          if (!uploadPayload.fileKey) {
+            throw new Error("AUDIO_UPLOAD_MISSING_FILE_KEY");
+          }
+
+          audioFileKey = uploadPayload.fileKey;
+          audioMimeType = uploadPayload.mimeType ?? answer.blob.type;
         }
 
         const { data, serverError } = await submitAnswerAction({
@@ -212,7 +239,7 @@ export default function FormViewer({ form }: FormViewerProps) {
           formId: form.id,
           language: form.language,
           defaultAnswer: answer.type === "default" ? answer.text : undefined,
-          audioBase64,
+          audioFileKey,
           audioMimeType,
         });
 

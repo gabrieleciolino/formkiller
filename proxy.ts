@@ -4,8 +4,10 @@ import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isPublicFormRoute = pathname.startsWith("/form/");
-  const allowSameOriginFraming = isPublicFormRoute;
+  const isPublicFormPageRoute = pathname.startsWith("/form/");
+  const isPublicFormApiRoute = pathname.startsWith("/api/form/");
+  const isPublicFormRoute = isPublicFormPageRoute || isPublicFormApiRoute;
+  const allowSameOriginFraming = isPublicFormPageRoute;
 
   if (pathname === "/") {
     return applySecurityHeaders(NextResponse.redirect(new URL("/it", request.url)));
