@@ -5,10 +5,10 @@ import type { RecordingButtonProps } from "@/features/forms/types";
 import { StopCircleIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const RADIUS = 26;
+const RADIUS = 36;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-export function RecordingButton({ onStop }: RecordingButtonProps) {
+export function RecordingButton({ onStop, isDark }: RecordingButtonProps) {
   const [elapsed, setElapsed] = useState(0);
   const onStopRef = useRef(onStop);
 
@@ -35,39 +35,40 @@ export function RecordingButton({ onStop }: RecordingButtonProps) {
     return () => clearInterval(id);
   }, []);
 
+  // decrements: starts full, empties as time passes
   const dashoffset = CIRCUMFERENCE * (elapsed / MAX_RECORDING_SECONDS);
 
   return (
-    <div className="relative size-14">
+    <div className="relative size-20">
+      <button
+        onClick={() => onStopRef.current(false)}
+        className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-red-500/40 bg-red-500/80 text-white transition-all active:scale-95 hover:bg-red-500/90"
+      >
+        <StopCircleIcon className="size-8" />
+      </button>
       <svg
-        className="absolute inset-0 -rotate-90"
-        viewBox="0 0 56 56"
+        className="pointer-events-none absolute inset-0 -rotate-90"
+        viewBox="0 0 80 80"
         fill="none"
       >
         <circle
-          cx="28"
-          cy="28"
+          cx="40"
+          cy="40"
           r={RADIUS}
-          stroke="rgba(239,68,68,0.15)"
-          strokeWidth="2"
+          stroke="rgba(255,255,255,0.2)"
+          strokeWidth="3"
         />
         <circle
-          cx="28"
-          cy="28"
+          cx="40"
+          cy="40"
           r={RADIUS}
-          stroke="rgba(239,68,68,0.7)"
-          strokeWidth="2"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth="3"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={dashoffset}
           strokeLinecap="round"
         />
       </svg>
-      <button
-        onClick={() => onStopRef.current(false)}
-        className="absolute inset-0 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 active:scale-95"
-      >
-        <StopCircleIcon className="size-5" />
-      </button>
     </div>
   );
 }

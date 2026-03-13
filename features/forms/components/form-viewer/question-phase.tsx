@@ -54,7 +54,8 @@ export function QuestionPhase({
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}
 
-      <div className="relative flex shrink-0 items-center gap-3 overflow-hidden px-6 pt-6 pb-2">
+      <div className={`relative mx-4 mt-6 shrink-0 rounded-2xl px-4 py-3 ${isDark ? "bg-black/90" : "bg-white/90"}`}>
+      <div className="flex items-center gap-3 overflow-hidden">
         <div className="flex min-w-0 flex-1 gap-1.5">
           {questions.map((_, i) => (
             <div
@@ -89,9 +90,10 @@ export function QuestionPhase({
           </button>
         )}
       </div>
+      </div>
 
       <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-4">
-        <p className="text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+        <p className={`text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl ${tk.textShadow}`}>
           {displayedText}
           <span
             className={`ml-px inline-block h-6 w-0.5 align-middle ${tk.cursor}`}
@@ -109,44 +111,45 @@ export function QuestionPhase({
               >
                 <MicIcon className="size-8" />
               </button>
-              <p className={`text-center text-xs ${tk.recordHint}`}>
+              <p className={`text-center text-xs font-semibold ${tk.recordHint} ${tk.textShadow}`}>
                 {t("viewer.question.recordHint")}
               </p>
             </>
           )}
 
           {recordState === "recording" && (
-            <RecordingButton onStop={onStopRecording} />
+            <RecordingButton onStop={onStopRecording} isDark={isDark} />
           )}
 
-          {recordState === "done" && (
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full border border-green-500/25 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-                  <CheckCircleIcon className="size-4" />
-                  {t("viewer.question.recorded")}
-                </div>
-                <button
-                  onClick={onResetRecording}
-                  className={`text-xs underline ${tk.reRecord}`}
-                >
-                  {t("viewer.question.reRecord")}
-                </button>
-              </div>
-              {autoStopped && (
-                <p className="text-xs text-amber-400/70">
-                  {t("viewer.question.recordAutoStopped")}
-                </p>
-              )}
-            </div>
-          )}
         </div>
       )}
 
       <div
         className={`relative mx-4 mb-6 shrink-0 space-y-3 rounded-2xl p-4 ${isDark ? "bg-black/90" : "bg-white/90"}`}
       >
-        {showDefaultAnswers && (
+        {showRecording && recordState === "done" && (
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium ${isDark ? "text-green-400" : "text-green-600"}`}>
+                <CheckCircleIcon className="size-4" />
+                {t("viewer.question.recorded")}
+              </div>
+              <button
+                onClick={onResetRecording}
+                className={`text-xs font-medium transition-all active:scale-95 ${tk.reRecord}`}
+              >
+                {t("viewer.question.reRecord")}
+              </button>
+            </div>
+            {autoStopped && (
+              <p className={`text-xs font-medium ${isDark ? "text-amber-300" : "text-amber-600"}`}>
+                {t("viewer.question.recordAutoStopped")}
+              </p>
+            )}
+          </div>
+        )}
+
+        {showDefaultAnswers && recordState !== "done" && (
           <>
             {showRecording && (
               <p className={`text-center text-xs ${tk.recordHint}`}>

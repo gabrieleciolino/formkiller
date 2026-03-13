@@ -105,6 +105,7 @@ export type FormViewerCompletionPayload = {
 
 export type RecordingButtonProps = {
   onStop: (wasAuto: boolean) => void;
+  isDark: boolean;
 };
 
 export type LeadFormProps = {
@@ -143,6 +144,7 @@ export type FormViewerThemeTokens = {
   recordIdle: string;
   recordHint: string;
   reRecord: string;
+  textShadow: string;
 };
 
 export type FormViewerBackgroundStyle = CSSProperties | undefined;
