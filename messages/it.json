@@ -19,6 +19,7 @@
   "dashboard": {
     "sidebar": {
       "forms": "Form",
+      "tests": "Test",
       "users": "Utenti",
       "leads": "Lead",
       "sessions": "Sessioni",
@@ -76,6 +77,24 @@
         "type": "Tipo",
         "language": "Lingua",
         "instructions": "Istruzioni"
+      }
+    },
+    "tests": {
+      "title": "Test",
+      "columns": {
+        "name": "Nome",
+        "slug": "Slug",
+        "language": "Lingua",
+        "status": "Stato",
+        "createdAt": "Creato il",
+        "actions": "Azioni",
+        "view": "Visualizza",
+        "open": "Apri",
+        "delete": "Elimina",
+        "confirmDelete": "Sei sicuro di voler eliminare questo test? L'azione non puo essere annullata."
+      },
+      "detail": {
+        "back": "Indietro"
       }
     },
     "leads": {
@@ -249,6 +268,78 @@
       "en": "English",
       "it": "Italiano",
       "es": "Español"
+    }
+  },
+  "tests": {
+    "status": {
+      "draft": "Bozza",
+      "published": "Pubblicato"
+    },
+    "create": {
+      "trigger": "Crea test",
+      "title": "Crea test",
+      "generatorTitle": "Generazione AI",
+      "additionalPrompt": "Prompt aggiuntivo",
+      "additionalPromptPlaceholder": "Facoltativo: indica stile, tema o target del test.",
+      "questionsCount": "Numero domande",
+      "language": "Lingua",
+      "generate": "Genera bozza",
+      "generating": "Generazione...",
+      "generated": "Bozza generata.",
+      "generateError": "Generazione bozza fallita.",
+      "reviewTitle": "Approva e modifica"
+    },
+    "editor": {
+      "name": "Nome test",
+      "language": "Lingua",
+      "introTitle": "Titolo intro",
+      "introMessage": "Messaggio intro",
+      "endTitle": "Titolo finale",
+      "endMessage": "Messaggio finale",
+      "create": "Salva e pubblica",
+      "save": "Salva modifiche",
+      "successCreate": "Test creato e pubblicato.",
+      "successUpdate": "Test aggiornato.",
+      "error": "Operazione fallita.",
+      "profiles": {
+        "titleSection": "Profili finali",
+        "profileTitle": "Profilo {index}",
+        "title": "Titolo",
+        "description": "Descrizione"
+      },
+      "questions": {
+        "titleSection": "Domande e risposte",
+        "add": "Aggiungi domanda",
+        "label": "Domanda {index}",
+        "delete": "Elimina domanda",
+        "answers": "Risposte",
+        "answerLabel": "Risposta {index}"
+      },
+      "scoring": {
+        "profile": "P{profile}"
+      }
+    }
+  },
+  "testViewer": {
+    "welcome": {
+      "defaultMessage": "Rispondi a tutte le domande per scoprire il tuo profilo finale.",
+      "start": "Inizia test"
+    },
+    "question": {
+      "progress": "Domanda {current} di {total}",
+      "next": "Avanti",
+      "finish": "Scopri il risultato"
+    },
+    "completed": {
+      "badge": "Risultato",
+      "title": "Il tuo profilo",
+      "defaultMessage": "Ecco il risultato del tuo test.",
+      "scoreLabel": "Punteggi finali",
+      "restart": "Rifai il test",
+      "saving": "Salvataggio risultato..."
+    },
+    "errors": {
+      "saveResult": "Errore durante il salvataggio del risultato."
     }
   },
   "viewer": {

@@ -17,6 +17,18 @@ import {
 import { authenticatedRole } from "drizzle-orm/supabase";
 import { GenerateFormType } from "@/lib/ai/types";
 
+type TestQuestionAnswer = {
+  answer: string;
+  order: number;
+  scores: [number, number, number, number];
+};
+
+type TestResultAnswerSelection = {
+  questionId: string;
+  answerOrder: number;
+  scores: [number, number, number, number];
+};
+
 const authUserTable = pgSchema("auth").table("users", {
   id: uuid("id").primaryKey().defaultRandom(),
 });
@@ -44,6 +56,15 @@ const ownsFormExpr = (formIdCol: AnyPgColumn): SQL => sql`
     from "form" f
     where f.id = ${formIdCol}
       and f.user_id = auth.uid()
+  )
+`;
+
+const isPublishedTestExpr = (testIdCol: AnyPgColumn): SQL => sql`
+  exists (
+    select 1
+    from "test" t
+    where t.id = ${testIdCol}
+      and t.status = 'published'
   )
 `;
 
@@ -127,6 +148,7 @@ export const formTypeEnum = pgEnum("form_type", [
 ]);
 
 export const formLanguageEnum = pgEnum("form_language", ["en", "it", "es"]);
+export const testStatusEnum = pgEnum("test_status", ["draft", "published"]);
 
 export const formTable = pgTable(
   "form",
@@ -397,6 +419,182 @@ export const answerTable = pgTable(
       for: "delete",
       to: authenticatedRole,
       using: isOwnerOrAdminExpr(t.userId),
+    }),
+  ],
+).enableRLS();
+
+export const testTable = pgTable(
+  "test",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => authUserTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    language: formLanguageEnum("language").notNull().default("en"),
+    status: testStatusEnum("status").notNull().default("draft"),
+    introTitle: text("intro_title"),
+    introMessage: text("intro_message"),
+    endTitle: text("end_title"),
+    endMessage: text("end_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    unique("test_slug_unique").on(t.slug),
+    index("test_user_id_idx").on(t.userId),
+    index("test_status_idx").on(t.status),
+    pgPolicy("test_select_public_or_admin", {
+      for: "select",
+      to: "public",
+      using: sql`${isAdminExpr} or ${t.status} = 'published'`,
+    }),
+    pgPolicy("test_insert_admin", {
+      for: "insert",
+      to: authenticatedRole,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_update_admin", {
+      for: "update",
+      to: authenticatedRole,
+      using: isAdminExpr,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_delete_admin", {
+      for: "delete",
+      to: authenticatedRole,
+      using: isAdminExpr,
+    }),
+  ],
+).enableRLS();
+
+export const testQuestionTable = pgTable(
+  "test_question",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    testId: uuid("test_id")
+      .notNull()
+      .references(() => testTable.id, { onDelete: "cascade" }),
+    order: integer("order").notNull().default(0),
+    question: text("question").notNull(),
+    answers: jsonb("answers").$type<TestQuestionAnswer[]>().notNull(),
+    fileKey: text("file_key"),
+    fileGeneratedAt: timestamp("file_generated_at"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("test_question_test_id_idx").on(t.testId),
+    index("test_question_test_id_order_idx").on(t.testId, t.order),
+    pgPolicy("test_question_select_public_or_admin", {
+      for: "select",
+      to: "public",
+      using: sql`${isAdminExpr} or ${isPublishedTestExpr(t.testId)}`,
+    }),
+    pgPolicy("test_question_insert_admin", {
+      for: "insert",
+      to: authenticatedRole,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_question_update_admin", {
+      for: "update",
+      to: authenticatedRole,
+      using: isAdminExpr,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_question_delete_admin", {
+      for: "delete",
+      to: authenticatedRole,
+      using: isAdminExpr,
+    }),
+  ],
+).enableRLS();
+
+export const testProfileTable = pgTable(
+  "test_profile",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    testId: uuid("test_id")
+      .notNull()
+      .references(() => testTable.id, { onDelete: "cascade" }),
+    order: integer("order").notNull().default(0),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("test_profile_test_id_idx").on(t.testId),
+    index("test_profile_test_id_order_idx").on(t.testId, t.order),
+    pgPolicy("test_profile_select_public_or_admin", {
+      for: "select",
+      to: "public",
+      using: sql`${isAdminExpr} or ${isPublishedTestExpr(t.testId)}`,
+    }),
+    pgPolicy("test_profile_insert_admin", {
+      for: "insert",
+      to: authenticatedRole,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_profile_update_admin", {
+      for: "update",
+      to: authenticatedRole,
+      using: isAdminExpr,
+      withCheck: isAdminExpr,
+    }),
+    pgPolicy("test_profile_delete_admin", {
+      for: "delete",
+      to: authenticatedRole,
+      using: isAdminExpr,
+    }),
+  ],
+).enableRLS();
+
+export const testResultTable = pgTable(
+  "test_result",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    testId: uuid("test_id")
+      .notNull()
+      .references(() => testTable.id, { onDelete: "cascade" }),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => testProfileTable.id, { onDelete: "cascade" }),
+    language: formLanguageEnum("language").notNull().default("en"),
+    scoreTotals: jsonb("score_totals").$type<number[]>().notNull(),
+    answerSelections: jsonb("answer_selections")
+      .$type<TestResultAnswerSelection[]>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("test_result_test_id_idx").on(t.testId),
+    index("test_result_profile_id_idx").on(t.profileId),
+    index("test_result_created_at_idx").on(t.createdAt),
+    pgPolicy("test_result_select_admin", {
+      for: "select",
+      to: authenticatedRole,
+      using: isAdminExpr,
+    }),
+    pgPolicy("test_result_insert_public", {
+      for: "insert",
+      to: "public",
+      withCheck: sql`
+        ${isPublishedTestExpr(t.testId)}
+        and exists (
+          select 1
+          from "test_profile" p
+          where p.id = ${t.profileId}
+            and p.test_id = ${t.testId}
+        )
+      `,
+    }),
+    pgPolicy("test_result_delete_admin", {
+      for: "delete",
+      to: authenticatedRole,
+      using: isAdminExpr,
     }),
   ],
 ).enableRLS();

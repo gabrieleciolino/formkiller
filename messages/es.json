@@ -19,6 +19,7 @@
   "dashboard": {
     "sidebar": {
       "forms": "Formularios",
+      "tests": "Tests",
       "users": "Usuarios",
       "leads": "Contactos",
       "sessions": "Sesiones",
@@ -76,6 +77,24 @@
         "type": "Tipo",
         "language": "Idioma",
         "instructions": "Instrucciones"
+      }
+    },
+    "tests": {
+      "title": "Tests",
+      "columns": {
+        "name": "Nombre",
+        "slug": "Slug",
+        "language": "Idioma",
+        "status": "Estado",
+        "createdAt": "Creado el",
+        "actions": "Acciones",
+        "view": "Ver",
+        "open": "Abrir",
+        "delete": "Eliminar",
+        "confirmDelete": "¿Seguro que quieres eliminar este test? Esta accion no se puede deshacer."
+      },
+      "detail": {
+        "back": "Volver"
       }
     },
     "leads": {
@@ -249,6 +268,78 @@
       "en": "English",
       "it": "Italiano",
       "es": "Español"
+    }
+  },
+  "tests": {
+    "status": {
+      "draft": "Borrador",
+      "published": "Publicado"
+    },
+    "create": {
+      "trigger": "Crear test",
+      "title": "Crear test",
+      "generatorTitle": "Generacion IA",
+      "additionalPrompt": "Prompt adicional",
+      "additionalPromptPlaceholder": "Opcional: define tema, tono o publico objetivo.",
+      "questionsCount": "Numero de preguntas",
+      "language": "Idioma",
+      "generate": "Generar borrador",
+      "generating": "Generando...",
+      "generated": "Borrador generado.",
+      "generateError": "Error al generar borrador.",
+      "reviewTitle": "Aprobar y editar"
+    },
+    "editor": {
+      "name": "Nombre del test",
+      "language": "Idioma",
+      "introTitle": "Titulo de intro",
+      "introMessage": "Mensaje de intro",
+      "endTitle": "Titulo final",
+      "endMessage": "Mensaje final",
+      "create": "Guardar y publicar",
+      "save": "Guardar cambios",
+      "successCreate": "Test creado y publicado.",
+      "successUpdate": "Test actualizado.",
+      "error": "Operacion fallida.",
+      "profiles": {
+        "titleSection": "Perfiles finales",
+        "profileTitle": "Perfil {index}",
+        "title": "Titulo",
+        "description": "Descripcion"
+      },
+      "questions": {
+        "titleSection": "Preguntas y respuestas",
+        "add": "Anadir pregunta",
+        "label": "Pregunta {index}",
+        "delete": "Eliminar pregunta",
+        "answers": "Respuestas",
+        "answerLabel": "Respuesta {index}"
+      },
+      "scoring": {
+        "profile": "P{profile}"
+      }
+    }
+  },
+  "testViewer": {
+    "welcome": {
+      "defaultMessage": "Responde todas las preguntas para descubrir tu perfil final.",
+      "start": "Empezar test"
+    },
+    "question": {
+      "progress": "Pregunta {current} de {total}",
+      "next": "Siguiente",
+      "finish": "Ver resultado"
+    },
+    "completed": {
+      "badge": "Resultado",
+      "title": "Tu perfil",
+      "defaultMessage": "Aqui esta el resultado final de tu test.",
+      "scoreLabel": "Puntuaciones finales",
+      "restart": "Repetir test",
+      "saving": "Guardando resultado..."
+    },
+    "errors": {
+      "saveResult": "Error al guardar el resultado."
     }
   },
   "viewer": {

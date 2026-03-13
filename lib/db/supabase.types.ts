@@ -400,6 +400,181 @@ export type Database = {
           },
         ]
       }
+      test: {
+        Row: {
+          created_at: string | null
+          end_message: string | null
+          end_title: string | null
+          id: string
+          intro_message: string | null
+          intro_title: string | null
+          language: Database["public"]["Enums"]["form_language"]
+          name: string
+          slug: string
+          status: Database["public"]["Enums"]["test_status"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_message?: string | null
+          end_title?: string | null
+          id?: string
+          intro_message?: string | null
+          intro_title?: string | null
+          language?: Database["public"]["Enums"]["form_language"]
+          name: string
+          slug: string
+          status?: Database["public"]["Enums"]["test_status"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_message?: string | null
+          end_title?: string | null
+          id?: string
+          intro_message?: string | null
+          intro_title?: string | null
+          language?: Database["public"]["Enums"]["form_language"]
+          name?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["test_status"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      test_profile: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          order: number
+          test_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          order?: number
+          test_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          order?: number
+          test_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_profile_test_id_test_id_fk"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "test"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_question: {
+        Row: {
+          answers: Json
+          created_at: string | null
+          file_generated_at: string | null
+          file_key: string | null
+          id: string
+          order: number
+          question: string
+          test_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          answers: Json
+          created_at?: string | null
+          file_generated_at?: string | null
+          file_key?: string | null
+          id?: string
+          order?: number
+          question: string
+          test_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          answers?: Json
+          created_at?: string | null
+          file_generated_at?: string | null
+          file_key?: string | null
+          id?: string
+          order?: number
+          question?: string
+          test_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_question_test_id_test_id_fk"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "test"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_result: {
+        Row: {
+          answer_selections: Json
+          created_at: string | null
+          id: string
+          language: Database["public"]["Enums"]["form_language"]
+          profile_id: string
+          score_totals: Json
+          test_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          answer_selections: Json
+          created_at?: string | null
+          id?: string
+          language?: Database["public"]["Enums"]["form_language"]
+          profile_id: string
+          score_totals: Json
+          test_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          answer_selections?: Json
+          created_at?: string | null
+          id?: string
+          language?: Database["public"]["Enums"]["form_language"]
+          profile_id?: string
+          score_totals?: Json
+          test_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_result_profile_id_test_profile_id_fk"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "test_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_result_test_id_test_id_fk"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "test"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -425,6 +600,7 @@ export type Database = {
       form_session_status: "pending" | "in_progress" | "completed"
       form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
+      test_status: "draft" | "published"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -561,6 +737,7 @@ export const Constants = {
       form_session_status: ["pending", "in_progress", "completed"],
       form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
+      test_status: ["draft", "published"],
     },
   },
 } as const

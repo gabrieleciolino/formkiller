@@ -3,6 +3,7 @@ import {
   generateCompletionAnalysisOutputSchema,
   generateFormOutputSchema,
   generateFormSchema,
+  generateViralTestOutputSchema,
 } from "@/lib/ai/schema";
 import { z } from "zod";
 
@@ -13,4 +14,7 @@ export type GenerateAnalysisInstructionsOutputType = z.infer<
 >;
 export type GenerateCompletionAnalysisOutputType = z.infer<
   typeof generateCompletionAnalysisOutputSchema
+>;
+export type GenerateViralTestOutputType = z.infer<
+  typeof generateViralTestOutputSchema
 >;

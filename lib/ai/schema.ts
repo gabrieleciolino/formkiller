@@ -2,6 +2,12 @@ import {
   ANALYSIS_PROMPT_MAX_CHARS,
   ANALYSIS_PROMPT_MAX_WORDS,
 } from "@/features/forms/schema";
+import {
+  TEST_ANSWERS_PER_QUESTION,
+  TEST_MAX_QUESTIONS,
+  TEST_MIN_QUESTIONS,
+  TEST_PROFILES_COUNT,
+} from "@/features/tests/schema";
 import z from "zod";
 
 const hasMaxWords = (value: string, maxWords: number) =>
@@ -50,4 +56,35 @@ export const generateCompletionAnalysisOutputSchema = z.object({
     .min(1)
     .max(ANALYSIS_PROMPT_MAX_CHARS)
     .refine((value) => hasMaxWords(value, ANALYSIS_PROMPT_MAX_WORDS)),
+});
+
+const generatedViralTestAnswerSchema = z.object({
+  answer: z.string().trim().min(1),
+  order: z.number().int(),
+  scores: z.array(z.number().int().min(0)).length(TEST_PROFILES_COUNT),
+});
+
+const generatedViralTestQuestionSchema = z.object({
+  question: z.string().trim().min(1),
+  order: z.number().int(),
+  answers: z.array(generatedViralTestAnswerSchema).length(TEST_ANSWERS_PER_QUESTION),
+});
+
+const generatedViralTestProfileSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  order: z.number().int(),
+});
+
+export const generateViralTestOutputSchema = z.object({
+  name: z.string().trim().min(1),
+  introTitle: z.string().trim().min(1),
+  introMessage: z.string().trim().min(1),
+  endTitle: z.string().trim().min(1),
+  endMessage: z.string().trim().min(1),
+  profiles: z.array(generatedViralTestProfileSchema).length(TEST_PROFILES_COUNT),
+  questions: z
+    .array(generatedViralTestQuestionSchema)
+    .min(TEST_MIN_QUESTIONS)
+    .max(TEST_MAX_QUESTIONS),
 });

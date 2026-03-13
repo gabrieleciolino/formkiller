@@ -6,14 +6,20 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublicFormPageRoute = pathname.startsWith("/form/");
   const isPublicFormApiRoute = pathname.startsWith("/api/form/");
-  const isPublicFormRoute = isPublicFormPageRoute || isPublicFormApiRoute;
-  const allowSameOriginFraming = isPublicFormPageRoute;
+  const isPublicTestPageRoute = pathname.startsWith("/test/");
+  const isPublicTestApiRoute = pathname.startsWith("/api/test/");
+  const isPublicRoute =
+    isPublicFormPageRoute ||
+    isPublicFormApiRoute ||
+    isPublicTestPageRoute ||
+    isPublicTestApiRoute;
+  const allowSameOriginFraming = isPublicFormPageRoute || isPublicTestPageRoute;
 
   if (pathname === "/") {
     return applySecurityHeaders(NextResponse.redirect(new URL("/it", request.url)));
   }
 
-  if (isPublicFormRoute) {
+  if (isPublicRoute) {
     return applySecurityHeaders(NextResponse.next({ request }), {
       allowSameOriginFraming,
     });

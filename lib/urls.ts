@@ -9,6 +9,11 @@ export const urls = {
       create: "/admin/forms/create",
       detail: (formId: string) => `/admin/forms/${formId}`,
     },
+    tests: {
+      index: "/admin/tests",
+      create: "/admin/tests/create",
+      detail: (testId: string) => `/admin/tests/${testId}`,
+    },
     users: {
       index: "/admin/users",
     },
@@ -42,4 +47,5 @@ export const urls = {
     },
   },
   form: (assignmentId: string) => `/form/${assignmentId}`,
+  test: (slug: string) => `/test/${slug}`,
 };

@@ -1,0 +1,155 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import TestEditorForm from "@/features/tests/components/test-editor-form";
+import { generateTestDraftAction } from "@/features/tests/actions";
+import {
+  generateTestDraftSchema,
+  type EditableTestType,
+  type GenerateTestDraftType,
+} from "@/features/tests/schema";
+import { formLanguageSchema, type FormLanguage } from "@/features/forms/schema";
+import { useZodLocale } from "@/hooks/use-zod-locale";
+import { Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+export default function CreateTestForm() {
+  const t = useTranslations();
+  const [draft, setDraft] = useState<EditableTestType | null>(null);
+  const [isGenerating, startGenerating] = useTransition();
+  useZodLocale();
+
+  const form = useForm<GenerateTestDraftType>({
+    resolver: zodResolver(generateTestDraftSchema),
+    defaultValues: {
+      additionalPrompt: "",
+      questionsCount: 7,
+      language: "it",
+    },
+  });
+
+  const handleGenerate = (values: GenerateTestDraftType) => {
+    startGenerating(async () => {
+      try {
+        const { data, serverError, validationErrors } = await generateTestDraftAction(
+          values,
+        );
+
+        if (serverError || validationErrors || !data) {
+          throw new Error();
+        }
+
+        setDraft(data);
+        toast(t("tests.create.generated"));
+      } catch {
+        toast(t("tests.create.generateError"));
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleGenerate)} className="space-y-4 rounded-md border border-border p-4">
+        <h3 className="text-base font-semibold text-foreground">
+          {t("tests.create.generatorTitle")}
+        </h3>
+
+        <Controller
+          name="additionalPrompt"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>
+                {t("tests.create.additionalPrompt")}
+              </FieldLabel>
+              <Textarea
+                {...field}
+                id={field.name}
+                rows={4}
+                placeholder={t("tests.create.additionalPromptPlaceholder")}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Controller
+            name="questionsCount"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>
+                  {t("tests.create.questionsCount")}
+                </FieldLabel>
+                <Input
+                  id={field.name}
+                  type="number"
+                  min={3}
+                  max={12}
+                  step={1}
+                  value={field.value}
+                  onChange={(event) => {
+                    const value = Number.parseInt(event.target.value, 10);
+                    field.onChange(Number.isNaN(value) ? 3 : value);
+                  }}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="language"
+            control={form.control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>{t("tests.create.language")}</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(formLanguageSchema.options as FormLanguage[]).map((language) => (
+                      <SelectItem key={language} value={language}>
+                        {t(`forms.languages.${language}` as Parameters<typeof t>[0])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          />
+        </div>
+
+        <Button type="submit" variant="secondary" disabled={isGenerating}>
+          <Sparkles className="size-4" />
+          {isGenerating ? t("tests.create.generating") : t("tests.create.generate")}
+        </Button>
+      </form>
+
+      {draft ? (
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold text-foreground">
+            {t("tests.create.reviewTitle")}
+          </h3>
+          <TestEditorForm mode="create" initialData={draft} />
+        </div>
+      ) : null}
+    </div>
+  );
+}

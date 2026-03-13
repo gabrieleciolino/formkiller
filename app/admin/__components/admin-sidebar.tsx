@@ -10,7 +10,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { urls } from "@/lib/urls";
-import { Form, PersonStanding, Layers, LibraryBig, Users } from "lucide-react";
+import {
+  Form,
+  PersonStanding,
+  Layers,
+  LibraryBig,
+  Users,
+  Flame,
+} from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +34,11 @@ export default async function AdminSidebar() {
       label: t("dashboard.sidebar.forms"),
       icon: Form,
       url: urls.admin.forms.index,
+    },
+    {
+      label: t("dashboard.sidebar.tests"),
+      icon: Flame,
+      url: urls.admin.tests.index,
     },
     {
       label: t("dashboard.sidebar.users"),
