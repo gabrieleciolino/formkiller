@@ -7,7 +7,7 @@ import { createLeadSchema, type CreateLeadType } from "@/features/leads/schema";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useCallback, useEffect, useRef, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -23,6 +23,10 @@ export function LeadForm({
   isDark,
 }: LeadFormProps) {
   const [isPending, startTransition] = useTransition();
+  const prefetchedTurnstileTokenRef = useRef<string | null>(null);
+  const prefetchTurnstileTokenPromiseRef = useRef<Promise<string | null> | null>(
+    null,
+  );
   const t = useTranslations();
 
   useZodLocale();
@@ -36,12 +40,56 @@ export function LeadForm({
     defaultValues: { sessionId, formId },
   });
 
+  const primeTurnstileToken = useCallback(() => {
+    if (prefetchedTurnstileTokenRef.current || prefetchTurnstileTokenPromiseRef.current) {
+      return;
+    }
+
+    prefetchTurnstileTokenPromiseRef.current = getTurnstileToken()
+      .then((token) => {
+        prefetchedTurnstileTokenRef.current = token;
+        return token;
+      })
+      .catch(() => null)
+      .finally(() => {
+        prefetchTurnstileTokenPromiseRef.current = null;
+      });
+  }, [getTurnstileToken]);
+
+  useEffect(() => {
+    primeTurnstileToken();
+
+    return () => {
+      prefetchedTurnstileTokenRef.current = null;
+      prefetchTurnstileTokenPromiseRef.current = null;
+    };
+  }, [primeTurnstileToken]);
+
+  const getSubmitTurnstileToken = useCallback(async () => {
+    if (prefetchedTurnstileTokenRef.current) {
+      const token = prefetchedTurnstileTokenRef.current;
+      prefetchedTurnstileTokenRef.current = null;
+      return token;
+    }
+
+    if (prefetchTurnstileTokenPromiseRef.current) {
+      const token = await prefetchTurnstileTokenPromiseRef.current;
+      if (token) {
+        prefetchedTurnstileTokenRef.current = null;
+        return token;
+      }
+    }
+
+    return getTurnstileToken().catch(() => null);
+  }, [getTurnstileToken]);
+
   const onSubmit = (values: CreateLeadType) => {
     startTransition(async () => {
       try {
-        const turnstileToken = await getTurnstileToken().catch(() => null);
+        const turnstileToken = await getSubmitTurnstileToken();
         if (!turnstileToken) {
           toast(t("viewer.errors.securityCheck"));
+          primeTurnstileToken();
           return;
         }
 
@@ -52,6 +100,7 @@ export function LeadForm({
 
         if (serverError === "TURNSTILE_FAILED") {
           toast(t("viewer.errors.securityCheck"));
+          primeTurnstileToken();
           return;
         }
 
@@ -63,6 +112,7 @@ export function LeadForm({
         });
       } catch {
         toast(t("viewer.leadForm.error"));
+        primeTurnstileToken();
       }
     });
   };
