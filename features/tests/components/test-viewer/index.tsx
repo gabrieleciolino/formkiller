@@ -36,11 +36,7 @@ function getWinnerProfileIndex(scoreTotals: ScoreTotals) {
 const ANSWER_LABELS = ["A", "B", "C", "D"];
 
 function ShareButtons({ profileTitle }: { profileTitle?: string }) {
-  const [url, setUrl] = useState("");
-
-  useEffect(() => {
-    setUrl(window.location.href);
-  }, []);
+  const url = typeof window === "undefined" ? "" : window.location.href;
 
   const shareText = profileTitle
     ? `Ho scoperto il mio profilo: "${profileTitle}"! Fai il test anche tu: ${url}`
