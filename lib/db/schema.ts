@@ -65,6 +65,7 @@ const isPublishedTestExpr = (testIdCol: AnyPgColumn): SQL => sql`
     from "test" t
     where t.id = ${testIdCol}
       and t.status = 'published'
+      and t.is_published = true
   )
 `;
 
@@ -444,6 +445,7 @@ export const testTable = pgTable(
     slug: text("slug").notNull(),
     language: formLanguageEnum("language").notNull().default("en"),
     status: testStatusEnum("status").notNull().default("draft"),
+    isPublished: boolean("is_published").notNull().default(false),
     backgroundImageKey: text("background_image_key"),
     backgroundMusicKey: text("background_music_key"),
     introTitle: text("intro_title"),
@@ -457,10 +459,11 @@ export const testTable = pgTable(
     unique("test_slug_unique").on(t.slug),
     index("test_user_id_idx").on(t.userId),
     index("test_status_idx").on(t.status),
+    index("test_is_published_idx").on(t.isPublished),
     pgPolicy("test_select_public_or_admin", {
       for: "select",
       to: "public",
-      using: sql`${isAdminExpr} or ${t.status} = 'published'`,
+      using: sql`${isAdminExpr} or (${t.status} = 'published' and ${t.isPublished} = true)`,
     }),
     pgPolicy("test_insert_admin", {
       for: "insert",

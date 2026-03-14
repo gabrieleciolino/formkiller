@@ -283,6 +283,7 @@ function normalizeEditableDraft(input: {
   return {
     name: input.name,
     language: "it",
+    isPublished: false,
     introTitle: input.introTitle,
     introMessage: input.introMessage,
     endTitle: input.endTitle,
@@ -493,7 +494,8 @@ export const createTestAction = adminActionClient
           name: parsedInput.name,
           slug,
           language: parsedInput.language,
-          status: "published",
+          status: parsedInput.isPublished ? "published" : "draft",
+          is_published: parsedInput.isPublished,
           background_image_key: DEFAULT_NEW_TEST_BACKGROUND_ASSET_ID,
           intro_title: toNullableText(parsedInput.introTitle),
           intro_message: toNullableText(parsedInput.introMessage),
@@ -634,7 +636,8 @@ export const updateTestAction = adminActionClient
       .update({
         name: parsedInput.name,
         language: parsedInput.language,
-        status: "published",
+        status: parsedInput.isPublished ? "published" : "draft",
+        is_published: parsedInput.isPublished,
         intro_title: toNullableText(parsedInput.introTitle),
         intro_message: toNullableText(parsedInput.introMessage),
         end_title: toNullableText(parsedInput.endTitle),

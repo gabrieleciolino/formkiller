@@ -53,4 +53,5 @@ export const urls = {
   },
   form: (assignmentId: string) => `/form/${assignmentId}`,
   test: (slug: string) => `/test/${slug}`,
+  tests: "/tests",
 };

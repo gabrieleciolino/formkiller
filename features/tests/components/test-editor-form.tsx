@@ -35,6 +35,7 @@ function createEmptyEditableTest(language: FormLanguage = "it"): EditableTestTyp
   return {
     name: "",
     language,
+    isPublished: false,
     introTitle: "",
     introMessage: "",
     endTitle: "",
@@ -118,7 +119,7 @@ export default function TestEditorForm({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Controller
           name="name"
           control={form.control}
@@ -152,6 +153,32 @@ export default function TestEditorForm({
                       {t(`forms.languages.${language}` as Parameters<typeof t>[0])}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="isPublished"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("tests.editor.publish")}</FieldLabel>
+              <Select
+                value={field.value ? "published" : "draft"}
+                onValueChange={(value) => field.onChange(value === "published")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">
+                    {t("tests.editor.publishOptions.draft")}
+                  </SelectItem>
+                  <SelectItem value="published">
+                    {t("tests.editor.publishOptions.published")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>

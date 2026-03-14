@@ -13,6 +13,7 @@ export const saveTestResultAction = publicActionClient
       .select("id")
       .eq("id", parsedInput.testId)
       .eq("status", "published")
+      .eq("is_published", true)
       .maybeSingle();
 
     if (testError) {

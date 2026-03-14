@@ -88,6 +88,7 @@ export type GenerateTestDraftType = z.infer<typeof generateTestDraftSchema>;
 export const editableTestSchema = z.object({
   name: z.string().trim().min(1).max(TEST_NAME_MAX_CHARS),
   language: formLanguageSchema,
+  isPublished: z.boolean(),
   introTitle: z.string().trim().min(1),
   introMessage: z.string().trim().min(1),
   endTitle: z.string().trim().min(1),

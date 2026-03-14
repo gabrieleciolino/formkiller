@@ -307,6 +307,11 @@
     "editor": {
       "name": "Nombre del test",
       "language": "Idioma",
+      "publish": "Publicación",
+      "publishOptions": {
+        "draft": "Borrador (no público)",
+        "published": "Publicado (público)"
+      },
       "introTitle": "Titulo de intro",
       "introMessage": "Mensaje de intro",
       "endTitle": "Titulo final",
@@ -373,6 +378,15 @@
         "completed": "Completada",
         "failed": "Fallida"
       }
+    },
+    "public": {
+      "eyebrow": "Tests rápidos",
+      "title": "Elige un test",
+      "description": "Abre un test, responde en pocos toques y obtén tu resultado al instante.",
+      "cta": "Empezar ahora",
+      "empty": "Ahora mismo no hay tests disponibles.",
+      "noSubtitle": "Descubre qué dice este test sobre ti.",
+      "logoAlt": "Logo de FormKiller"
     }
   },
   "testViewer": {

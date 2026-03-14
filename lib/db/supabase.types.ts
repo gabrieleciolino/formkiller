@@ -410,6 +410,7 @@ export type Database = {
           id: string
           intro_message: string | null
           intro_title: string | null
+          is_published: boolean
           language: Database["public"]["Enums"]["form_language"]
           name: string
           slug: string
@@ -426,6 +427,7 @@ export type Database = {
           id?: string
           intro_message?: string | null
           intro_title?: string | null
+          is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name: string
           slug: string
@@ -442,6 +444,7 @@ export type Database = {
           id?: string
           intro_message?: string | null
           intro_title?: string | null
+          is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name?: string
           slug?: string

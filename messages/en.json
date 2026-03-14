@@ -307,6 +307,11 @@
     "editor": {
       "name": "Test name",
       "language": "Language",
+      "publish": "Publishing",
+      "publishOptions": {
+        "draft": "Draft (not public)",
+        "published": "Published (public)"
+      },
       "introTitle": "Intro title",
       "introMessage": "Intro message",
       "endTitle": "End title",
@@ -373,6 +378,15 @@
         "completed": "Completed",
         "failed": "Failed"
       }
+    },
+    "public": {
+      "eyebrow": "Quick tests",
+      "title": "Choose a test",
+      "description": "Open a test, answer in a few taps, and get your result instantly.",
+      "cta": "Start now",
+      "empty": "There are no tests available right now.",
+      "noSubtitle": "Find out what this test says about you.",
+      "logoAlt": "FormKiller logo"
     }
   },
   "testViewer": {

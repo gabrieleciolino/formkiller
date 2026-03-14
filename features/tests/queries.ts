@@ -19,6 +19,7 @@ export type AdminTestListItem = {
   slug: string;
   language: "en" | "it" | "es";
   status: "draft" | "published";
+  is_published: boolean;
   created_at: string | null;
 };
 
@@ -62,6 +63,7 @@ export type AdminTestDetail = {
   slug: string;
   language: "en" | "it" | "es";
   status: "draft" | "published";
+  is_published: boolean;
   background_image_key: string | null;
   background_music_key: string | null;
   intro_title: string | null;
@@ -109,6 +111,15 @@ export type PublicTestViewerData = {
     }>;
     audioUrl: string | null;
   }>;
+};
+
+export type PublicTestListItem = {
+  id: string;
+  slug: string;
+  language: "en" | "it" | "es";
+  name: string;
+  intro_title: string | null;
+  intro_message: string | null;
 };
 
 const normalizeAnswers = (value: unknown) => {
@@ -232,7 +243,7 @@ export async function getAdminTestsQuery({
     const { data, error } = await traceAdminStep(trace, "db.select.test", () =>
       supabase
         .from("test")
-        .select("id, name, slug, language, status, created_at")
+        .select("id, name, slug, language, status, is_published, created_at")
         .order("created_at", { ascending: false }),
     );
 
@@ -274,7 +285,7 @@ export async function getAdminTestByIdQuery({
           supabase
             .from("test")
             .select(
-              "id, user_id, name, slug, language, status, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
+              "id, user_id, name, slug, language, status, is_published, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
             )
             .eq("id", testId)
             .maybeSingle(),
@@ -361,6 +372,7 @@ export async function getPublishedTestBySlugQuery({
     )
     .eq("slug", slug)
     .eq("status", "published")
+    .eq("is_published", true)
     .maybeSingle();
 
   if (error) {
@@ -418,6 +430,49 @@ export async function getPublishedTestBySlugQuery({
       audioUrl: question.file_key,
     })),
   };
+}
+
+export async function getPublishedTestsListQuery({
+  supabase,
+}: {
+  supabase: TypedSupabaseClient;
+}): Promise<PublicTestListItem[]> {
+  const { data, error } = await supabase
+    .from("test")
+    .select("id, slug, language, name, intro_title, intro_message")
+    .eq("status", "published")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data
+    .filter(
+      (row): row is PublicTestListItem =>
+        Boolean(row) &&
+        typeof row === "object" &&
+        typeof (row as { id?: unknown }).id === "string" &&
+        typeof (row as { slug?: unknown }).slug === "string" &&
+        typeof (row as { name?: unknown }).name === "string" &&
+        (row as { language?: unknown }).language !== undefined,
+    )
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      language:
+        row.language === "it" || row.language === "es" ? row.language : "en",
+      name: row.name,
+      intro_title:
+        typeof row.intro_title === "string" ? row.intro_title : null,
+      intro_message:
+        typeof row.intro_message === "string" ? row.intro_message : null,
+    }));
 }
 
 export async function getAdminTestSlidesByIdQuery({
