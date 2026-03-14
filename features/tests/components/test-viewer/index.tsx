@@ -154,7 +154,7 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
   const hasBackground = !!test.backgroundImageUrl;
 
   const containerClassName = cn(
-    "relative flex min-h-dvh flex-col items-center justify-center px-4 pb-24 pt-10",
+    "relative flex min-h-dvh flex-col items-center px-4 py-5",
     hasBackground
       ? "bg-cover bg-center bg-no-repeat"
       : "bg-gradient-to-br from-background via-muted/30 to-background",
@@ -354,12 +354,34 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
           preload="auto"
         />
       ) : null}
-      {content}
 
-      {/* Logo fixed bottom center */}
-      <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
+      <div className="flex w-full justify-center">
+        <Image
+          src="/logo-seituilproblema.png"
+          alt="Sei Tu Il Problema"
+          width={220}
+          height={54}
+          className="h-auto w-[160px] sm:w-[190px]"
+          priority
+        />
+      </div>
+
+      <div className="flex w-full flex-1 items-center justify-center">
+        {content}
+      </div>
+
+      <div className="mt-6 flex flex-col items-center gap-1 pb-2">
+        <p className="text-[10px] font-medium uppercase tracking-widest text-black/30">
+          powered by
+        </p>
         <Link href={urls.home}>
-          <Image src="/logo.png" alt="FormKiller" width={110} height={28} />
+          <Image
+            src="/logo.png"
+            alt="FormKiller"
+            width={120}
+            height={31}
+            priority
+          />
         </Link>
       </div>
     </div>

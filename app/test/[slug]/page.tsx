@@ -2,7 +2,34 @@ import TestViewer from "@/features/tests/components/test-viewer";
 import { getPublishedTestBySlugQuery } from "@/features/tests/queries";
 import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+
+const getPublicTestBySlug = cache(async (slug: string) =>
+  publicQuery(async ({ supabase }) => getPublishedTestBySlugQuery({ slug, supabase })),
+);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const test = await getPublicTestBySlug(slug);
+
+  return {
+    title: test?.name ?? undefined,
+    openGraph: {
+      title: test?.name ?? undefined,
+      images: [{ url: "/ogimage-seituilproblema.png" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: ["/ogimage-seituilproblema.png"],
+    },
+  };
+}
 
 export default async function PublicTestPage({
   params,
@@ -11,9 +38,7 @@ export default async function PublicTestPage({
 }) {
   const { slug } = await params;
 
-  const test = await publicQuery(async ({ supabase }) =>
-    getPublishedTestBySlugQuery({ slug, supabase }),
-  );
+  const test = await getPublicTestBySlug(slug);
 
   if (!test) {
     notFound();

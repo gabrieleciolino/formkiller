@@ -1,7 +1,7 @@
 "use client";
 
 import { urls } from "@/lib/urls";
-import { ArrowRight, Search, X } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -79,17 +79,22 @@ export default function PublicTestsList({ tests }: PublicTestsListProps) {
         className="relative min-h-dvh bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${BG_URL})` }}
       >
-        <div className="absolute inset-0 bg-black/55" />
-
-        <div className="relative mx-auto flex w-full max-w-md flex-col px-5 pb-16 pt-12">
+        <div className="relative mx-auto flex w-full max-w-md flex-col p-5">
           <header
             className="anim text-center"
             style={{ animationDelay: "0ms" }}
           >
-            <span className="inline-block rounded-full border border-white/25 bg-white/15 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80 backdrop-blur-sm">
-              {t("tests.public.eyebrow")}
-            </span>
-            <h1 className="font-roboto mt-4 text-[3rem] font-black leading-[1.0] tracking-tight text-white drop-shadow-lg">
+            <div className="flex justify-center">
+              <Image
+                src="/logo-seituilproblema.png"
+                alt={t("tests.public.logoAlt")}
+                width={240}
+                height={58}
+                className="h-auto w-[190px] sm:w-[220px]"
+                priority
+              />
+            </div>
+            <h1 className="font-roboto text-[3rem] font-black leading-[1.0] tracking-tight text-white drop-shadow-lg">
               {t("tests.public.title")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-white/70">
@@ -98,7 +103,7 @@ export default function PublicTestsList({ tests }: PublicTestsListProps) {
           </header>
 
           <div
-            className="anim mt-6 rounded-2xl border border-white/25 bg-white/90 px-3 py-2 backdrop-blur-md"
+            className="anim mt-4 rounded-2xl border border-white/25 bg-white/90 px-3 py-2 backdrop-blur-md"
             style={{ animationDelay: "80ms" }}
           >
             <label className="flex items-center gap-2">
@@ -179,20 +184,21 @@ export default function PublicTestsList({ tests }: PublicTestsListProps) {
           </section>
 
           <footer
-            className="anim mt-14 flex flex-col items-center gap-2 pb-2"
+            className="anim mt-14 flex flex-col items-center gap-1 pb-2"
             style={{ animationDelay: `${120 + filteredTests.length * 70}ms` }}
           >
-            <p className="text-[10px] font-medium uppercase tracking-widest text-white/30">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-black/30">
               powered by
             </p>
-            <Image
-              src="/logo.png"
-              alt={t("tests.public.logoAlt")}
-              width={120}
-              height={31}
-              className="h-auto"
-              priority
-            />
+            <Link href={urls.home}>
+              <Image
+                src="/logo.png"
+                alt="FormKiller"
+                width={120}
+                height={31}
+                priority
+              />
+            </Link>
           </footer>
         </div>
       </main>

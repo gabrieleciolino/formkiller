@@ -103,7 +103,9 @@
       "description": "Select a test to generate and manage the Instagram carousel.",
       "empty": "No tests available.",
       "open": "Open slides",
-      "back": "Back to slides"
+      "back": "Back to slides",
+      "downloadZip": "Download ZIP",
+      "downloadZipDisabled": "Generate all 4 images first to download the ZIP."
     },
     "leads": {
       "title": "Leads",
@@ -389,7 +391,8 @@
       "empty": "There are no tests available right now.",
       "noResults": "No tests found for \"{query}\".",
       "noSubtitle": "Find out what this test says about you.",
-      "logoAlt": "FormKiller logo"
+      "logoAlt": "Sei Tu Il Problema logo",
+      "poweredByLogoAlt": "FormKiller logo"
     }
   },
   "testViewer": {

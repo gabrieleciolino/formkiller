@@ -5,7 +5,7 @@ import { getAdminTestSlidesByIdQuery } from "@/features/tests/queries";
 import { adminQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
-import { ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -87,6 +87,8 @@ export default async function AdminSlidesDetailPage({
       imageUrl: slide?.image_file_key ? getFileUrl(slide.image_file_key) : null,
     };
   });
+  const canDownloadZip = initialSlides.every((slide) => Boolean(slide.imageFileKey));
+  const downloadZipHref = `/api/admin/slides/${test.id}/zip`;
 
   return (
     <div className="space-y-4">
@@ -97,6 +99,24 @@ export default async function AdminSlidesDetailPage({
         </div>
 
         <div className="flex items-center gap-2">
+          {canDownloadZip ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={downloadZipHref} prefetch={false}>
+                <Download className="size-4" />
+                {t("dashboard.slides.downloadZip")}
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              title={t("dashboard.slides.downloadZipDisabled")}
+            >
+              <Download className="size-4" />
+              {t("dashboard.slides.downloadZip")}
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm">
             <Link href={urls.admin.slides.index}>
               {t("dashboard.slides.back")}

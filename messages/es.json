@@ -103,7 +103,9 @@
       "description": "Selecciona un test para generar y gestionar el carrusel de Instagram.",
       "empty": "No hay tests disponibles.",
       "open": "Abrir slides",
-      "back": "Volver a slides"
+      "back": "Volver a slides",
+      "downloadZip": "Descargar ZIP",
+      "downloadZipDisabled": "Genera primero las 4 imágenes para descargar el ZIP."
     },
     "leads": {
       "title": "Contactos",
@@ -389,7 +391,8 @@
       "empty": "Ahora mismo no hay tests disponibles.",
       "noResults": "No se encontraron tests para \"{query}\".",
       "noSubtitle": "Descubre qué dice este test sobre ti.",
-      "logoAlt": "Logo de FormKiller"
+      "logoAlt": "Logo de Sei Tu Il Problema",
+      "poweredByLogoAlt": "Logo de FormKiller"
     }
   },
   "testViewer": {
