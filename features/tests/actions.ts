@@ -30,12 +30,37 @@ import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
 import { inspect } from "node:util";
 
-const DEFAULT_NEW_TEST_BACKGROUND_ASSET_ID = "529b071b-2da4-4922-8635-a5fc9b2edbfc";
+const DEFAULT_TEST_BACKGROUND_ASSET_ID = "b0e66024-24c6-482a-b857-ffdb1a121c03";
 
 const toNullableText = (value: string) => {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
+
+async function resolveDefaultTestBackgroundImageKey(
+  client: TypedSupabaseClient,
+) {
+  const { data, error } = await client
+    .from("asset")
+    .select("file_key")
+    .eq("id", DEFAULT_TEST_BACKGROUND_ASSET_ID)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  const fileKey =
+    data && typeof data.file_key === "string" ? data.file_key : null;
+
+  if (!fileKey) {
+    throw new Error(
+      `Default test background asset not found: ${DEFAULT_TEST_BACKGROUND_ASSET_ID}`,
+    );
+  }
+
+  return fileKey;
+}
 
 function logTestsActionError(
   action: string,
@@ -486,6 +511,8 @@ export const createTestAction = adminActionClient
         client,
         source: parsedInput.name,
       });
+      const defaultBackgroundImageKey =
+        await resolveDefaultTestBackgroundImageKey(client);
 
       const { data: createdTest, error: createTestError } = (await client
         .from("test")
@@ -496,7 +523,7 @@ export const createTestAction = adminActionClient
           language: parsedInput.language,
           status: parsedInput.isPublished ? "published" : "draft",
           is_published: parsedInput.isPublished,
-          background_image_key: DEFAULT_NEW_TEST_BACKGROUND_ASSET_ID,
+          background_image_key: defaultBackgroundImageKey,
           intro_title: toNullableText(parsedInput.introTitle),
           intro_message: toNullableText(parsedInput.introMessage),
           end_title: toNullableText(parsedInput.endTitle),
@@ -630,6 +657,8 @@ export const updateTestAction = adminActionClient
     const oldAudioKeys = (currentQuestions ?? [])
       .map((question) => question.file_key)
       .filter((key): key is string => Boolean(key));
+    const defaultBackgroundImageKey =
+      await resolveDefaultTestBackgroundImageKey(client);
 
     const { error: updateTestError } = await client
       .from("test")
@@ -638,6 +667,7 @@ export const updateTestAction = adminActionClient
         language: parsedInput.language,
         status: parsedInput.isPublished ? "published" : "draft",
         is_published: parsedInput.isPublished,
+        background_image_key: defaultBackgroundImageKey,
         intro_title: toNullableText(parsedInput.introTitle),
         intro_message: toNullableText(parsedInput.introMessage),
         end_title: toNullableText(parsedInput.endTitle),
@@ -728,11 +758,13 @@ export const editTestCustomizationAction = adminActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
     const client = supabase;
+    const defaultBackgroundImageKey =
+      await resolveDefaultTestBackgroundImageKey(client);
 
     const { data: updatedTest, error: updateTestError } = (await client
       .from("test")
       .update({
-        background_image_key: parsedInput.backgroundImageKey ?? null,
+        background_image_key: defaultBackgroundImageKey,
         background_music_key: parsedInput.backgroundMusicKey ?? null,
       })
       .eq("id", parsedInput.testId)

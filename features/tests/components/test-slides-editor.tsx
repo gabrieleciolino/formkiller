@@ -19,6 +19,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useState } from "react";
 
+const POLLING_REFRESH_INTERVAL_MS = 3000;
+
 const statusClassMap: Record<string, string> = {
   idle: "border-border bg-muted text-muted-foreground",
   processing: "border-border bg-muted text-foreground",
@@ -72,10 +74,29 @@ export default function TestSlidesEditor({
   const [queueingSlideOrder, setQueueingSlideOrder] = useState<number | null>(
     null,
   );
+  const hasProcessingSlides = slides.some(
+    (slide) => slide.generationStatus === "processing",
+  );
 
   useEffect(() => {
     setSlides(normalizeSlides(initialSlides));
   }, [initialSlides]);
+
+  useEffect(() => {
+    if (!hasProcessingSlides) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      router.refresh();
+    }, POLLING_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [hasProcessingSlides, router]);
 
   const updateSlide = (
     order: number,

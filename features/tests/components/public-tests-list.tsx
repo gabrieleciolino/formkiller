@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const BG_URL =
-  "https://assets.formkiller.cloud/library/1773473263392-e46908fc-af4e-46d1-841d-b23e8ed576d0.jpg";
+  "https://assets.formkiller.cloud/library/1773489476490-610c016c-565a-4c45-8453-64bf8f901159.jpg";
 
 type PublicTestCard = {
   id: string;

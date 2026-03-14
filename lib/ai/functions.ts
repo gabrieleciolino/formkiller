@@ -375,7 +375,7 @@ export const generateTestCarouselDraft = async ({
       - Slide 3: order=2, kind=question_2
         Deve contenere la seconda domanda e le 4 risposte.
       - Slide 4: order=3, kind=cta
-        Deve contenere una call to action finale per compilare il test e scoprire il risultato.
+        Deve contenere una call to action forte che spinga a cliccare il link in bio per completare il test e scoprire il risultato.
 
       DATI DEL TEST:
       - Nome test: ${testName}
@@ -389,6 +389,7 @@ export const generateTestCarouselDraft = async ({
 
       IMPORTANTE:
       - Non cambiare le risposte delle domande nelle slide 2 e 3.
+      - Nella slide 4 inserisci in modo esplicito il concetto: "clicca il link in bio per completare il test e scoprire il risultato", adattato alla lingua del test.
       - Il prompt immagine deve richiedere testo renderizzato nell'immagine, includendo il copy della slide.
       - Specifica che il testo deve essere leggibile su mobile, ad alto contrasto e senza elementi che coprano le parole.
       - Usa uno stile visual coerente tra le 4 slide.
@@ -408,7 +409,7 @@ export const generateTestCarouselDraft = async ({
         intro: "Fai il test e scopri subito il tuo profilo.",
         question_1: "Domanda 1\n1) A\n2) B\n3) C\n4) D",
         question_2: "Domanda 2\n1) A\n2) B\n3) C\n4) D",
-        cta: "Scopri il tuo risultato finale.",
+        cta: "Clicca il link in bio per completare il test e scoprire il risultato.",
       } as const;
       const fallbackCopy = fallbackCopyByKind[kind];
 
