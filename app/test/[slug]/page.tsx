@@ -30,6 +30,12 @@ export default async function PublicTestPage({
 
   const viewerData = {
     ...test,
+    backgroundImageUrl: test.backgroundImageUrl
+      ? getFileUrl(test.backgroundImageUrl)
+      : null,
+    backgroundMusicUrl: test.backgroundMusicUrl
+      ? getFileUrl(test.backgroundMusicUrl)
+      : null,
     questions: test.questions.map((question) => ({
       ...question,
       audioUrl: question.audioUrl ? getFileUrl(question.audioUrl) : null,

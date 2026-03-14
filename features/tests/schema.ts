@@ -74,6 +74,15 @@ export const updateTestSchema = editableTestSchema.extend({
 });
 export type UpdateTestType = z.infer<typeof updateTestSchema>;
 
+export const editTestCustomizationSchema = z.object({
+  testId: z.string().uuid(),
+  backgroundImageKey: z.string().nullable().optional(),
+  backgroundMusicKey: z.string().nullable().optional(),
+});
+export type EditTestCustomizationType = z.infer<
+  typeof editTestCustomizationSchema
+>;
+
 export const deleteTestSchema = z.object({
   testId: z.string().uuid(),
 });

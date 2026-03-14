@@ -289,6 +289,13 @@
       "generateError": "Error al generar borrador.",
       "reviewTitle": "Aprobar y editar"
     },
+    "customize": {
+      "trigger": "Personalizar",
+      "title": "Personalizar test",
+      "save": "Guardar personalizacion",
+      "success": "Personalizacion guardada.",
+      "error": "Error al guardar la personalizacion."
+    },
     "editor": {
       "name": "Nombre del test",
       "language": "Idioma",

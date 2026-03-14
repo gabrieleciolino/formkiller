@@ -289,6 +289,13 @@
       "generateError": "Failed to generate draft.",
       "reviewTitle": "Approve and edit"
     },
+    "customize": {
+      "trigger": "Customize",
+      "title": "Customize test",
+      "save": "Save customization",
+      "success": "Customization saved.",
+      "error": "Failed to save customization."
+    },
     "editor": {
       "name": "Test name",
       "language": "Language",

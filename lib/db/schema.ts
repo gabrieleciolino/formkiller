@@ -434,6 +434,8 @@ export const testTable = pgTable(
     slug: text("slug").notNull(),
     language: formLanguageEnum("language").notNull().default("en"),
     status: testStatusEnum("status").notNull().default("draft"),
+    backgroundImageKey: text("background_image_key"),
+    backgroundMusicKey: text("background_music_key"),
     introTitle: text("intro_title"),
     introMessage: text("intro_message"),
     endTitle: text("end_title"),

@@ -402,6 +402,8 @@ export type Database = {
       }
       test: {
         Row: {
+          background_image_key: string | null
+          background_music_key: string | null
           created_at: string | null
           end_message: string | null
           end_title: string | null
@@ -416,6 +418,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          background_image_key?: string | null
+          background_music_key?: string | null
           created_at?: string | null
           end_message?: string | null
           end_title?: string | null
@@ -430,6 +434,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          background_image_key?: string | null
+          background_music_key?: string | null
           created_at?: string | null
           end_message?: string | null
           end_title?: string | null

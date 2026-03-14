@@ -3,6 +3,7 @@
 import {
   createTestSchema,
   deleteTestSchema,
+  editTestCustomizationSchema,
   generateTestDraftSchema,
   TEST_ANSWERS_PER_QUESTION,
   TEST_PROFILES_COUNT,
@@ -17,6 +18,8 @@ import { deleteFile } from "@/lib/r2/functions";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
+
+const DEFAULT_NEW_TEST_BACKGROUND_ASSET_ID = "529b071b-2da4-4922-8635-a5fc9b2edbfc";
 
 const toNullableText = (value: string) => {
   const trimmed = value.trim();
@@ -242,6 +245,7 @@ export const createTestAction = adminActionClient
           slug,
           language: parsedInput.language,
           status: "published",
+          background_image_key: DEFAULT_NEW_TEST_BACKGROUND_ASSET_ID,
           intro_title: toNullableText(parsedInput.introTitle),
           intro_message: toNullableText(parsedInput.introMessage),
           end_title: toNullableText(parsedInput.endTitle),
@@ -464,6 +468,39 @@ export const updateTestAction = adminActionClient
     return {
       id: parsedInput.testId,
       slug: currentTest.slug,
+    };
+  });
+
+export const editTestCustomizationAction = adminActionClient
+  .inputSchema(editTestCustomizationSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase } = ctx;
+    const client = supabase;
+
+    const { data: updatedTest, error: updateTestError } = (await client
+      .from("test")
+      .update({
+        background_image_key: parsedInput.backgroundImageKey ?? null,
+        background_music_key: parsedInput.backgroundMusicKey ?? null,
+      })
+      .eq("id", parsedInput.testId)
+      .select("id, slug")
+      .single()) as {
+      data: { id: string; slug: string } | null;
+      error: { message: string } | null;
+    };
+
+    if (updateTestError || !updatedTest) {
+      throw updateTestError ?? new Error("Test not found");
+    }
+
+    revalidatePath(urls.admin.tests.index);
+    revalidatePath(urls.admin.tests.detail(parsedInput.testId));
+    revalidatePath(urls.test(updatedTest.slug));
+
+    return {
+      id: updatedTest.id,
+      slug: updatedTest.slug,
     };
   });
 

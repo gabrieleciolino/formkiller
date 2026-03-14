@@ -47,6 +47,8 @@ export type AdminTestDetail = {
   slug: string;
   language: "en" | "it" | "es";
   status: "draft" | "published";
+  background_image_key: string | null;
+  background_music_key: string | null;
   intro_title: string | null;
   intro_message: string | null;
   end_title: string | null;
@@ -60,6 +62,8 @@ export type PublicTestViewerData = {
   slug: string;
   language: "en" | "it" | "es";
   name: string;
+  backgroundImageUrl: string | null;
+  backgroundMusicUrl: string | null;
   introTitle: string | null;
   introMessage: string | null;
   endTitle: string | null;
@@ -194,7 +198,7 @@ export async function getAdminTestByIdQuery({
   const { data, error } = await supabase
     .from("test")
     .select(
-      "id, user_id, name, slug, language, status, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
+      "id, user_id, name, slug, language, status, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
     )
     .eq("id", testId)
     .maybeSingle();
@@ -224,7 +228,7 @@ export async function getPublishedTestBySlugQuery({
   const { data, error } = await supabase
     .from("test")
     .select(
-      "id, slug, language, name, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
+      "id, slug, language, name, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
     )
     .eq("slug", slug)
     .eq("status", "published")
@@ -243,6 +247,8 @@ export async function getPublishedTestBySlugQuery({
     slug: string;
     language: "en" | "it" | "es";
     name: string;
+    background_image_key: string | null;
+    background_music_key: string | null;
     intro_title: string | null;
     intro_message: string | null;
     end_title: string | null;
@@ -263,6 +269,8 @@ export async function getPublishedTestBySlugQuery({
     slug: row.slug,
     language: row.language,
     name: row.name,
+    backgroundImageUrl: row.background_image_key,
+    backgroundMusicUrl: row.background_music_key,
     introTitle: row.intro_title,
     introMessage: row.intro_message,
     endTitle: row.end_title,

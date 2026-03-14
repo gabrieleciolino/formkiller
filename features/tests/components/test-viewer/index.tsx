@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { saveTestResultAction } from "@/features/tests/public-actions";
 import type { TestViewerProps } from "@/features/tests/types";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -47,6 +48,7 @@ export default function TestViewer({ test }: TestViewerProps) {
   const [winnerProfileIndex, setWinnerProfileIndex] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
 
   const currentQuestion = test.questions[currentIndex];
   const isLastQuestion = currentIndex === test.questions.length - 1;
@@ -86,6 +88,15 @@ export default function TestViewer({ test }: TestViewerProps) {
     setSelectedAnswerOrder(null);
     setWinnerProfileIndex(null);
     setPhase("question");
+
+    const backgroundMusic = backgroundMusicRef.current;
+    if (!backgroundMusic) {
+      return;
+    }
+
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.volume = 0.35;
+    void backgroundMusic.play().catch(() => null);
   };
 
   const handleAdvance = () => {
@@ -151,76 +162,66 @@ export default function TestViewer({ test }: TestViewerProps) {
     setCurrentIndex((index) => index + 1);
   };
 
-  if (phase === "welcome") {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-8 text-foreground">
-        <div className="w-full max-w-xl space-y-4 rounded-lg border border-border bg-card p-6 text-center shadow-sm">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {test.introTitle || test.name}
-          </h1>
-          <p className="whitespace-pre-line text-sm text-muted-foreground">
-            {test.introMessage || t("testViewer.welcome.defaultMessage")}
-          </p>
-          <Button onClick={handleStart} className="w-full md:w-auto">
-            {t("testViewer.welcome.start")}
-          </Button>
-        </div>
+  const containerClassName = cn(
+    "flex min-h-dvh items-center justify-center px-4 py-8 text-foreground",
+    test.backgroundImageUrl ? "bg-cover bg-center bg-no-repeat" : "bg-background",
+  );
+  const containerStyle = test.backgroundImageUrl
+    ? { backgroundImage: `url(${test.backgroundImageUrl})` }
+    : undefined;
+  const cardClassName = cn(
+    "w-full max-w-xl space-y-4 rounded-lg border border-border p-6 shadow-sm",
+    test.backgroundImageUrl ? "bg-card/90 backdrop-blur-sm" : "bg-card",
+  );
+
+  const content =
+    phase === "welcome" ? (
+      <div className={cn(cardClassName, "text-center")}>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {test.introTitle || test.name}
+        </h1>
+        <p className="whitespace-pre-line text-sm text-muted-foreground">
+          {test.introMessage || t("testViewer.welcome.defaultMessage")}
+        </p>
+        <Button onClick={handleStart} className="w-full md:w-auto">
+          {t("testViewer.welcome.start")}
+        </Button>
       </div>
-    );
-  }
+    ) : phase === "completed" ? (
+      <div className={cardClassName}>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t("testViewer.completed.badge")}
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {test.endTitle || t("testViewer.completed.title")}
+        </h1>
+        <p className="whitespace-pre-line text-sm text-muted-foreground">
+          {test.endMessage || t("testViewer.completed.defaultMessage")}
+        </p>
 
-  if (phase === "completed") {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-8 text-foreground">
-        <div className="w-full max-w-xl space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("testViewer.completed.badge")}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {test.endTitle || t("testViewer.completed.title")}
-          </h1>
-          <p className="whitespace-pre-line text-sm text-muted-foreground">
-            {test.endMessage || t("testViewer.completed.defaultMessage")}
-          </p>
-
-          {winnerProfile ? (
-            <div className="space-y-2 rounded-md border border-border bg-background p-4">
-              <h2 className="text-xl font-semibold text-foreground">
-                {winnerProfile.title}
-              </h2>
-              <p className="whitespace-pre-line text-sm text-muted-foreground">
-                {winnerProfile.description}
-              </p>
-            </div>
-          ) : null}
-
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p>{t("testViewer.completed.scoreLabel")}</p>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-              {scoreTotals.map((score, index) => (
-                <div key={index} className="rounded-md border border-border px-3 py-2 text-center">
-                  <p className="font-semibold text-foreground">P{index + 1}</p>
-                  <p>{score}</p>
-                </div>
-              ))}
-            </div>
+        {winnerProfile ? (
+          <div className="space-y-2 rounded-md border border-border bg-background p-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              {winnerProfile.title}
+            </h2>
+            <p className="whitespace-pre-line text-sm text-muted-foreground">
+              {winnerProfile.description}
+            </p>
           </div>
+        ) : null}
 
-          <Button variant="outline" onClick={handleStart} className="w-full md:w-auto">
-            {t("testViewer.completed.restart")}
-          </Button>
+        <Button variant="outline" onClick={handleStart} className="w-full md:w-auto">
+          {t("testViewer.completed.restart")}
+        </Button>
 
-          {isPending ? (
-            <p className="text-xs text-muted-foreground">{t("testViewer.completed.saving")}</p>
-          ) : null}
-        </div>
+        {isPending ? (
+          <p className="text-xs text-muted-foreground">
+            {t("testViewer.completed.saving")}
+          </p>
+        ) : null}
       </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-8 text-foreground">
-      <div className="w-full max-w-xl space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+    ) : (
+      <div className={cardClassName}>
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {t("testViewer.question.progress", {
             current: currentIndex + 1,
@@ -240,11 +241,12 @@ export default function TestViewer({ test }: TestViewerProps) {
               <button
                 key={answer.order}
                 type="button"
-                className={`rounded-md border px-4 py-3 text-left text-sm transition-colors ${
+                className={cn(
+                  "rounded-md border px-4 py-3 text-left text-sm transition-colors",
                   selected
                     ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border bg-background text-foreground hover:bg-muted"
-                }`}
+                    : "border-border bg-background text-foreground hover:bg-muted",
+                )}
                 onClick={() => setSelectedAnswerOrder(answer.order)}
               >
                 {answer.answer}
@@ -263,6 +265,14 @@ export default function TestViewer({ test }: TestViewerProps) {
             : t("testViewer.question.next")}
         </Button>
       </div>
+    );
+
+  return (
+    <div className={containerClassName} style={containerStyle}>
+      {test.backgroundMusicUrl ? (
+        <audio ref={backgroundMusicRef} src={test.backgroundMusicUrl} loop preload="auto" />
+      ) : null}
+      {content}
     </div>
   );
 }

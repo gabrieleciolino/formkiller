@@ -26,6 +26,14 @@ export type TestEditorFormProps = {
   testId?: string;
 };
 
+export type EditTestSheetProps = {
+  testId: string;
+  backgroundImageKey: string | null;
+  backgroundMusicKey: string | null;
+  backgroundImageUrl: string | null;
+  backgroundMusicUrl: string | null;
+};
+
 export type TestProfilesFieldsProps = {
   values: EditableTestValues["profiles"];
   onChange: (next: EditableTestValues["profiles"]) => void;

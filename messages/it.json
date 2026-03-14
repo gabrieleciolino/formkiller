@@ -289,6 +289,13 @@
       "generateError": "Generazione bozza fallita.",
       "reviewTitle": "Approva e modifica"
     },
+    "customize": {
+      "trigger": "Personalizza",
+      "title": "Personalizza test",
+      "save": "Salva personalizzazione",
+      "success": "Personalizzazione salvata.",
+      "error": "Salvataggio personalizzazione fallito."
+    },
     "editor": {
       "name": "Nome test",
       "language": "Lingua",
