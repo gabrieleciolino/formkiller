@@ -56,8 +56,14 @@ export type TestScoringGridProps = {
   disabled?: boolean;
 };
 
+export type TestViewerMessages = {
+  testViewer: Record<string, unknown>;
+};
+
 export type TestViewerProps = {
   test: TestViewerData;
+  locale: TestViewerData["language"];
+  messages: TestViewerMessages;
 };
 
 export type SavePublicTestResultValues = SaveTestResultType;

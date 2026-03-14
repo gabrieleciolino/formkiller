@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { saveTestResultAction } from "@/features/tests/public-actions";
 import type { TestViewerProps } from "@/features/tests/types";
+import { urls } from "@/lib/urls";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { NextIntlClientProvider, useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -33,11 +35,13 @@ function getWinnerProfileIndex(scoreTotals: ScoreTotals) {
 
 const ANSWER_LABELS = ["A", "B", "C", "D"];
 
-export default function TestViewer({ test }: TestViewerProps) {
+function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
   const t = useTranslations();
   const [phase, setPhase] = useState<ViewerPhase>("welcome");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswerOrder, setSelectedAnswerOrder] = useState<number | null>(null);
+  const [selectedAnswerOrder, setSelectedAnswerOrder] = useState<number | null>(
+    null,
+  );
   const [scoreTotals, setScoreTotals] = useState<ScoreTotals>([0, 0, 0, 0]);
   const [answerSelections, setAnswerSelections] = useState<
     Array<{
@@ -46,7 +50,9 @@ export default function TestViewer({ test }: TestViewerProps) {
       scores: ScoreTotals;
     }>
   >([]);
-  const [winnerProfileIndex, setWinnerProfileIndex] = useState<number | null>(null);
+  const [winnerProfileIndex, setWinnerProfileIndex] = useState<number | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -183,9 +189,11 @@ export default function TestViewer({ test }: TestViewerProps) {
 
           {test.questions.length > 0 && (
             <div className="flex items-center justify-center gap-1.5">
-              {Array.from({ length: Math.min(test.questions.length, 12) }).map((_, i) => (
-                <div key={i} className="h-1.5 w-5 rounded-full bg-muted" />
-              ))}
+              {Array.from({ length: Math.min(test.questions.length, 12) }).map(
+                (_, i) => (
+                  <div key={i} className="h-1.5 w-5 rounded-full bg-muted" />
+                ),
+              )}
               {test.questions.length > 12 && (
                 <span className="text-xs text-muted-foreground">
                   +{test.questions.length - 12}
@@ -199,7 +207,11 @@ export default function TestViewer({ test }: TestViewerProps) {
               {test.questions.length}{" "}
               {test.questions.length === 1 ? "domanda" : "domande"}
             </p>
-            <Button size="lg" onClick={handleStart} className="w-full font-bold text-base">
+            <Button
+              size="lg"
+              onClick={handleStart}
+              className="w-full font-bold text-base"
+            >
               {t("testViewer.welcome.start")}
               <span className="ml-1">→</span>
             </Button>
@@ -335,20 +347,33 @@ export default function TestViewer({ test }: TestViewerProps) {
   return (
     <div className={containerClassName} style={containerStyle}>
       {test.backgroundMusicUrl ? (
-        <audio ref={backgroundMusicRef} src={test.backgroundMusicUrl} loop preload="auto" />
+        <audio
+          ref={backgroundMusicRef}
+          src={test.backgroundMusicUrl}
+          loop
+          preload="auto"
+        />
       ) : null}
       {content}
 
       {/* Logo fixed bottom center */}
       <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
-        <Image
-          src="/logo.png"
-          alt="FormKiller"
-          width={110}
-          height={28}
-          className="opacity-50 transition-opacity duration-200 hover:opacity-80"
-        />
+        <Link href={urls.home}>
+          <Image src="/logo.png" alt="FormKiller" width={110} height={28} />
+        </Link>
       </div>
     </div>
+  );
+}
+
+export default function TestViewer({
+  test,
+  locale,
+  messages,
+}: TestViewerProps) {
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <TestViewerContent test={test} />
+    </NextIntlClientProvider>
   );
 }

@@ -60,10 +60,10 @@ export async function updateSession(request: NextRequest) {
     supabase.auth.getClaims(),
   );
 
-  const user = data?.claims;
+  const userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null;
   const isProtectedRoute = isDashboardRoute || isAdminRoute;
 
-  if (!user && isProtectedRoute) {
+  if (!userId && isProtectedRoute) {
     // no user, potentially respond by redirecting the user to the login page
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = urls.auth.login;
@@ -81,54 +81,6 @@ export async function updateSession(request: NextRequest) {
     return redirectResponse;
   }
 
-  if (user && isAdminRoute) {
-    const userId = typeof user.sub === "string" ? user.sub : null;
-
-    if (!userId) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = urls.auth.login;
-      loginUrl.searchParams.set(
-        "redirect_to",
-        `${request.nextUrl.pathname}${request.nextUrl.search}`,
-      );
-
-      const redirectResponse = NextResponse.redirect(loginUrl);
-      supabaseResponse.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie);
-      });
-
-      finish("redirect_login_missing_sub");
-      return redirectResponse;
-    }
-
-    const { data: account, error: accountError } = await traceAdminStep(
-      trace,
-      "db.accountRole",
-      () =>
-        supabase
-          .from("account")
-          .select("role")
-          .eq("user_id", userId)
-          .maybeSingle(),
-      { userId },
-    );
-
-    if (accountError || account?.role !== "admin") {
-      const redirectResponse = NextResponse.redirect(
-        new URL(urls.dashboard.index, request.url),
-      );
-      supabaseResponse.cookies.getAll().forEach((cookie) => {
-        redirectResponse.cookies.set(cookie);
-      });
-
-      finish("redirect_dashboard_non_admin", {
-        hasError: Boolean(accountError),
-        role: account?.role ?? null,
-      });
-      return redirectResponse;
-    }
-  }
-
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:
@@ -142,6 +94,6 @@ export async function updateSession(request: NextRequest) {
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
 
-  finish("ok");
+  finish("ok", { userId });
   return supabaseResponse;
 }

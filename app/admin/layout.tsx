@@ -1,6 +1,7 @@
 import AdminSidebar from "@/app/admin/__components/admin-sidebar";
 import SidebarToggle from "@/app/dashboard/__components/sidebar-toggle";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { adminQuery } from "@/lib/queries";
 import { urls } from "@/lib/urls";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,6 +12,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  await adminQuery(async () => null);
+
   return (
     <SidebarProvider>
       <AdminSidebar />

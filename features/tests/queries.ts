@@ -195,27 +195,91 @@ export async function getAdminTestByIdQuery({
   testId: string;
   supabase: TypedSupabaseClient;
 }): Promise<AdminTestDetail | null> {
-  const { data, error } = await supabase
-    .from("test")
-    .select(
-      "id, user_id, name, slug, language, status, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
-    )
-    .eq("id", testId)
-    .maybeSingle();
+  const trace = startAdminTrace("tests.getAdminTestByIdQuery", { testId });
+  let status = "ok";
+  let profileCount = 0;
+  let questionCount = 0;
 
-  if (error) {
+  try {
+    const [testResult, profilesResult, questionsResult] = await Promise.all([
+      traceAdminStep(
+        trace,
+        "db.select.test",
+        () =>
+          supabase
+            .from("test")
+            .select(
+              "id, user_id, name, slug, language, status, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
+            )
+            .eq("id", testId)
+            .maybeSingle(),
+        { testId },
+      ),
+      traceAdminStep(
+        trace,
+        "db.select.test_profile",
+        () =>
+          supabase
+            .from("test_profile")
+            .select("id, test_id, title, description, order")
+            .eq("test_id", testId)
+            .order("order", { ascending: true }),
+        { testId },
+      ),
+      traceAdminStep(
+        trace,
+        "db.select.test_question",
+        () =>
+          supabase
+            .from("test_question")
+            .select("id, test_id, question, answers, order, file_key")
+            .eq("test_id", testId)
+            .order("order", { ascending: true }),
+        { testId },
+      ),
+    ]);
+
+    if (testResult.error) {
+      status = "error";
+      throw testResult.error;
+    }
+    if (profilesResult.error) {
+      status = "error";
+      throw profilesResult.error;
+    }
+    if (questionsResult.error) {
+      status = "error";
+      throw questionsResult.error;
+    }
+
+    if (!testResult.data) {
+      status = "not_found";
+      return null;
+    }
+
+    const profiles = await traceAdminStep(trace, "normalize.profiles", () =>
+      normalizeProfiles(profilesResult.data),
+    );
+    const questions = await traceAdminStep(trace, "normalize.questions", () =>
+      normalizeQuestions(questionsResult.data),
+    );
+
+    profileCount = profiles.length;
+    questionCount = questions.length;
+
+    return {
+      ...(testResult.data as Omit<AdminTestDetail, "profiles" | "questions">),
+      profiles,
+      questions,
+    };
+  } catch (error) {
+    if (status === "ok") {
+      status = "error";
+    }
     throw error;
+  } finally {
+    endAdminTrace(trace, { status, profileCount, questionCount });
   }
-
-  if (!data) {
-    return null;
-  }
-
-  return {
-    ...(data as Omit<AdminTestDetail, "profiles" | "questions">),
-    profiles: normalizeProfiles((data as { profiles?: unknown }).profiles),
-    questions: normalizeQuestions((data as { questions?: unknown }).questions),
-  };
 }
 
 export async function getPublishedTestBySlugQuery({

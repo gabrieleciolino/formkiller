@@ -1,11 +1,50 @@
 type AdminTraceMeta = Record<string, unknown>;
 
 const ADMIN_TRACE_ENABLED = process.env.FORMKILLER_ADMIN_TRACE === "1";
+const ADMIN_TRACE_METRICS_WINDOW_SIZE = 200;
 
 type AdminTrace = {
   id: string;
   label: string;
   startAt: number;
+};
+
+type AdminTraceMetricState = {
+  count: number;
+  sum: number;
+  samples: number[];
+};
+
+const adminTraceMetrics = new Map<string, AdminTraceMetricState>();
+
+const roundMs = (value: number) => Math.round(value * 10) / 10;
+
+const recordTraceMetric = (key: string, durationMs: number) => {
+  const metricState = adminTraceMetrics.get(key) ?? {
+    count: 0,
+    sum: 0,
+    samples: [],
+  };
+
+  metricState.count += 1;
+  metricState.sum += durationMs;
+  metricState.samples.push(durationMs);
+
+  if (metricState.samples.length > ADMIN_TRACE_METRICS_WINDOW_SIZE) {
+    metricState.samples.shift();
+  }
+
+  adminTraceMetrics.set(key, metricState);
+
+  const sortedSamples = [...metricState.samples].sort((a, b) => a - b);
+  const p95Index = Math.max(0, Math.ceil(sortedSamples.length * 0.95) - 1);
+  const p95Ms = sortedSamples[p95Index] ?? durationMs;
+
+  return {
+    metricCount: metricState.count,
+    metricAvgMs: roundMs(metricState.sum / metricState.count),
+    metricP95Ms: roundMs(p95Ms),
+  };
 };
 
 const getTraceId = () => {
@@ -65,9 +104,13 @@ export function endAdminTrace(trace: AdminTrace | null, meta?: AdminTraceMeta) {
     return;
   }
 
-  const totalMs = Math.round((performance.now() - trace.startAt) * 10) / 10;
+  const totalMs = roundMs(performance.now() - trace.startAt);
+  const metricMeta = recordTraceMetric(`${trace.label}.total`, totalMs);
   console.info(
-    `[admin-trace:${trace.id}] end ${trace.label} total=${totalMs}ms${stringifyMeta(meta)}`,
+    `[admin-trace:${trace.id}] end ${trace.label} total=${totalMs}ms${stringifyMeta({
+      ...meta,
+      ...metricMeta,
+    })}`,
   );
 }
 
@@ -81,7 +124,14 @@ export async function traceAdminStep<T>(
   try {
     return await fn();
   } finally {
-    const durationMs = Math.round((performance.now() - stepStartAt) * 10) / 10;
-    stepAdminTrace(trace, step, { ...meta, durationMs });
+    const durationMs = roundMs(performance.now() - stepStartAt);
+    const metricMeta = trace
+      ? recordTraceMetric(`${trace.label}.${step}`, durationMs)
+      : null;
+    stepAdminTrace(trace, step, {
+      ...meta,
+      durationMs,
+      ...(metricMeta ?? {}),
+    });
   }
 }

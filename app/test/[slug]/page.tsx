@@ -2,7 +2,6 @@ import TestViewer from "@/features/tests/components/test-viewer";
 import { getPublishedTestBySlugQuery } from "@/features/tests/queries";
 import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
-import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 
 export default async function PublicTestPage({
@@ -42,9 +41,5 @@ export default async function PublicTestPage({
     })),
   };
 
-  return (
-    <NextIntlClientProvider locale={test.language} messages={messages}>
-      <TestViewer test={viewerData} />
-    </NextIntlClientProvider>
-  );
+  return <TestViewer test={viewerData} locale={test.language} messages={messages} />;
 }
