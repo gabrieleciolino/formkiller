@@ -202,7 +202,7 @@ export const generateViralTest = async ({
   const normalizedAdditionalPrompt = additionalPrompt.trim();
 
   const { output } = await generateText({
-    model: openai("gpt-5-mini"),
+    model: openai("gpt-5.1"),
     prompt: `
       Sei un autore specializzato in test virali per social media, pensati per Instagram, TikTok e Reels.
       Il tuo obiettivo è creare un test che le persone vogliano iniziare subito, completare fino in fondo e condividere con amici o nelle storie.

@@ -383,8 +383,11 @@
       "eyebrow": "Quick tests",
       "title": "Choose a test",
       "description": "Open a test, answer in a few taps, and get your result instantly.",
+      "searchPlaceholder": "Search by name",
+      "clearSearch": "Clear search",
       "cta": "Start now",
       "empty": "There are no tests available right now.",
+      "noResults": "No tests found for \"{query}\".",
       "noSubtitle": "Find out what this test says about you.",
       "logoAlt": "FormKiller logo"
     }

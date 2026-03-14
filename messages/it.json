@@ -383,8 +383,11 @@
       "eyebrow": "Test rapidi",
       "title": "Scegli un test",
       "description": "Apri un test, rispondi in pochi tap e scopri subito il risultato.",
+      "searchPlaceholder": "Cerca per nome",
+      "clearSearch": "Pulisci ricerca",
       "cta": "Inizia ora",
       "empty": "Al momento non ci sono test disponibili.",
+      "noResults": "Nessun test trovato per \"{query}\".",
       "noSubtitle": "Scopri cosa racconta questo test su di te.",
       "logoAlt": "Logo FormKiller"
     }
