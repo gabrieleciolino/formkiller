@@ -20,6 +20,7 @@
     "sidebar": {
       "forms": "Form",
       "tests": "Test",
+      "slides": "Slides",
       "users": "Utenti",
       "leads": "Lead",
       "sessions": "Sessioni",
@@ -96,6 +97,13 @@
       "detail": {
         "back": "Indietro"
       }
+    },
+    "slides": {
+      "title": "Slides",
+      "description": "Seleziona un test per generare e gestire il carosello Instagram.",
+      "empty": "Non ci sono test disponibili.",
+      "open": "Apri slides",
+      "back": "Torna alle slides"
     },
     "leads": {
       "title": "Lead",
@@ -324,6 +332,46 @@
       },
       "scoring": {
         "profile": "P{profile}"
+      }
+    },
+    "carousel": {
+      "generateDraft": "Genera bozza",
+      "generatingDraft": "Generazione bozza...",
+      "generateDraftSuccess": "Bozza slides generata.",
+      "generateDraftError": "Generazione bozza fallita.",
+      "save": "Salva copy e prompt",
+      "saving": "Salvataggio...",
+      "saveSuccess": "Slides salvate.",
+      "saveError": "Salvataggio slides fallito.",
+      "trigger": "Genera immagini",
+      "triggering": "Generazione in coda...",
+      "triggerFirst": "Genera immagine slide 1",
+      "triggeringFirst": "Slide 1 in generazione...",
+      "triggerSlide": "Genera immagine",
+      "triggeringSlide": "In generazione...",
+      "regenerateSlide": "Rigenera immagine",
+      "regeneratingSlide": "Rigenerazione...",
+      "triggerSuccess": "Generazione immagini avviata.",
+      "triggerError": "Avvio generazione fallito.",
+      "missingContent": "Completa copy e prompt per tutte le slide.",
+      "missingSlideContent": "Completa copy e prompt della slide prima di generare.",
+      "firstSlideRequired": "Genera prima l'immagine della slide 1 per mantenere lo stile.",
+      "copyLabel": "Copy slide",
+      "promptLabel": "Prompt immagine (Gemini)",
+      "previewLabel": "Anteprima immagine",
+      "previewAlt": "Slide {index}",
+      "noImage": "Nessuna immagine generata.",
+      "slides": {
+        "intro": "Slide 1 · Intro",
+        "question1": "Slide 2 · Domanda 1",
+        "question2": "Slide 3 · Domanda 2",
+        "cta": "Slide 4 · CTA finale"
+      },
+      "status": {
+        "idle": "Da generare",
+        "processing": "In generazione",
+        "completed": "Completata",
+        "failed": "Fallita"
       }
     }
   },

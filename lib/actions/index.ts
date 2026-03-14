@@ -21,9 +21,32 @@ const baseActionClient = createSafeActionClient({
       return error.message;
     }
 
+    const candidate = error as Error & {
+      cause?: unknown;
+      digest?: string;
+      statusCode?: number;
+      code?: string;
+      details?: unknown;
+      hint?: string;
+    };
+
     console.log("[safe_action_error]", {
       name: error.name,
       message: error.message,
+      stack: error.stack,
+      digest: candidate.digest,
+      statusCode: candidate.statusCode,
+      code: candidate.code,
+      hint: candidate.hint,
+      details: candidate.details,
+      cause:
+        candidate.cause instanceof Error
+          ? {
+              name: candidate.cause.name,
+              message: candidate.cause.message,
+              stack: candidate.cause.stack,
+            }
+          : candidate.cause,
     });
 
     return DEFAULT_SERVER_ERROR_MESSAGE;

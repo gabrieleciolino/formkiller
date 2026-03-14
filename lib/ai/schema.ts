@@ -4,9 +4,11 @@ import {
 } from "@/features/forms/schema";
 import {
   TEST_ANSWERS_PER_QUESTION,
+  TEST_CAROUSEL_SLIDES_COUNT,
   TEST_MAX_QUESTIONS,
   TEST_MIN_QUESTIONS,
   TEST_PROFILES_COUNT,
+  testSlideKindSchema,
 } from "@/features/tests/schema";
 import z from "zod";
 
@@ -87,4 +89,17 @@ export const generateViralTestOutputSchema = z.object({
     .array(generatedViralTestQuestionSchema)
     .min(TEST_MIN_QUESTIONS)
     .max(TEST_MAX_QUESTIONS),
+});
+
+const generateTestCarouselSlideOutputSchema = z.object({
+  order: z.number().int().min(0).max(TEST_CAROUSEL_SLIDES_COUNT - 1),
+  kind: testSlideKindSchema,
+  copy: z.string().trim().min(1),
+  imagePrompt: z.string().trim().min(1),
+});
+
+export const generateTestCarouselOutputSchema = z.object({
+  slides: z
+    .array(generateTestCarouselSlideOutputSchema)
+    .length(TEST_CAROUSEL_SLIDES_COUNT),
 });

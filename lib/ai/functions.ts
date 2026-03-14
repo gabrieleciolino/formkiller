@@ -1,8 +1,10 @@
-import { generateText, Output } from "ai";
+import { generateImage, generateText, Output } from "ai";
+import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import {
   generateAnalysisInstructionsOutputSchema,
   generateCompletionAnalysisOutputSchema,
+  generateTestCarouselOutputSchema,
   generateFormOutputSchema,
   generateViralTestOutputSchema,
 } from "@/lib/ai/schema";
@@ -12,6 +14,7 @@ import {
   FormLanguage,
 } from "@/features/forms/schema";
 import {
+  TEST_CAROUSEL_SLIDE_DEFINITIONS,
   TEST_MAX_QUESTIONS,
   TEST_MIN_QUESTIONS,
   TEST_PROFILES_COUNT,
@@ -19,9 +22,12 @@ import {
 import type {
   GenerateAnalysisInstructionsOutputType,
   GenerateCompletionAnalysisOutputType,
+  GenerateTestCarouselOutputType,
   GenerateFormOutputType,
   GenerateViralTestOutputType,
 } from "@/lib/ai/types";
+
+const TEST_CAROUSEL_IMAGE_MODEL_ID = "gemini-3.1-flash-image-preview";
 
 const getLanguageName = (language: FormLanguage) => {
   switch (language) {
@@ -308,4 +314,177 @@ export const generateViralTest = async ({
   });
 
   return output;
+};
+
+export const generateTestCarouselDraft = async ({
+  language,
+  testName,
+  introTitle,
+  introMessage,
+  endTitle,
+  endMessage,
+  questions,
+}: {
+  language: FormLanguage;
+  testName: string;
+  introTitle: string;
+  introMessage: string;
+  endTitle: string;
+  endMessage: string;
+  questions: Array<{
+    order: number;
+    question: string;
+    answers: Array<{ order: number; answer: string }>;
+  }>;
+}): Promise<GenerateTestCarouselOutputType["slides"]> => {
+  const questionsText = questions
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((question, index) => {
+      const answers = question.answers
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map((answer, answerIndex) => `${answerIndex + 1}) ${answer.answer}`)
+        .join("\n");
+
+      return `Domanda ${index + 1}: ${question.question}\n${answers}`;
+    })
+    .join("\n\n");
+
+  const { output } = await generateText({
+    model: openai("gpt-5-mini"),
+    prompt: `
+      Sei un social media copywriter specializzato in caroselli Instagram che promuovono quiz.
+      Devi generare copy e prompt immagine per 4 slide.
+
+      REGOLE FISSE:
+      - Lingua di output: ${getLanguageName(language)}.
+      - Mantieni il tono rapido, social, condivisibile.
+      - Ogni slide deve avere:
+        - "copy": testo finale visibile sulla slide
+        - "imagePrompt": prompt per Gemini per creare lo sfondo visuale
+      - "imagePrompt" deve essere nella stessa lingua del test.
+      - "imagePrompt" deve richiedere esplicitamente che Gemini inserisca il copy nella grafica della slide.
+      - Evita testo troppo lungo: copy leggibile in pochi secondi su mobile.
+
+      STRUTTURA OBBLIGATORIA:
+      - Slide 1: order=0, kind=intro
+        Deve contenere hook, descrizione breve, titolo del test e call to action.
+      - Slide 2: order=1, kind=question_1
+        Deve contenere la prima domanda e le 4 risposte.
+      - Slide 3: order=2, kind=question_2
+        Deve contenere la seconda domanda e le 4 risposte.
+      - Slide 4: order=3, kind=cta
+        Deve contenere una call to action finale per compilare il test e scoprire il risultato.
+
+      DATI DEL TEST:
+      - Nome test: ${testName}
+      - Intro title: ${introTitle}
+      - Intro message: ${introMessage}
+      - End title: ${endTitle}
+      - End message: ${endMessage}
+
+      Prime due domande con risposte:
+      ${questionsText}
+
+      IMPORTANTE:
+      - Non cambiare le risposte delle domande nelle slide 2 e 3.
+      - Il prompt immagine deve richiedere testo renderizzato nell'immagine, includendo il copy della slide.
+      - Specifica che il testo deve essere leggibile su mobile, ad alto contrasto e senza elementi che coprano le parole.
+      - Usa uno stile visual coerente tra le 4 slide.
+    `,
+    output: Output.object({
+      schema: generateTestCarouselOutputSchema,
+    }),
+  });
+
+  const byOrder = new Map(output.slides.map((slide) => [slide.order, slide]));
+
+  return TEST_CAROUSEL_SLIDE_DEFINITIONS.map(({ order, kind }) => {
+    const generatedSlide = byOrder.get(order);
+
+    if (!generatedSlide) {
+      const fallbackCopyByKind = {
+        intro: "Fai il test e scopri subito il tuo profilo.",
+        question_1: "Domanda 1\n1) A\n2) B\n3) C\n4) D",
+        question_2: "Domanda 2\n1) A\n2) B\n3) C\n4) D",
+        cta: "Scopri il tuo risultato finale.",
+      } as const;
+      const fallbackCopy = fallbackCopyByKind[kind];
+
+      return {
+        order,
+        kind,
+        copy: fallbackCopy,
+        imagePrompt: `Crea una slide social moderna ed editoriale e inserisci in overlay esattamente questo testo: \"${fallbackCopy}\". Garantisci massima leggibilità su mobile, alto contrasto e margini sicuri.`,
+      };
+    }
+
+    return {
+      order,
+      kind,
+      copy: generatedSlide.copy.trim(),
+      imagePrompt: generatedSlide.imagePrompt.trim(),
+    };
+  });
+};
+
+export const generateTestCarouselSlideImage = async ({
+  imagePrompt,
+  slideCopy,
+  styleReferenceImage,
+}: {
+  imagePrompt: string;
+  slideCopy: string;
+  styleReferenceImage?: Buffer;
+}) => {
+  const normalizedPrompt = imagePrompt.trim();
+  const normalizedCopy = slideCopy.trim();
+  const finalPrompt = `
+    Crea una slide Instagram in formato 4:5.
+    L'immagine deve includere il testo del copy già scritto sulla grafica.
+
+    COPY OBBLIGATORIO DA INSERIRE (copialo esattamente, senza modificarlo):
+    \"\"\"${normalizedCopy}\"\"\"
+
+    ISTRUZIONI VISIVE:
+    ${normalizedPrompt}
+
+    REGOLE:
+    - Non omettere nessuna parte del copy.
+    - Non aggiungere testo extra, watermark o loghi.
+    - Testo molto leggibile su mobile, con contrasto alto e margini di sicurezza.
+    - Mantieni una composizione pulita e pronta per carosello social.
+    ${styleReferenceImage ? "- Mantieni lo stile visivo coerente con l'immagine di riferimento allegata." : ""}
+  `;
+
+  const result = await generateImage({
+    model: google.image(TEST_CAROUSEL_IMAGE_MODEL_ID),
+    prompt: styleReferenceImage
+      ? {
+          text: finalPrompt,
+          images: [styleReferenceImage],
+        }
+      : finalPrompt,
+    aspectRatio: "4:5",
+  });
+
+  const { image } = result;
+
+  return {
+    data: Buffer.from(image.uint8Array),
+    mediaType: image.mediaType,
+    debug: {
+      warnings: result.warnings,
+      usage: result.usage,
+      providerMetadata: result.providerMetadata,
+      responses: (result.responses ?? []).map((response) => ({
+        modelId: response.modelId,
+        timestamp:
+          response.timestamp instanceof Date
+            ? response.timestamp.toISOString()
+            : null,
+      })),
+    },
+  };
 };

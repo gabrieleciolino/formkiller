@@ -20,6 +20,7 @@
     "sidebar": {
       "forms": "Formularios",
       "tests": "Tests",
+      "slides": "Slides",
       "users": "Usuarios",
       "leads": "Contactos",
       "sessions": "Sesiones",
@@ -96,6 +97,13 @@
       "detail": {
         "back": "Volver"
       }
+    },
+    "slides": {
+      "title": "Slides",
+      "description": "Selecciona un test para generar y gestionar el carrusel de Instagram.",
+      "empty": "No hay tests disponibles.",
+      "open": "Abrir slides",
+      "back": "Volver a slides"
     },
     "leads": {
       "title": "Contactos",
@@ -324,6 +332,46 @@
       },
       "scoring": {
         "profile": "P{profile}"
+      }
+    },
+    "carousel": {
+      "generateDraft": "Generar borrador",
+      "generatingDraft": "Generando borrador...",
+      "generateDraftSuccess": "Borrador de slides generado.",
+      "generateDraftError": "No se pudo generar el borrador de slides.",
+      "save": "Guardar copy y prompt",
+      "saving": "Guardando...",
+      "saveSuccess": "Slides guardadas.",
+      "saveError": "No se pudieron guardar las slides.",
+      "trigger": "Generar imágenes",
+      "triggering": "Encolando generación...",
+      "triggerFirst": "Generar imagen slide 1",
+      "triggeringFirst": "Generando slide 1...",
+      "triggerSlide": "Generar imagen",
+      "triggeringSlide": "Generando...",
+      "regenerateSlide": "Regenerar imagen",
+      "regeneratingSlide": "Regenerando...",
+      "triggerSuccess": "Generación de imágenes iniciada.",
+      "triggerError": "No se pudo iniciar la generación.",
+      "missingContent": "Completa copy y prompt para todas las slides.",
+      "missingSlideContent": "Completa copy y prompt de esta slide antes de generar.",
+      "firstSlideRequired": "Genera primero la imagen de la slide 1 para mantener el estilo.",
+      "copyLabel": "Copy de la slide",
+      "promptLabel": "Prompt de imagen (Gemini)",
+      "previewLabel": "Vista previa",
+      "previewAlt": "Slide {index}",
+      "noImage": "Aún no hay imagen generada.",
+      "slides": {
+        "intro": "Slide 1 · Intro",
+        "question1": "Slide 2 · Pregunta 1",
+        "question2": "Slide 3 · Pregunta 2",
+        "cta": "Slide 4 · CTA final"
+      },
+      "status": {
+        "idle": "Por generar",
+        "processing": "Generando",
+        "completed": "Completada",
+        "failed": "Fallida"
       }
     }
   },

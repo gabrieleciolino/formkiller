@@ -581,6 +581,56 @@ export type Database = {
           },
         ]
       }
+      test_slide: {
+        Row: {
+          copy: string
+          created_at: string | null
+          generation_error: string | null
+          generation_status: Database["public"]["Enums"]["test_slide_generation_status"]
+          id: string
+          image_file_key: string | null
+          image_prompt: string
+          kind: Database["public"]["Enums"]["test_slide_kind"]
+          order: number
+          test_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          copy: string
+          created_at?: string | null
+          generation_error?: string | null
+          generation_status?: Database["public"]["Enums"]["test_slide_generation_status"]
+          id?: string
+          image_file_key?: string | null
+          image_prompt: string
+          kind: Database["public"]["Enums"]["test_slide_kind"]
+          order?: number
+          test_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          copy?: string
+          created_at?: string | null
+          generation_error?: string | null
+          generation_status?: Database["public"]["Enums"]["test_slide_generation_status"]
+          id?: string
+          image_file_key?: string | null
+          image_prompt?: string
+          kind?: Database["public"]["Enums"]["test_slide_kind"]
+          order?: number
+          test_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_slide_test_id_test_id_fk"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "test"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -606,6 +656,12 @@ export type Database = {
       form_session_status: "pending" | "in_progress" | "completed"
       form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
+      test_slide_generation_status:
+        | "idle"
+        | "processing"
+        | "completed"
+        | "failed"
+      test_slide_kind: "intro" | "question_1" | "question_2" | "cta"
       test_status: "draft" | "published"
     }
     CompositeTypes: {
@@ -743,6 +799,13 @@ export const Constants = {
       form_session_status: ["pending", "in_progress", "completed"],
       form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
+      test_slide_generation_status: [
+        "idle",
+        "processing",
+        "completed",
+        "failed",
+      ],
+      test_slide_kind: ["intro", "question_1", "question_2", "cta"],
       test_status: ["draft", "published"],
     },
   },
