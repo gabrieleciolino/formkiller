@@ -14,10 +14,6 @@ import {
   generateFormAnalysisInstructionsAction,
   saveFormAnalysisInstructionsAction,
 } from "@/features/forms/actions";
-import {
-  ANALYSIS_PROMPT_MAX_CHARS,
-  ANALYSIS_PROMPT_MAX_WORDS,
-} from "@/features/forms/schema";
 import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
@@ -106,7 +102,6 @@ export default function GenerateAnalysisSheet({
             <Textarea
               value={additionalPrompt}
               onChange={(event) => setAdditionalPrompt(event.target.value)}
-              maxLength={ANALYSIS_PROMPT_MAX_CHARS}
               rows={4}
               placeholder={t("forms.analysis.additionalPromptPlaceholder")}
             />
@@ -128,16 +123,9 @@ export default function GenerateAnalysisSheet({
             <Textarea
               value={analysisInstructions}
               onChange={(event) => setAnalysisInstructions(event.target.value)}
-              maxLength={ANALYSIS_PROMPT_MAX_CHARS}
               rows={14}
               placeholder={t("forms.analysis.instructionsPlaceholder")}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("forms.analysis.limitHint", {
-                words: ANALYSIS_PROMPT_MAX_WORDS,
-                chars: ANALYSIS_PROMPT_MAX_CHARS,
-              })}
-            </p>
           </Field>
 
           <Button

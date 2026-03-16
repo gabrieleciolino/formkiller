@@ -6,11 +6,7 @@ import {
   generateFormOutputSchema,
   generateViralTestOutputSchema,
 } from "@/lib/ai/schema";
-import {
-  ANALYSIS_PROMPT_MAX_CHARS,
-  ANALYSIS_PROMPT_MAX_WORDS,
-  FormLanguage,
-} from "@/features/forms/schema";
+import { FormLanguage } from "@/features/forms/schema";
 import {
   TEST_MAX_QUESTIONS,
   TEST_MIN_QUESTIONS,
@@ -38,15 +34,7 @@ const getLanguageName = (language: FormLanguage) => {
 };
 
 const normalizeAnalysisPrompt = (value: string) => {
-  const trimmed = value.trim();
-  const byChars = trimmed.slice(0, ANALYSIS_PROMPT_MAX_CHARS);
-  const words = byChars.split(/\s+/).filter((token) => token.trim().length > 0);
-
-  if (words.length <= ANALYSIS_PROMPT_MAX_WORDS) {
-    return byChars;
-  }
-
-  return words.slice(0, ANALYSIS_PROMPT_MAX_WORDS).join(" ");
+  return value.trim();
 };
 
 const getTestToneInstructions = (tone: TestTone) => {
@@ -167,7 +155,6 @@ export const generateFormAnalysisInstructions = async ({
         Deve produrre un testo breve, conciso e discorsivo.
         Niente sezioni o elenchi, niente diagnosi, niente invenzioni.
         Interpreta solo le risposte disponibili.
-        Massimo ${ANALYSIS_PROMPT_MAX_WORDS} parole o ${ANALYSIS_PROMPT_MAX_CHARS} caratteri.
 
         Lingua: ${getLanguageName(language)}.
         Contesto form: ${formInstructions}
@@ -215,7 +202,6 @@ export const generateCompletionAnalysis = async ({
         Scrivi un commento finale per l'utente del form "${formName}".
         Deve essere breve, conciso, discorsivo, senza sezioni o bullet point.
         Usa solo le risposte disponibili, senza inventare dettagli.
-        Massimo ${ANALYSIS_PROMPT_MAX_WORDS} parole o ${ANALYSIS_PROMPT_MAX_CHARS} caratteri.
 
         Lingua: ${getLanguageName(language)}.
         Istruzione di analisi: ${normalizedAnalysisInstructions}

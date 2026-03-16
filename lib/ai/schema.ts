@@ -1,19 +1,10 @@
 import {
-  ANALYSIS_PROMPT_MAX_CHARS,
-  ANALYSIS_PROMPT_MAX_WORDS,
-} from "@/features/forms/schema";
-import {
   TEST_ANSWERS_PER_QUESTION,
   TEST_MAX_QUESTIONS,
   TEST_MIN_QUESTIONS,
   TEST_PROFILES_COUNT,
 } from "@/features/tests/schema";
 import z from "zod";
-
-const hasMaxWords = (value: string, maxWords: number) =>
-  value
-    .split(/\s+/)
-    .filter((token) => token.trim().length > 0).length <= maxWords;
 
 const generatedQuestionSchema = z.object({
   question: z.string(),
@@ -41,21 +32,11 @@ export const generateFormOutputSchema = z.object({
 });
 
 export const generateAnalysisInstructionsOutputSchema = z.object({
-  analysisInstructions: z
-    .string()
-    .trim()
-    .min(1)
-    .max(ANALYSIS_PROMPT_MAX_CHARS)
-    .refine((value) => hasMaxWords(value, ANALYSIS_PROMPT_MAX_WORDS)),
+  analysisInstructions: z.string().trim().min(1),
 });
 
 export const generateCompletionAnalysisOutputSchema = z.object({
-  analysis: z
-    .string()
-    .trim()
-    .min(1)
-    .max(ANALYSIS_PROMPT_MAX_CHARS)
-    .refine((value) => hasMaxWords(value, ANALYSIS_PROMPT_MAX_WORDS)),
+  analysis: z.string().trim().min(1),
 });
 
 const generatedViralTestAnswerSchema = z.object({
