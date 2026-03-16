@@ -18,6 +18,8 @@ import TestEditorForm, {
 import { generateTestDraftAction } from "@/features/tests/actions";
 import {
   generateTestDraftSchema,
+  testResultTypeSchema,
+  testToneSchema,
   type EditableTestType,
   type GenerateTestDraftType,
 } from "@/features/tests/schema";
@@ -41,6 +43,8 @@ export default function CreateTestForm() {
       additionalPrompt: "",
       questionsCount: 7,
       language: "it",
+      tone: "fun",
+      resultType: "profile",
     },
   });
 
@@ -63,9 +67,16 @@ export default function CreateTestForm() {
     });
   };
   const selectedLanguage = form.watch("language");
+  const selectedTone = form.watch("tone");
+  const selectedResultType = form.watch("resultType");
 
   const handleStartFromScratch = () => {
-    setDraft(createEmptyEditableTest(selectedLanguage));
+    setDraft(
+      createEmptyEditableTest(selectedLanguage, {
+        tone: selectedTone,
+        resultType: selectedResultType,
+      }),
+    );
   };
 
   return (
@@ -134,6 +145,54 @@ export default function CreateTestForm() {
                     {(formLanguageSchema.options as FormLanguage[]).map((language) => (
                       <SelectItem key={language} value={language}>
                         {t(`forms.languages.${language}` as Parameters<typeof t>[0])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="tone"
+            control={form.control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>{t("tests.create.tone")}</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {testToneSchema.options.map((tone) => (
+                      <SelectItem key={tone} value={tone}>
+                        {t(`tests.editor.toneOptions.${tone}` as Parameters<typeof t>[0])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="resultType"
+            control={form.control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>{t("tests.create.resultType")}</FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {testResultTypeSchema.options.map((resultType) => (
+                      <SelectItem key={resultType} value={resultType}>
+                        {t(
+                          `tests.editor.resultTypeOptions.${resultType}` as Parameters<
+                            typeof t
+                          >[0],
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>

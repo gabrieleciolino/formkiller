@@ -26,6 +26,8 @@ import {
 } from "@/features/tests/actions";
 import {
   editableTestSchema,
+  testResultTypeSchema,
+  testToneSchema,
   TEST_ANSWERS_PER_QUESTION,
   TEST_PROFILES_COUNT,
   type EditableTestType,
@@ -49,11 +51,17 @@ type VoiceOption = {
 
 export function createEmptyEditableTest(
   language: FormLanguage = "it",
+  options?: {
+    tone?: EditableTestType["tone"];
+    resultType?: EditableTestType["resultType"];
+  },
 ): EditableTestType {
   return {
     name: "",
     language,
     voiceId: undefined,
+    tone: options?.tone ?? "fun",
+    resultType: options?.resultType ?? "profile",
     isPublished: false,
     introTitle: "",
     introMessage: "",
@@ -98,6 +106,7 @@ export default function TestEditorForm({
     defaultValues: initialData ?? createEmptyEditableTest(),
   });
   const selectedVoiceId = form.watch("voiceId");
+  const selectedResultType = form.watch("resultType");
   const selectedVoice = voiceOptions.find((voice) => voice.id === selectedVoiceId);
 
   useEffect(() => {
@@ -319,6 +328,56 @@ export default function TestEditorForm({
         />
       </div>
 
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Controller
+          name="tone"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("tests.editor.tone")}</FieldLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {testToneSchema.options.map((tone) => (
+                    <SelectItem key={tone} value={tone}>
+                      {t(`tests.editor.toneOptions.${tone}` as Parameters<typeof t>[0])}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="resultType"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("tests.editor.resultType")}</FieldLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {testResultTypeSchema.options.map((resultType) => (
+                    <SelectItem key={resultType} value={resultType}>
+                      {t(
+                        `tests.editor.resultTypeOptions.${resultType}` as Parameters<
+                          typeof t
+                        >[0],
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+      </div>
+
       {selectedVoice && (
         <div className="rounded-md border border-border bg-card p-3">
           <p className="text-sm font-medium text-foreground">
@@ -404,22 +463,28 @@ export default function TestEditorForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <h3 className="text-base font-semibold text-foreground">
-          {t("tests.editor.profiles.titleSection")}
-        </h3>
-        <Controller
-          name="profiles"
-          control={form.control}
-          render={({ field }) => (
-            <TestProfilesFields
-              values={field.value}
-              onChange={field.onChange}
-              disabled={isPending}
-            />
-          )}
-        />
-      </div>
+      {selectedResultType === "profile" ? (
+        <div className="space-y-2">
+          <h3 className="text-base font-semibold text-foreground">
+            {t("tests.editor.profiles.titleSection")}
+          </h3>
+          <Controller
+            name="profiles"
+            control={form.control}
+            render={({ field }) => (
+              <TestProfilesFields
+                values={field.value}
+                onChange={field.onChange}
+                disabled={isPending}
+              />
+            )}
+          />
+        </div>
+      ) : (
+        <div className="rounded-md border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+          {t("tests.editor.resultModes.analysisHint")}
+        </div>
+      )}
 
       <div className="space-y-2">
         <h3 className="text-base font-semibold text-foreground">
@@ -432,6 +497,7 @@ export default function TestEditorForm({
             <TestQuestionsFields
               values={field.value}
               onChange={field.onChange}
+              showScoring={selectedResultType === "profile"}
               disabled={isPending}
             />
           )}

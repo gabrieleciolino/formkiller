@@ -45,6 +45,8 @@ export default async function AdminTestDetailPage({
           name: test.name,
           language: test.language,
           voiceId: test.voice_id ?? undefined,
+          tone: test.tone,
+          resultType: test.result_type,
           isPublished: test.is_published,
           introTitle: test.intro_title ?? "",
           introMessage: test.intro_message ?? "",

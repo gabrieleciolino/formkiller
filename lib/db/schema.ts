@@ -150,6 +150,16 @@ export const formTypeEnum = pgEnum("form_type", [
 
 export const formLanguageEnum = pgEnum("form_language", ["en", "it", "es"]);
 export const testStatusEnum = pgEnum("test_status", ["draft", "published"]);
+export const testToneEnum = pgEnum("test_tone", [
+  "fun",
+  "educational",
+  "serious",
+  "professional",
+]);
+export const testResultTypeEnum = pgEnum("test_result_type", [
+  "profile",
+  "analysis",
+]);
 
 export const formTable = pgTable(
   "form",
@@ -436,6 +446,10 @@ export const testTable = pgTable(
     slug: text("slug").notNull(),
     language: formLanguageEnum("language").notNull().default("en"),
     voiceId: text("voice_id"),
+    tone: testToneEnum("tone").notNull().default("fun"),
+    resultType: testResultTypeEnum("result_type")
+      .notNull()
+      .default("profile"),
     status: testStatusEnum("status").notNull().default("draft"),
     isPublished: boolean("is_published").notNull().default(false),
     backgroundImageKey: text("background_image_key"),

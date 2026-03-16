@@ -416,8 +416,10 @@ export type Database = {
           is_published: boolean
           language: Database["public"]["Enums"]["form_language"]
           name: string
+          result_type: Database["public"]["Enums"]["test_result_type"]
           slug: string
           status: Database["public"]["Enums"]["test_status"]
+          tone: Database["public"]["Enums"]["test_tone"]
           updated_at: string | null
           user_id: string
           voice_id: string | null
@@ -434,8 +436,10 @@ export type Database = {
           is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name: string
+          result_type?: Database["public"]["Enums"]["test_result_type"]
           slug: string
           status?: Database["public"]["Enums"]["test_status"]
+          tone?: Database["public"]["Enums"]["test_tone"]
           updated_at?: string | null
           user_id: string
           voice_id?: string | null
@@ -452,8 +456,10 @@ export type Database = {
           is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name?: string
+          result_type?: Database["public"]["Enums"]["test_result_type"]
           slug?: string
           status?: Database["public"]["Enums"]["test_status"]
+          tone?: Database["public"]["Enums"]["test_tone"]
           updated_at?: string | null
           user_id?: string
           voice_id?: string | null
@@ -615,7 +621,9 @@ export type Database = {
       form_session_status: "pending" | "in_progress" | "completed"
       form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
+      test_result_type: "profile" | "analysis"
       test_status: "draft" | "published"
+      test_tone: "fun" | "educational" | "serious" | "professional"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -752,7 +760,9 @@ export const Constants = {
       form_session_status: ["pending", "in_progress", "completed"],
       form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
+      test_result_type: ["profile", "analysis"],
       test_status: ["draft", "published"],
+      test_tone: ["fun", "educational", "serious", "professional"],
     },
   },
 } as const

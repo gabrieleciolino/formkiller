@@ -27,6 +27,7 @@ function createEmptyQuestion(nextOrder: number) {
 export default function TestQuestionsFields({
   values,
   onChange,
+  showScoring = true,
   disabled = false,
 }: TestQuestionsFieldsProps) {
   const t = useTranslations();
@@ -145,33 +146,35 @@ export default function TestQuestionsFields({
                     />
                   </Field>
 
-                  <TestScoringGrid
-                    questionIndex={questionIndex}
-                    answerIndex={answerIndex}
-                    scores={answer.scores}
-                    disabled={disabled}
-                    onChange={(nextScores) => {
-                      const next = values.map((item, itemIndex) => {
-                        if (itemIndex !== questionIndex) {
-                          return item;
-                        }
+                  {showScoring ? (
+                    <TestScoringGrid
+                      questionIndex={questionIndex}
+                      answerIndex={answerIndex}
+                      scores={answer.scores}
+                      disabled={disabled}
+                      onChange={(nextScores) => {
+                        const next = values.map((item, itemIndex) => {
+                          if (itemIndex !== questionIndex) {
+                            return item;
+                          }
 
-                        return {
-                          ...item,
-                          answers: item.answers.map((currentAnswer, currentAnswerIndex) =>
-                            currentAnswerIndex === answerIndex
-                              ? {
-                                  ...currentAnswer,
-                                  scores: nextScores,
-                                }
-                              : currentAnswer,
-                          ),
-                        };
-                      });
+                          return {
+                            ...item,
+                            answers: item.answers.map((currentAnswer, currentAnswerIndex) =>
+                              currentAnswerIndex === answerIndex
+                                ? {
+                                    ...currentAnswer,
+                                    scores: nextScores,
+                                  }
+                                : currentAnswer,
+                            ),
+                          };
+                        });
 
-                      onChange(next);
-                    }}
-                  />
+                        onChange(next);
+                      }}
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>

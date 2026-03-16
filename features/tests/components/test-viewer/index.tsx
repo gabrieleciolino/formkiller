@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 type ViewerPhase = "welcome" | "question" | "completed";
 type ScoreTotals = [number, number, number, number];
+type AnalysisStatus = "idle" | "loading" | "ready" | "failed";
 
 function addScores(current: ScoreTotals, next: ScoreTotals): ScoreTotals {
   return [
@@ -107,6 +108,8 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
   const [winnerProfileIndex, setWinnerProfileIndex] = useState<number | null>(
     null,
   );
+  const [analysisText, setAnalysisText] = useState<string | null>(null);
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>("idle");
   const [isPending, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
@@ -144,6 +147,8 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
     setAnswerSelections([]);
     setSelectedAnswerOrder(null);
     setWinnerProfileIndex(null);
+    setAnalysisText(null);
+    setAnalysisStatus("idle");
     setPhase("question");
 
     const backgroundMusic = backgroundMusicRef.current;
@@ -179,12 +184,14 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
       setAnswerSelections(nextSelections);
       setWinnerProfileIndex(profileIndex);
       setPhase("completed");
+      setAnalysisText(null);
+      setAnalysisStatus(test.resultType === "analysis" ? "loading" : "idle");
 
       if (!winnerProfileId) return;
 
       startTransition(async () => {
         try {
-          const { serverError } = await saveTestResultAction({
+          const { data, serverError } = await saveTestResultAction({
             testId: test.id,
             profileId: winnerProfileId,
             language: test.language,
@@ -192,7 +199,16 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
             answerSelections: nextSelections,
           });
           if (serverError) throw new Error();
+
+          if (test.resultType === "analysis") {
+            const nextAnalysis = data?.analysisText?.trim() || null;
+            setAnalysisText(nextAnalysis);
+            setAnalysisStatus(nextAnalysis ? "ready" : "failed");
+          }
         } catch {
+          if (test.resultType === "analysis") {
+            setAnalysisStatus("failed");
+          }
           toast(t("testViewer.errors.saveResult"));
         }
       });
@@ -289,7 +305,7 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
             </p>
           </div>
 
-          {winnerProfile ? (
+          {test.resultType === "profile" && winnerProfile ? (
             <div className="rounded-xl border border-primary/25 bg-primary/5 p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full bg-primary" />
@@ -306,7 +322,35 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
             </div>
           ) : null}
 
-          <ShareButtons profileTitle={winnerProfile?.title} />
+          {test.resultType === "analysis" ? (
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="size-2 rounded-full bg-primary" />
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                  {t("testViewer.completed.analysisTitle")}
+                </p>
+              </div>
+              {analysisStatus === "loading" ? (
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {t("testViewer.completed.analysisLoading")}
+                </p>
+              ) : analysisText ? (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                  {analysisText}
+                </p>
+              ) : (
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {t("testViewer.completed.analysisErrorFallback")}
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          <ShareButtons
+            profileTitle={
+              test.resultType === "profile" ? winnerProfile?.title : undefined
+            }
+          />
 
           <Button
             variant="outline"

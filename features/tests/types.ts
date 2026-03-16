@@ -43,6 +43,7 @@ export type TestProfilesFieldsProps = {
 export type TestQuestionsFieldsProps = {
   values: EditableTestValues["questions"];
   onChange: (next: EditableTestValues["questions"]) => void;
+  showScoring?: boolean;
   disabled?: boolean;
 };
 

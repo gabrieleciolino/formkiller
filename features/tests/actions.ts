@@ -178,6 +178,8 @@ function toScoresTuple(scores: number[]): [number, number, number, number] {
 
 function normalizeEditableDraft(input: {
   name: string;
+  tone: EditableTestType["tone"];
+  resultType: EditableTestType["resultType"];
   introTitle: string;
   introMessage: string;
   endTitle: string;
@@ -197,6 +199,8 @@ function normalizeEditableDraft(input: {
     name: input.name,
     language: "it",
     voiceId: undefined,
+    tone: input.tone,
+    resultType: input.resultType,
     isPublished: false,
     introTitle: input.introTitle,
     introMessage: input.introMessage,
@@ -245,13 +249,21 @@ export const generateTestDraftAction = adminActionClient
       existingTestsDigest,
       language: parsedInput.language,
       questionsCount: parsedInput.questionsCount,
+      tone: parsedInput.tone,
+      resultType: parsedInput.resultType,
     });
 
-    const normalized = normalizeEditableDraft(output);
+    const normalized = normalizeEditableDraft({
+      ...output,
+      tone: parsedInput.tone,
+      resultType: parsedInput.resultType,
+    });
 
     return {
       ...normalized,
       language: parsedInput.language,
+      tone: parsedInput.tone,
+      resultType: parsedInput.resultType,
     };
   });
 
@@ -291,6 +303,8 @@ export const createTestAction = adminActionClient
           slug,
           language: parsedInput.language,
           voice_id: resolvedVoiceId,
+          tone: parsedInput.tone,
+          result_type: parsedInput.resultType,
           status: parsedInput.isPublished ? "published" : "draft",
           is_published: parsedInput.isPublished,
           background_image_key: defaultBackgroundImageKey,
@@ -440,6 +454,8 @@ export const updateTestAction = adminActionClient
         name: parsedInput.name,
         language: parsedInput.language,
         voice_id: resolvedVoiceId,
+        tone: parsedInput.tone,
+        result_type: parsedInput.resultType,
         status: parsedInput.isPublished ? "published" : "draft",
         is_published: parsedInput.isPublished,
         background_image_key: defaultBackgroundImageKey,

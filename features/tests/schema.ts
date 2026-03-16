@@ -12,6 +12,15 @@ export const TEST_ADDITIONAL_PROMPT_MAX_CHARS = 500;
 
 export const testStatusSchema = z.enum(["draft", "published"]);
 export type TestStatus = z.infer<typeof testStatusSchema>;
+export const testToneSchema = z.enum([
+  "fun",
+  "educational",
+  "serious",
+  "professional",
+]);
+export type TestTone = z.infer<typeof testToneSchema>;
+export const testResultTypeSchema = z.enum(["profile", "analysis"]);
+export type TestResultType = z.infer<typeof testResultTypeSchema>;
 
 export const testAnswerScoresSchema = z.tuple([
   z.number().int().min(TEST_MIN_SCORE).max(TEST_MAX_SCORE),
@@ -44,6 +53,13 @@ export const testProfileSchema = z.object({
 });
 export type TestProfile = z.infer<typeof testProfileSchema>;
 
+const editableTestProfileSchema = z.object({
+  id: z.string().uuid(),
+  order: z.number().int().nonnegative(),
+  title: z.string().trim(),
+  description: z.string().trim(),
+});
+
 export const generateTestDraftSchema = z.object({
   additionalPrompt: z
     .string()
@@ -51,21 +67,58 @@ export const generateTestDraftSchema = z.object({
     .max(TEST_ADDITIONAL_PROMPT_MAX_CHARS),
   questionsCount: z.number().int().min(TEST_MIN_QUESTIONS).max(TEST_MAX_QUESTIONS),
   language: formLanguageSchema,
+  tone: testToneSchema,
+  resultType: testResultTypeSchema,
 });
 export type GenerateTestDraftType = z.infer<typeof generateTestDraftSchema>;
 
-export const editableTestSchema = z.object({
-  name: z.string().trim().min(1).max(TEST_NAME_MAX_CHARS),
-  language: formLanguageSchema,
-  voiceId: z.string().trim().min(1).optional(),
-  isPublished: z.boolean(),
-  introTitle: z.string().trim().min(1),
-  introMessage: z.string().trim().min(1),
-  endTitle: z.string().trim().min(1),
-  endMessage: z.string().trim().min(1),
-  profiles: z.array(testProfileSchema).length(TEST_PROFILES_COUNT),
-  questions: z.array(testQuestionSchema).min(TEST_MIN_QUESTIONS).max(TEST_MAX_QUESTIONS),
-});
+export const editableTestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(TEST_NAME_MAX_CHARS),
+    language: formLanguageSchema,
+    voiceId: z.string().trim().min(1).optional(),
+    tone: testToneSchema,
+    resultType: testResultTypeSchema,
+    isPublished: z.boolean(),
+    introTitle: z.string().trim().min(1),
+    introMessage: z.string().trim().min(1),
+    endTitle: z.string().trim().min(1),
+    endMessage: z.string().trim().min(1),
+    profiles: z.array(editableTestProfileSchema).length(TEST_PROFILES_COUNT),
+    questions: z
+      .array(testQuestionSchema)
+      .min(TEST_MIN_QUESTIONS)
+      .max(TEST_MAX_QUESTIONS),
+  })
+  .superRefine((value, ctx) => {
+    if (value.resultType !== "profile") {
+      return;
+    }
+
+    value.profiles.forEach((profile, index) => {
+      if (profile.title.trim().length === 0) {
+        ctx.addIssue({
+          code: "too_small",
+          minimum: 1,
+          inclusive: true,
+          origin: "string",
+          path: ["profiles", index, "title"],
+          input: profile.title,
+        });
+      }
+
+      if (profile.description.trim().length === 0) {
+        ctx.addIssue({
+          code: "too_small",
+          minimum: 1,
+          inclusive: true,
+          origin: "string",
+          path: ["profiles", index, "description"],
+          input: profile.description,
+        });
+      }
+    });
+  });
 export type EditableTestType = z.infer<typeof editableTestSchema>;
 
 export const createTestSchema = editableTestSchema;

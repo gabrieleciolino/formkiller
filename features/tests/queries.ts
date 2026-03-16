@@ -15,6 +15,8 @@ export type AdminTestListItem = {
   name: string;
   slug: string;
   language: "en" | "it" | "es";
+  tone: "fun" | "educational" | "serious" | "professional";
+  result_type: "profile" | "analysis";
   status: "draft" | "published";
   is_published: boolean;
   created_at: string | null;
@@ -48,6 +50,8 @@ export type AdminTestDetail = {
   slug: string;
   language: "en" | "it" | "es";
   voice_id: string | null;
+  tone: "fun" | "educational" | "serious" | "professional";
+  result_type: "profile" | "analysis";
   status: "draft" | "published";
   is_published: boolean;
   background_image_key: string | null;
@@ -64,6 +68,8 @@ export type PublicTestViewerData = {
   id: string;
   slug: string;
   language: "en" | "it" | "es";
+  tone: "fun" | "educational" | "serious" | "professional";
+  resultType: "profile" | "analysis";
   name: string;
   backgroundImageUrl: string | null;
   backgroundMusicUrl: string | null;
@@ -179,7 +185,7 @@ export async function getAdminTestsQuery({
     const { data, error } = await traceAdminStep(trace, "db.select.test", () =>
       supabase
         .from("test")
-        .select("id, name, slug, language, status, is_published, created_at")
+        .select("id, name, slug, language, tone, result_type, status, is_published, created_at")
         .order("created_at", { ascending: false }),
     );
 
@@ -220,9 +226,7 @@ export async function getAdminTestByIdQuery({
         () =>
           supabase
             .from("test")
-            .select(
-              "id, user_id, name, slug, language, voice_id, status, is_published, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
-            )
+            .select("id, user_id, name, slug, language, voice_id, tone, result_type, status, is_published, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message")
             .eq("id", testId)
             .maybeSingle(),
         { testId },
@@ -304,7 +308,7 @@ export async function getPublishedTestBySlugQuery({
   const { data, error } = await supabase
     .from("test")
     .select(
-      "id, slug, language, name, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
+      "id, slug, language, tone, result_type, name, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, profiles:test_profile(id, test_id, title, description, order), questions:test_question(id, test_id, question, answers, order, file_key)",
     )
     .eq("slug", slug)
     .eq("status", "published")
@@ -323,6 +327,8 @@ export async function getPublishedTestBySlugQuery({
     id: string;
     slug: string;
     language: "en" | "it" | "es";
+    tone: "fun" | "educational" | "serious" | "professional";
+    result_type: "profile" | "analysis";
     name: string;
     background_image_key: string | null;
     background_music_key: string | null;
@@ -345,6 +351,8 @@ export async function getPublishedTestBySlugQuery({
     id: row.id,
     slug: row.slug,
     language: row.language,
+    tone: row.tone,
+    resultType: row.result_type,
     name: row.name,
     backgroundImageUrl: row.background_image_key,
     backgroundMusicUrl: row.background_music_key,

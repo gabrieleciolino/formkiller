@@ -300,6 +300,8 @@
       "additionalPromptPlaceholder": "Opcional: define tema, tono o publico objetivo.",
       "questionsCount": "Numero de preguntas",
       "language": "Idioma",
+      "tone": "Tono del test",
+      "resultType": "Tipo de resultado final",
       "generate": "Generar borrador",
       "generating": "Generando...",
       "generated": "Borrador generado.",
@@ -324,6 +326,21 @@
       "voiceHint": "La voz seleccionada se usara al regenerar el audio de las preguntas.",
       "voiceLoadError": "No se pudieron cargar las voces de ElevenLabs.",
       "defaultVoiceName": "Voz predeterminada",
+      "tone": "Tono del test",
+      "toneOptions": {
+        "fun": "Divertido",
+        "educational": "Divulgativo / Informativo",
+        "serious": "Serio / Reflexivo",
+        "professional": "Profesional"
+      },
+      "resultType": "Tipo de resultado final",
+      "resultTypeOptions": {
+        "profile": "Perfil final (1 de 4)",
+        "analysis": "Analisis general de respuestas"
+      },
+      "resultModes": {
+        "analysisHint": "Modo analisis: el test mostrara un resumen general de respuestas, sin perfil final."
+      },
       "publish": "Publicación",
       "publishOptions": {
         "draft": "Borrador (no público)",
@@ -424,6 +441,9 @@
       "badge": "Resultado",
       "title": "Tu perfil",
       "defaultMessage": "Aqui esta el resultado final de tu test.",
+      "analysisTitle": "Tu analisis",
+      "analysisLoading": "Estamos preparando tu analisis...",
+      "analysisErrorFallback": "El analisis no esta disponible por ahora. Intentalo de nuevo mas tarde.",
       "scoreLabel": "Puntuaciones finales",
       "restart": "Repetir test",
       "saving": "Guardando resultado..."

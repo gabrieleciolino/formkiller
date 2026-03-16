@@ -300,6 +300,8 @@
       "additionalPromptPlaceholder": "Optional: guide theme, tone or audience.",
       "questionsCount": "Questions count",
       "language": "Language",
+      "tone": "Test tone",
+      "resultType": "Final result type",
       "generate": "Generate draft",
       "generating": "Generating...",
       "generated": "Draft generated.",
@@ -324,6 +326,21 @@
       "voiceHint": "The selected voice will be used when regenerating question audio.",
       "voiceLoadError": "Unable to load ElevenLabs voices.",
       "defaultVoiceName": "Default voice",
+      "tone": "Test tone",
+      "toneOptions": {
+        "fun": "Fun",
+        "educational": "Educational / Informative",
+        "serious": "Serious / Reflective",
+        "professional": "Professional"
+      },
+      "resultType": "Final result type",
+      "resultTypeOptions": {
+        "profile": "Final profile (1 of 4)",
+        "analysis": "General answer analysis"
+      },
+      "resultModes": {
+        "analysisHint": "Analysis mode: users will receive a general answer summary instead of a final profile."
+      },
       "publish": "Publishing",
       "publishOptions": {
         "draft": "Draft (not public)",
@@ -424,6 +441,9 @@
       "badge": "Result",
       "title": "Your profile",
       "defaultMessage": "Here is your final test result.",
+      "analysisTitle": "Your analysis",
+      "analysisLoading": "We are preparing your analysis...",
+      "analysisErrorFallback": "Analysis is not available right now. Please try again later.",
       "scoreLabel": "Final scores",
       "restart": "Retake test",
       "saving": "Saving result..."
