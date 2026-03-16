@@ -14,7 +14,6 @@ import {
   Form,
   PersonStanding,
   Layers,
-  Images,
   LibraryBig,
   Users,
   Flame,
@@ -40,11 +39,6 @@ export default async function AdminSidebar() {
       label: t("dashboard.sidebar.tests"),
       icon: Flame,
       url: urls.admin.tests.index,
-    },
-    {
-      label: t("dashboard.sidebar.slides"),
-      icon: Images,
-      url: urls.admin.slides.index,
     },
     {
       label: t("dashboard.sidebar.users"),

@@ -1,7 +1,6 @@
 import {
   generateAnalysisInstructionsOutputSchema,
   generateCompletionAnalysisOutputSchema,
-  generateTestCarouselOutputSchema,
   generateFormOutputSchema,
   generateFormSchema,
   generateViralTestOutputSchema,
@@ -18,7 +17,4 @@ export type GenerateCompletionAnalysisOutputType = z.infer<
 >;
 export type GenerateViralTestOutputType = z.infer<
   typeof generateViralTestOutputSchema
->;
-export type GenerateTestCarouselOutputType = z.infer<
-  typeof generateTestCarouselOutputSchema
 >;

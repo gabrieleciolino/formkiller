@@ -1,10 +1,7 @@
 import {
   TEST_ANSWERS_PER_QUESTION,
-  TEST_CAROUSEL_SLIDES_COUNT,
   TEST_PROFILES_COUNT,
   testAnswerSchema,
-  testSlideGenerationStatusSchema,
-  testSlideKindSchema,
 } from "@/features/tests/schema";
 import {
   endAdminTrace,
@@ -44,18 +41,6 @@ export type AdminTestQuestion = {
   file_key: string | null;
 };
 
-export type AdminTestSlide = {
-  id: string;
-  test_id: string;
-  order: number;
-  kind: "intro" | "question_1" | "question_2" | "cta";
-  copy: string;
-  image_prompt: string;
-  image_file_key: string | null;
-  generation_status: "idle" | "processing" | "completed" | "failed";
-  generation_error: string | null;
-};
-
 export type AdminTestDetail = {
   id: string;
   user_id: string;
@@ -72,15 +57,6 @@ export type AdminTestDetail = {
   end_message: string | null;
   profiles: AdminTestProfile[];
   questions: AdminTestQuestion[];
-};
-
-export type AdminTestSlidesDetail = {
-  id: string;
-  name: string;
-  slug: string;
-  language: "en" | "it" | "es";
-  status: "draft" | "published";
-  slides: AdminTestSlide[];
 };
 
 export type PublicTestViewerData = {
@@ -187,47 +163,6 @@ const normalizeQuestions = (questions: unknown): AdminTestQuestion[] => {
         typeof question.file_key === "string" ? question.file_key : null,
     }))
     .sort((a, b) => a.order - b.order);
-};
-
-const normalizeSlides = (slides: unknown): AdminTestSlide[] => {
-  if (!Array.isArray(slides)) {
-    return [];
-  }
-
-  return slides
-    .filter(
-      (slide): slide is Omit<AdminTestSlide, "kind" | "generation_status"> & {
-        kind: unknown;
-        generation_status: unknown;
-      } =>
-        Boolean(slide) &&
-        typeof slide === "object" &&
-        typeof (slide as { id?: unknown }).id === "string" &&
-        typeof (slide as { test_id?: unknown }).test_id === "string" &&
-        typeof (slide as { order?: unknown }).order === "number" &&
-        typeof (slide as { copy?: unknown }).copy === "string" &&
-        typeof (slide as { image_prompt?: unknown }).image_prompt === "string",
-    )
-    .map((slide) => {
-      const parsedKind = testSlideKindSchema.safeParse(slide.kind);
-      const parsedStatus = testSlideGenerationStatusSchema.safeParse(
-        slide.generation_status,
-      );
-
-      return {
-        ...slide,
-        kind: parsedKind.success ? parsedKind.data : "intro",
-        generation_status: parsedStatus.success ? parsedStatus.data : "idle",
-        image_file_key:
-          typeof slide.image_file_key === "string" ? slide.image_file_key : null,
-        generation_error:
-          typeof slide.generation_error === "string"
-            ? slide.generation_error
-            : null,
-      };
-    })
-    .sort((a, b) => a.order - b.order)
-    .slice(0, TEST_CAROUSEL_SLIDES_COUNT);
 };
 
 export async function getAdminTestsQuery({
@@ -473,44 +408,4 @@ export async function getPublishedTestsListQuery({
       intro_message:
         typeof row.intro_message === "string" ? row.intro_message : null,
     }));
-}
-
-export async function getAdminTestSlidesByIdQuery({
-  testId,
-  supabase,
-}: {
-  testId: string;
-  supabase: TypedSupabaseClient;
-}): Promise<AdminTestSlidesDetail | null> {
-  const [testResult, slidesResult] = await Promise.all([
-    supabase
-      .from("test")
-      .select("id, name, slug, language, status")
-      .eq("id", testId)
-      .maybeSingle(),
-    supabase
-      .from("test_slide")
-      .select(
-        "id, test_id, order, kind, copy, image_prompt, image_file_key, generation_status, generation_error",
-      )
-      .eq("test_id", testId)
-      .order("order", { ascending: true }),
-  ]);
-
-  if (testResult.error) {
-    throw testResult.error;
-  }
-
-  if (slidesResult.error) {
-    throw slidesResult.error;
-  }
-
-  if (!testResult.data) {
-    return null;
-  }
-
-  return {
-    ...(testResult.data as Omit<AdminTestSlidesDetail, "slides">),
-    slides: normalizeSlides(slidesResult.data),
-  };
 }

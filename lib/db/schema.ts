@@ -150,16 +150,6 @@ export const formTypeEnum = pgEnum("form_type", [
 
 export const formLanguageEnum = pgEnum("form_language", ["en", "it", "es"]);
 export const testStatusEnum = pgEnum("test_status", ["draft", "published"]);
-export const testSlideKindEnum = pgEnum("test_slide_kind", [
-  "intro",
-  "question_1",
-  "question_2",
-  "cta",
-]);
-export const testSlideGenerationStatusEnum = pgEnum(
-  "test_slide_generation_status",
-  ["idle", "processing", "completed", "failed"],
-);
 
 export const formTable = pgTable(
   "form",
@@ -478,53 +468,6 @@ export const testTable = pgTable(
       withCheck: isAdminExpr,
     }),
     pgPolicy("test_delete_admin", {
-      for: "delete",
-      to: authenticatedRole,
-      using: isAdminExpr,
-    }),
-  ],
-).enableRLS();
-
-export const testSlideTable = pgTable(
-  "test_slide",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    testId: uuid("test_id")
-      .notNull()
-      .references(() => testTable.id, { onDelete: "cascade" }),
-    order: integer("order").notNull().default(0),
-    kind: testSlideKindEnum("kind").notNull(),
-    copy: text("copy").notNull(),
-    imagePrompt: text("image_prompt").notNull(),
-    imageFileKey: text("image_file_key"),
-    generationStatus: testSlideGenerationStatusEnum("generation_status")
-      .notNull()
-      .default("idle"),
-    generationError: text("generation_error"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-  },
-  (t) => [
-    unique("test_slide_test_order_unique").on(t.testId, t.order),
-    index("test_slide_test_id_idx").on(t.testId),
-    index("test_slide_test_id_order_idx").on(t.testId, t.order),
-    pgPolicy("test_slide_select_admin", {
-      for: "select",
-      to: authenticatedRole,
-      using: isAdminExpr,
-    }),
-    pgPolicy("test_slide_insert_admin", {
-      for: "insert",
-      to: authenticatedRole,
-      withCheck: isAdminExpr,
-    }),
-    pgPolicy("test_slide_update_admin", {
-      for: "update",
-      to: authenticatedRole,
-      using: isAdminExpr,
-      withCheck: isAdminExpr,
-    }),
-    pgPolicy("test_slide_delete_admin", {
       for: "delete",
       to: authenticatedRole,
       using: isAdminExpr,

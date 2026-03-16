@@ -15,10 +15,6 @@ export const urls = {
       create: "/admin/tests/create",
       detail: (testId: string) => `/admin/tests/${testId}`,
     },
-    slides: {
-      index: "/admin/slides",
-      detail: (testId: string) => `/admin/slides/${testId}`,
-    },
     users: {
       index: "/admin/users",
     },

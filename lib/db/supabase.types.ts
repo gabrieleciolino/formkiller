@@ -587,44 +587,6 @@ export type Database = {
           },
         ]
       }
-      test_slide: {
-        Row: {
-          background_image_key: string | null
-          copy: string
-          created_at: string | null
-          id: string
-          order: number
-          test_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          background_image_key?: string | null
-          copy: string
-          created_at?: string | null
-          id?: string
-          order?: number
-          test_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          background_image_key?: string | null
-          copy?: string
-          created_at?: string | null
-          id?: string
-          order?: number
-          test_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "test_slide_test_id_test_id_fk"
-            columns: ["test_id"]
-            isOneToOne: false
-            referencedRelation: "test"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never

@@ -9,40 +9,9 @@ export const TEST_MIN_SCORE = 0;
 export const TEST_MAX_SCORE = 10;
 export const TEST_NAME_MAX_CHARS = 120;
 export const TEST_ADDITIONAL_PROMPT_MAX_CHARS = 500;
-export const TEST_CAROUSEL_SLIDES_COUNT = 4;
-export const TEST_CAROUSEL_SLIDE_COPY_MAX_CHARS = 1200;
-export const TEST_CAROUSEL_SLIDE_PROMPT_MAX_CHARS = 2000;
 
 export const testStatusSchema = z.enum(["draft", "published"]);
 export type TestStatus = z.infer<typeof testStatusSchema>;
-
-export const testSlideKindSchema = z.enum([
-  "intro",
-  "question_1",
-  "question_2",
-  "cta",
-]);
-export type TestSlideKind = z.infer<typeof testSlideKindSchema>;
-
-export const testSlideGenerationStatusSchema = z.enum([
-  "idle",
-  "processing",
-  "completed",
-  "failed",
-]);
-export type TestSlideGenerationStatus = z.infer<
-  typeof testSlideGenerationStatusSchema
->;
-
-export const TEST_CAROUSEL_SLIDE_DEFINITIONS: Array<{
-  order: number;
-  kind: TestSlideKind;
-}> = [
-  { order: 0, kind: "intro" },
-  { order: 1, kind: "question_1" },
-  { order: 2, kind: "question_2" },
-  { order: 3, kind: "cta" },
-];
 
 export const testAnswerScoresSchema = z.tuple([
   z.number().int().min(TEST_MIN_SCORE).max(TEST_MAX_SCORE),
@@ -119,58 +88,6 @@ export const deleteTestSchema = z.object({
   testId: z.string().uuid(),
 });
 export type DeleteTestType = z.infer<typeof deleteTestSchema>;
-
-export const editableTestSlideSchema = z.object({
-  order: z.number().int().min(0).max(TEST_CAROUSEL_SLIDES_COUNT - 1),
-  kind: testSlideKindSchema,
-  copy: z
-    .string()
-    .trim()
-    .min(1)
-    .max(TEST_CAROUSEL_SLIDE_COPY_MAX_CHARS),
-  imagePrompt: z
-    .string()
-    .trim()
-    .min(1)
-    .max(TEST_CAROUSEL_SLIDE_PROMPT_MAX_CHARS),
-  imageFileKey: z.string().nullable().optional(),
-  generationStatus: testSlideGenerationStatusSchema.optional(),
-  generationError: z.string().nullable().optional(),
-});
-export type EditableTestSlideType = z.infer<typeof editableTestSlideSchema>;
-
-export const generateTestCarouselDraftSchema = z.object({
-  testId: z.string().uuid(),
-});
-export type GenerateTestCarouselDraftType = z.infer<
-  typeof generateTestCarouselDraftSchema
->;
-
-export const saveTestCarouselDraftSchema = z.object({
-  testId: z.string().uuid(),
-  slides: z.array(editableTestSlideSchema).length(TEST_CAROUSEL_SLIDES_COUNT),
-});
-export type SaveTestCarouselDraftType = z.infer<
-  typeof saveTestCarouselDraftSchema
->;
-
-export const triggerTestCarouselGenerationSchema = z.object({
-  testId: z.string().uuid(),
-  slideOrder: z.number().int().min(0).max(TEST_CAROUSEL_SLIDES_COUNT - 1),
-  copy: z
-    .string()
-    .trim()
-    .min(1)
-    .max(TEST_CAROUSEL_SLIDE_COPY_MAX_CHARS),
-  imagePrompt: z
-    .string()
-    .trim()
-    .min(1)
-    .max(TEST_CAROUSEL_SLIDE_PROMPT_MAX_CHARS),
-});
-export type TriggerTestCarouselGenerationType = z.infer<
-  typeof triggerTestCarouselGenerationSchema
->;
 
 export const saveTestResultSchema = z.object({
   testId: z.string().uuid(),
