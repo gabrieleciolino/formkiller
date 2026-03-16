@@ -178,6 +178,7 @@ export type Database = {
           type: Database["public"]["Enums"]["form_type"]
           updated_at: string | null
           user_id: string
+          voice_id: string | null
         }
         Insert: {
           analysis_instructions?: string | null
@@ -196,6 +197,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id: string
+          voice_id?: string | null
         }
         Update: {
           analysis_instructions?: string | null
@@ -214,6 +216,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id?: string
+          voice_id?: string | null
         }
         Relationships: []
       }
@@ -586,40 +589,28 @@ export type Database = {
       }
       test_slide: {
         Row: {
+          background_image_key: string | null
           copy: string
           created_at: string | null
-          generation_error: string | null
-          generation_status: Database["public"]["Enums"]["test_slide_generation_status"]
           id: string
-          image_file_key: string | null
-          image_prompt: string
-          kind: Database["public"]["Enums"]["test_slide_kind"]
           order: number
           test_id: string
           updated_at: string | null
         }
         Insert: {
+          background_image_key?: string | null
           copy: string
           created_at?: string | null
-          generation_error?: string | null
-          generation_status?: Database["public"]["Enums"]["test_slide_generation_status"]
           id?: string
-          image_file_key?: string | null
-          image_prompt: string
-          kind: Database["public"]["Enums"]["test_slide_kind"]
           order?: number
           test_id: string
           updated_at?: string | null
         }
         Update: {
+          background_image_key?: string | null
           copy?: string
           created_at?: string | null
-          generation_error?: string | null
-          generation_status?: Database["public"]["Enums"]["test_slide_generation_status"]
           id?: string
-          image_file_key?: string | null
-          image_prompt?: string
-          kind?: Database["public"]["Enums"]["test_slide_kind"]
           order?: number
           test_id?: string
           updated_at?: string | null
@@ -659,12 +650,6 @@ export type Database = {
       form_session_status: "pending" | "in_progress" | "completed"
       form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
-      test_slide_generation_status:
-        | "idle"
-        | "processing"
-        | "completed"
-        | "failed"
-      test_slide_kind: "intro" | "question_1" | "question_2" | "cta"
       test_status: "draft" | "published"
     }
     CompositeTypes: {
@@ -802,13 +787,6 @@ export const Constants = {
       form_session_status: ["pending", "in_progress", "completed"],
       form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
-      test_slide_generation_status: [
-        "idle",
-        "processing",
-        "completed",
-        "failed",
-      ],
-      test_slide_kind: ["intro", "question_1", "question_2", "cta"],
       test_status: ["draft", "published"],
     },
   },

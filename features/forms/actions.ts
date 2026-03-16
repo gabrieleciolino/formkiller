@@ -9,6 +9,7 @@ import {
   editFormSchema,
   editQuestionsSchema,
   generateAnalysisInstructionsSchema,
+  getElevenLabsVoicesSchema,
   generateQuestionTTSSchema,
   saveAnalysisInstructionsSchema,
   unassignFormUserSchema,
@@ -18,7 +19,11 @@ import {
   generateForm,
   generateFormAnalysisInstructions,
 } from "@/lib/ai/functions";
-import { generateTTS } from "@/lib/elevenlabs/functions";
+import {
+  generateTTS,
+  getDefaultElevenLabsVoiceId,
+  getElevenLabsVoices,
+} from "@/lib/elevenlabs/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
@@ -27,7 +32,12 @@ export const createFormAction = adminActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userId } = ctx;
-    const { name, instructions, type, language, questions = [] } = parsedInput;
+    const { name, instructions, type, language, voiceId, questions = [] } =
+      parsedInput;
+    const normalizedInstructions = instructions.trim();
+    const normalizedVoiceId = voiceId?.trim() || null;
+    const fallbackVoiceId = getDefaultElevenLabsVoiceId();
+    const resolvedVoiceId = normalizedVoiceId ?? fallbackVoiceId;
     const generatedTtsKeys: string[] = [];
     let createdFormId: string | null = null;
 
@@ -51,7 +61,14 @@ export const createFormAction = adminActionClient
       };
 
       if (!hasManualQuestions) {
-        const output = await generateForm({ instructions, language });
+        if (normalizedInstructions.length === 0) {
+          throw new Error("Instructions are required when questions are not provided.");
+        }
+
+        const output = await generateForm({
+          instructions: normalizedInstructions,
+          language,
+        });
         if (!output || output.questions.length === 0) {
           throw new Error("Empty AI output.");
         }
@@ -67,9 +84,10 @@ export const createFormAction = adminActionClient
         .from("form")
         .insert({
           name,
-          instructions,
+          instructions: normalizedInstructions,
           type,
           language,
+          voice_id: resolvedVoiceId,
           user_id: userId,
           intro_title: introTitle,
           intro_message: introMessage,
@@ -113,6 +131,7 @@ export const createFormAction = adminActionClient
             text: question.question,
             formId: form.id,
             language: form.language,
+            voiceId: resolvedVoiceId,
           }),
         ),
       );
@@ -155,6 +174,15 @@ export const createFormAction = adminActionClient
 
       throw error;
     }
+  });
+
+export const getElevenLabsVoicesAction = adminActionClient
+  .inputSchema(getElevenLabsVoicesSchema)
+  .action(async () => {
+    const voices = await getElevenLabsVoices();
+    const defaultVoiceId = getDefaultElevenLabsVoiceId();
+
+    return { voices, defaultVoiceId };
   });
 
 export const editFormAction = adminActionClient
@@ -231,6 +259,13 @@ export const editQuestionsAction = adminActionClient
       (question) => currentMap.get(question.id)?.question !== question.question,
     );
 
+    const { data: form } = await supabase
+      .from("form")
+      .select("voice_id")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
+
     await Promise.all(
       questions.map((question) =>
         supabase
@@ -252,6 +287,7 @@ export const editQuestionsAction = adminActionClient
             text: question.question,
             formId,
             language,
+            voiceId: form.voice_id,
           }),
         ),
       );
@@ -367,10 +403,18 @@ export const generateQuestionTTSAction = adminActionClient
 
     if (!question) throw new Error("Question not found.");
 
+    const { data: form } = await supabase
+      .from("form")
+      .select("voice_id")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
+
     const { url, key } = await generateTTS({
       text: question.question,
       formId,
       language,
+      voiceId: form.voice_id,
     });
 
     await supabase

@@ -173,6 +173,7 @@ export const formTable = pgTable(
     instructions: text("instructions").notNull(),
     type: formTypeEnum("type").notNull().default("mixed"),
     language: formLanguageEnum("language").notNull().default("en"),
+    voiceId: text("voice_id"),
 
     backgroundImageKey: text("background_image_key"),
     backgroundMusicKey: text("background_music_key"),

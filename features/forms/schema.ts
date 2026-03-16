@@ -39,30 +39,48 @@ export const FORM_LANGUAGE_LABELS: Record<FormLanguage, string> = {
   es: "Español",
 };
 
-export const createFormSchema = z.object({
-  name: z.string().min(1),
-  instructions: z.string().min(1),
-  type: formTypeSchema,
-  language: formLanguageSchema,
-  questions: z
+const createFormQuestionSchema = z.object({
+  question: z.string().min(1),
+  order: z.number().int().nonnegative(),
+  default_answers: z
     .array(
       z.object({
-        question: z.string().min(1),
+        answer: z.string().min(1),
         order: z.number().int().nonnegative(),
-        default_answers: z
-          .array(
-            z.object({
-              answer: z.string().min(1),
-              order: z.number().int().nonnegative(),
-            }),
-          )
-          .length(4),
       }),
     )
-    .optional(),
+    .length(4),
 });
 
+export const createFormSchema = z
+  .object({
+    name: z.string().min(1),
+    instructions: z.string(),
+    type: formTypeSchema,
+    language: formLanguageSchema,
+    voiceId: z.string().trim().min(1).optional(),
+    questions: z.array(createFormQuestionSchema).optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasManualQuestions = (value.questions?.length ?? 0) > 0;
+    const hasInstructions = value.instructions.trim().length > 0;
+
+    if (!hasManualQuestions && !hasInstructions) {
+      ctx.addIssue({
+        code: "too_small",
+        minimum: 1,
+        inclusive: true,
+        origin: "string",
+        path: ["instructions"],
+        input: value.instructions,
+      });
+    }
+  });
+
 export type CreateFormType = z.infer<typeof createFormSchema>;
+
+export const getElevenLabsVoicesSchema = z.object({});
+export type GetElevenLabsVoicesType = z.infer<typeof getElevenLabsVoicesSchema>;
 
 export const formThemeSchema = z.enum(["light", "dark"]);
 export type FormTheme = z.infer<typeof formThemeSchema>;

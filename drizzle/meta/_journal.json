@@ -197,6 +197,13 @@
       "when": 1773484400233,
       "tag": "0027_odd_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1773666434909,
+      "tag": "0028_fuzzy_mulholland_black",
+      "breakpoints": true
     }
   ]
 }

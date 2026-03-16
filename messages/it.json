@@ -165,6 +165,13 @@
       "instructionsPlaceholder": "Istruzioni",
       "type": "Tipo",
       "language": "Lingua",
+      "voice": "Voce AI",
+      "voicePlaceholder": "Seleziona una voce",
+      "voiceLoading": "Caricamento voci...",
+      "voiceUnavailable": "Nessuna voce disponibile",
+      "voiceHint": "Scegli la voce ElevenLabs usata per generare l'audio delle domande.",
+      "voiceLoadError": "Impossibile caricare le voci ElevenLabs. Verrà usata la voce di default.",
+      "defaultVoiceName": "Voce di default",
       "submit": "Crea form",
       "success": "Form creato con successo.",
       "error": "Creazione form fallita."
