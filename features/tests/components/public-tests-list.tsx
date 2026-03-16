@@ -84,16 +84,6 @@ export default function PublicTestsList({ tests }: PublicTestsListProps) {
             className="anim text-center"
             style={{ animationDelay: "0ms" }}
           >
-            <div className="flex justify-center">
-              <Image
-                src="/logo-seituilproblema.png"
-                alt={t("tests.public.logoAlt")}
-                width={240}
-                height={58}
-                className="h-auto w-[190px] sm:w-[220px]"
-                priority
-              />
-            </div>
             <h1 className="font-roboto text-[3rem] font-black leading-[1.0] tracking-tight text-white drop-shadow-lg">
               {t("tests.public.title")}
             </h1>

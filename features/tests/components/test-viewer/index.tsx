@@ -455,17 +455,6 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
         />
       ) : null}
 
-      <div className="flex w-full justify-center">
-        <Image
-          src="/logo-seituilproblema.png"
-          alt="Sei Tu Il Problema"
-          width={220}
-          height={54}
-          className="h-auto w-[160px] sm:w-[190px]"
-          priority
-        />
-      </div>
-
       <div className="flex w-full flex-1 items-center justify-center">
         {content}
       </div>
