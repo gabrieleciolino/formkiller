@@ -5,6 +5,37 @@ import {
   traceAdminStep,
 } from "@/lib/observability/admin-trace";
 
+type PublicViewerQuestionRow = {
+  id: string;
+  question: string;
+  order: number;
+  file_key: string | null;
+  default_answers: { answer: string; order: number }[];
+};
+
+type PublicViewerFormRow = {
+  id: string;
+  name: string;
+  type: string | null;
+  theme: string | null;
+  language: string | null;
+  background_image_key: string | null;
+  background_music_key: string | null;
+  intro_title: string | null;
+  intro_message: string | null;
+  end_title: string | null;
+  end_message: string | null;
+  questions: PublicViewerQuestionRow[] | null;
+};
+
+export type PublicViewerAssignmentWithForm = {
+  id: string;
+  form_id: string;
+  user_id: string;
+  active: boolean;
+  form: PublicViewerFormRow | null;
+};
+
 export const getUserFormsQuery = async ({
   userId,
   supabase,
@@ -86,7 +117,6 @@ export const getFormByIdQuery = async ({
     .from("form")
     .select("*, questions:question(*)")
     .eq("id", formId)
-    .order("created_at", { ascending: false })
     .order("order", { referencedTable: "question", ascending: true })
     .single()
     .throwOnError();
@@ -118,7 +148,6 @@ export const getUserFormByIdQuery = async ({
     .from("form")
     .select("*, questions:question(*)")
     .eq("id", formId)
-    .order("created_at", { ascending: false })
     .order("order", { referencedTable: "question", ascending: true })
     .maybeSingle();
 
@@ -129,6 +158,50 @@ export const getUserFormByIdQuery = async ({
     ...data,
     assignment_id: assignment.id,
   };
+};
+
+export const getPublicFormViewerByAssignmentIdQuery = async ({
+  assignmentId,
+  supabase,
+}: {
+  assignmentId: string;
+  supabase: TypedSupabaseClient;
+}) => {
+  const { data, error } = await supabase
+    .from("form_assignment")
+    .select(
+      "id, form_id, user_id, active, form:form_id(id, name, type, theme, language, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, questions:question(id, question, order, file_key, default_answers))",
+    )
+    .eq("id", assignmentId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const row = data as unknown as {
+    id: string;
+    form_id: string;
+    user_id: string;
+    active: boolean;
+    form: PublicViewerFormRow | PublicViewerFormRow[] | null;
+  };
+
+  const rawForm = Array.isArray(row.form) ? row.form[0] : row.form;
+
+  return {
+    id: row.id,
+    form_id: row.form_id,
+    user_id: row.user_id,
+    active: row.active,
+    form: rawForm
+      ? {
+          ...rawForm,
+          questions: [...(rawForm.questions ?? [])].sort(
+            (left, right) => left.order - right.order,
+          ),
+        }
+      : null,
+  } satisfies PublicViewerAssignmentWithForm;
 };
 
 export const getFormAssignmentByIdQuery = async ({

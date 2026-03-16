@@ -280,6 +280,8 @@ export const questionTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [
+    index("question_form_id_idx").on(t.formId),
+    index("question_form_id_order_idx").on(t.formId, t.order),
     pgPolicy("question_select_public", {
       for: "select",
       to: "public",

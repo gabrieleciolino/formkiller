@@ -156,8 +156,23 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
 
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let pollAttempts = 0;
+    const maxPollAttempts = 200;
+    const pollDelayMs = 1500;
+
+    const scheduleNextPoll = () => {
+      timeoutId = setTimeout(() => {
+        void poll();
+      }, pollDelayMs);
+    };
 
     const poll = async () => {
+      pollAttempts += 1;
+      if (pollAttempts > maxPollAttempts) {
+        setAnalysisStatus("failed");
+        return;
+      }
+
       try {
         const { data, serverError } = await getTestAnalysisStatusAction({
           runId: analysisRunId,
@@ -168,14 +183,12 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
         }
 
         if (serverError || !data) {
-          setAnalysisStatus("failed");
+          scheduleNextPoll();
           return;
         }
 
         if (data.status === "processing") {
-          timeoutId = setTimeout(() => {
-            void poll();
-          }, 1500);
+          scheduleNextPoll();
           return;
         }
 
@@ -184,12 +197,12 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
         setAnalysisStatus(nextAnalysis ? "ready" : "failed");
       } catch {
         if (!cancelled) {
-          setAnalysisStatus("failed");
+          scheduleNextPoll();
         }
       }
     };
 
-    void poll();
+    scheduleNextPoll();
 
     return () => {
       cancelled = true;

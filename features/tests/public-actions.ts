@@ -231,7 +231,9 @@ export const getTestAnalysisStatusAction = publicActionClient
       });
 
       return testAnalysisPollingResultSchema.parse({
-        status: "failed",
+        // runs.retrieve can fail transiently (eventual consistency/network hiccups):
+        // keep polling instead of failing analysis immediately.
+        status: "processing",
         analysisText: null,
       });
     }
