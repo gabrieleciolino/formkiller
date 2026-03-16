@@ -47,6 +47,7 @@ export type AdminTestDetail = {
   name: string;
   slug: string;
   language: "en" | "it" | "es";
+  voice_id: string | null;
   status: "draft" | "published";
   is_published: boolean;
   background_image_key: string | null;
@@ -220,7 +221,7 @@ export async function getAdminTestByIdQuery({
           supabase
             .from("test")
             .select(
-              "id, user_id, name, slug, language, status, is_published, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
+              "id, user_id, name, slug, language, voice_id, status, is_published, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message",
             )
             .eq("id", testId)
             .maybeSingle(),

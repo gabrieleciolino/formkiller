@@ -304,6 +304,7 @@
       "generating": "Generating...",
       "generated": "Draft generated.",
       "generateError": "Failed to generate draft.",
+      "startFromScratch": "Create from scratch",
       "reviewTitle": "Approve and edit"
     },
     "customize": {
@@ -316,6 +317,13 @@
     "editor": {
       "name": "Test name",
       "language": "Language",
+      "voice": "AI voice",
+      "voiceLoading": "Loading voices...",
+      "voiceUnavailable": "No voices available",
+      "voicePlaceholder": "Select a voice",
+      "voiceHint": "The selected voice will be used when regenerating question audio.",
+      "voiceLoadError": "Unable to load ElevenLabs voices.",
+      "defaultVoiceName": "Default voice",
       "publish": "Publishing",
       "publishOptions": {
         "draft": "Draft (not public)",

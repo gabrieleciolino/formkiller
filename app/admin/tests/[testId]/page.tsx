@@ -44,6 +44,7 @@ export default async function AdminTestDetailPage({
         const mappedInitialData: EditableTestType = {
           name: test.name,
           language: test.language,
+          voiceId: test.voice_id ?? undefined,
           isPublished: test.is_published,
           introTitle: test.intro_title ?? "",
           introMessage: test.intro_message ?? "",

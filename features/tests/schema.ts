@@ -57,6 +57,7 @@ export type GenerateTestDraftType = z.infer<typeof generateTestDraftSchema>;
 export const editableTestSchema = z.object({
   name: z.string().trim().min(1).max(TEST_NAME_MAX_CHARS),
   language: formLanguageSchema,
+  voiceId: z.string().trim().min(1).optional(),
   isPublished: z.boolean(),
   introTitle: z.string().trim().min(1),
   introMessage: z.string().trim().min(1),
@@ -103,3 +104,6 @@ export const saveTestResultSchema = z.object({
   ),
 });
 export type SaveTestResultType = z.infer<typeof saveTestResultSchema>;
+
+export const getTestVoicesSchema = z.object({});
+export type GetTestVoicesType = z.infer<typeof getTestVoicesSchema>;

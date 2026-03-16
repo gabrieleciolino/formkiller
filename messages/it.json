@@ -304,6 +304,7 @@
       "generating": "Generazione...",
       "generated": "Bozza generata.",
       "generateError": "Generazione bozza fallita.",
+      "startFromScratch": "Crea da zero",
       "reviewTitle": "Approva e modifica"
     },
     "customize": {
@@ -316,6 +317,13 @@
     "editor": {
       "name": "Nome test",
       "language": "Lingua",
+      "voice": "Voce AI",
+      "voiceLoading": "Caricamento voci...",
+      "voiceUnavailable": "Nessuna voce disponibile",
+      "voicePlaceholder": "Seleziona una voce",
+      "voiceHint": "La voce selezionata verra usata per rigenerare gli audio delle domande.",
+      "voiceLoadError": "Impossibile caricare le voci ElevenLabs.",
+      "defaultVoiceName": "Voce predefinita",
       "publish": "Pubblicazione",
       "publishOptions": {
         "draft": "Bozza (non pubblico)",

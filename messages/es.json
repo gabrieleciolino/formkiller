@@ -304,6 +304,7 @@
       "generating": "Generando...",
       "generated": "Borrador generado.",
       "generateError": "Error al generar borrador.",
+      "startFromScratch": "Crear desde cero",
       "reviewTitle": "Aprobar y editar"
     },
     "customize": {
@@ -316,6 +317,13 @@
     "editor": {
       "name": "Nombre del test",
       "language": "Idioma",
+      "voice": "Voz AI",
+      "voiceLoading": "Cargando voces...",
+      "voiceUnavailable": "No hay voces disponibles",
+      "voicePlaceholder": "Selecciona una voz",
+      "voiceHint": "La voz seleccionada se usara al regenerar el audio de las preguntas.",
+      "voiceLoadError": "No se pudieron cargar las voces de ElevenLabs.",
+      "defaultVoiceName": "Voz predeterminada",
       "publish": "Publicación",
       "publishOptions": {
         "draft": "Borrador (no público)",

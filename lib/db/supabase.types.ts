@@ -420,6 +420,7 @@ export type Database = {
           status: Database["public"]["Enums"]["test_status"]
           updated_at: string | null
           user_id: string
+          voice_id: string | null
         }
         Insert: {
           background_image_key?: string | null
@@ -437,6 +438,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["test_status"]
           updated_at?: string | null
           user_id: string
+          voice_id?: string | null
         }
         Update: {
           background_image_key?: string | null
@@ -454,6 +456,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["test_status"]
           updated_at?: string | null
           user_id?: string
+          voice_id?: string | null
         }
         Relationships: []
       }

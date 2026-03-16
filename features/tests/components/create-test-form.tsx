@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import TestEditorForm from "@/features/tests/components/test-editor-form";
+import TestEditorForm, {
+  createEmptyEditableTest,
+} from "@/features/tests/components/test-editor-form";
 import { generateTestDraftAction } from "@/features/tests/actions";
 import {
   generateTestDraftSchema,
@@ -21,7 +23,7 @@ import {
 } from "@/features/tests/schema";
 import { formLanguageSchema, type FormLanguage } from "@/features/forms/schema";
 import { useZodLocale } from "@/hooks/use-zod-locale";
-import { Sparkles } from "lucide-react";
+import { Sparkles, SquarePen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -59,6 +61,11 @@ export default function CreateTestForm() {
         toast(t("tests.create.generateError"));
       }
     });
+  };
+  const selectedLanguage = form.watch("language");
+
+  const handleStartFromScratch = () => {
+    setDraft(createEmptyEditableTest(selectedLanguage));
   };
 
   return (
@@ -136,10 +143,21 @@ export default function CreateTestForm() {
           />
         </div>
 
-        <Button type="submit" variant="secondary" disabled={isGenerating}>
-          <Sparkles className="size-4" />
-          {isGenerating ? t("tests.create.generating") : t("tests.create.generate")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" variant="secondary" disabled={isGenerating}>
+            <Sparkles className="size-4" />
+            {isGenerating ? t("tests.create.generating") : t("tests.create.generate")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isGenerating}
+            onClick={handleStartFromScratch}
+          >
+            <SquarePen className="size-4" />
+            {t("tests.create.startFromScratch")}
+          </Button>
+        </div>
       </form>
 
       {draft ? (

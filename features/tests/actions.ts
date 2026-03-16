@@ -5,6 +5,7 @@ import {
   deleteTestSchema,
   editTestCustomizationSchema,
   generateTestDraftSchema,
+  getTestVoicesSchema,
   TEST_ANSWERS_PER_QUESTION,
   TEST_PROFILES_COUNT,
   updateTestSchema,
@@ -13,7 +14,11 @@ import {
 import type { FormLanguage } from "@/features/forms/schema";
 import { adminActionClient } from "@/lib/actions";
 import { generateViralTest } from "@/lib/ai/functions";
-import { generateTTS } from "@/lib/elevenlabs/functions";
+import {
+  generateTTS,
+  getDefaultElevenLabsVoiceId,
+  getElevenLabsVoices,
+} from "@/lib/elevenlabs/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import { urls } from "@/lib/urls";
@@ -191,6 +196,7 @@ function normalizeEditableDraft(input: {
   return {
     name: input.name,
     language: "it",
+    voiceId: undefined,
     isPublished: false,
     introTitle: input.introTitle,
     introMessage: input.introMessage,
@@ -249,6 +255,15 @@ export const generateTestDraftAction = adminActionClient
     };
   });
 
+export const getTestVoicesAction = adminActionClient
+  .inputSchema(getTestVoicesSchema)
+  .action(async () => {
+    const voices = await getElevenLabsVoices();
+    const defaultVoiceId = getDefaultElevenLabsVoiceId();
+
+    return { voices, defaultVoiceId };
+  });
+
 export const createTestAction = adminActionClient
   .inputSchema(createTestSchema)
   .action(async ({ parsedInput, ctx }) => {
@@ -256,6 +271,9 @@ export const createTestAction = adminActionClient
     const client = supabase;
     const generatedTtsKeys: string[] = [];
     let createdTestId: string | null = null;
+    const normalizedVoiceId = parsedInput.voiceId?.trim() || null;
+    const fallbackVoiceId = getDefaultElevenLabsVoiceId();
+    const resolvedVoiceId = normalizedVoiceId ?? fallbackVoiceId;
 
     try {
       const slug = await createUniqueTestSlug({
@@ -272,6 +290,7 @@ export const createTestAction = adminActionClient
           name: parsedInput.name,
           slug,
           language: parsedInput.language,
+          voice_id: resolvedVoiceId,
           status: parsedInput.isPublished ? "published" : "draft",
           is_published: parsedInput.isPublished,
           background_image_key: defaultBackgroundImageKey,
@@ -334,6 +353,7 @@ export const createTestAction = adminActionClient
             text: question.question,
             formId: createdTest.id,
             language: parsedInput.language,
+            voiceId: resolvedVoiceId,
           }),
         ),
       );
@@ -379,6 +399,9 @@ export const updateTestAction = adminActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
     const client = supabase;
+    const normalizedVoiceId = parsedInput.voiceId?.trim() || null;
+    const fallbackVoiceId = getDefaultElevenLabsVoiceId();
+    const resolvedVoiceId = normalizedVoiceId ?? fallbackVoiceId;
 
     const { data: currentTest, error: currentTestError } = (await client
       .from("test")
@@ -416,6 +439,7 @@ export const updateTestAction = adminActionClient
       .update({
         name: parsedInput.name,
         language: parsedInput.language,
+        voice_id: resolvedVoiceId,
         status: parsedInput.isPublished ? "published" : "draft",
         is_published: parsedInput.isPublished,
         background_image_key: defaultBackgroundImageKey,
@@ -475,6 +499,7 @@ export const updateTestAction = adminActionClient
           text: question.question,
           formId: parsedInput.testId,
           language: parsedInput.language,
+          voiceId: resolvedVoiceId,
         }),
       ),
     );

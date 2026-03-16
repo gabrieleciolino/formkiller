@@ -2,7 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,7 +19,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import TestProfilesFields from "@/features/tests/components/test-profiles-fields";
 import TestQuestionsFields from "@/features/tests/components/test-questions-fields";
-import { createTestAction, updateTestAction } from "@/features/tests/actions";
+import {
+  createTestAction,
+  getTestVoicesAction,
+  updateTestAction,
+} from "@/features/tests/actions";
 import {
   editableTestSchema,
   TEST_ANSWERS_PER_QUESTION,
@@ -26,15 +35,25 @@ import { formLanguageSchema, type FormLanguage } from "@/features/forms/schema";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { urls } from "@/lib/urls";
 import { Controller, useForm } from "react-hook-form";
-import { useEffect, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
-function createEmptyEditableTest(language: FormLanguage = "it"): EditableTestType {
+type VoiceOption = {
+  id: string;
+  name: string;
+  category: string | null;
+  previewUrl: string | null;
+};
+
+export function createEmptyEditableTest(
+  language: FormLanguage = "it",
+): EditableTestType {
   return {
     name: "",
     language,
+    voiceId: undefined,
     isPublished: false,
     introTitle: "",
     introMessage: "",
@@ -69,18 +88,91 @@ export default function TestEditorForm({
   const t = useTranslations();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [voiceOptions, setVoiceOptions] = useState<VoiceOption[]>([]);
+  const [isVoicesPending, setIsVoicesPending] = useState(true);
+  const [isVoicesError, setIsVoicesError] = useState(false);
   useZodLocale();
 
   const form = useForm<EditableTestType>({
     resolver: zodResolver(editableTestSchema),
     defaultValues: initialData ?? createEmptyEditableTest(),
   });
+  const selectedVoiceId = form.watch("voiceId");
+  const selectedVoice = voiceOptions.find((voice) => voice.id === selectedVoiceId);
 
   useEffect(() => {
     if (initialData) {
       form.reset(initialData);
     }
   }, [form, initialData]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadVoices = async () => {
+      setIsVoicesPending(true);
+      setIsVoicesError(false);
+
+      try {
+        const {
+          data,
+          serverError,
+          validationErrors,
+        } = await getTestVoicesAction({});
+
+        if (serverError || validationErrors || !data) {
+          throw new Error("Unable to load ElevenLabs voices.");
+        }
+
+        const nextVoiceOptions = [...data.voices];
+        const defaultVoiceId = data.defaultVoiceId?.trim() || undefined;
+
+        if (
+          defaultVoiceId &&
+          !nextVoiceOptions.some((voice) => voice.id === defaultVoiceId)
+        ) {
+          nextVoiceOptions.unshift({
+            id: defaultVoiceId,
+            name: t("tests.editor.defaultVoiceName"),
+            category: null,
+            previewUrl: null,
+          });
+        }
+
+        if (!isActive) {
+          return;
+        }
+
+        setVoiceOptions(nextVoiceOptions);
+
+        const currentVoiceId = form.getValues("voiceId");
+        if (!currentVoiceId) {
+          const voiceToSelect = defaultVoiceId ?? nextVoiceOptions[0]?.id;
+          if (voiceToSelect) {
+            form.setValue("voiceId", voiceToSelect, {
+              shouldValidate: true,
+            });
+          }
+        }
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setIsVoicesError(true);
+      } finally {
+        if (isActive) {
+          setIsVoicesPending(false);
+        }
+      }
+    };
+
+    loadVoices();
+
+    return () => {
+      isActive = false;
+    };
+  }, [form, t]);
 
   const onSubmit = (values: EditableTestType) => {
     startTransition(async () => {
@@ -119,7 +211,7 @@ export default function TestEditorForm({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Controller
           name="name"
           control={form.control}
@@ -160,6 +252,47 @@ export default function TestEditorForm({
         />
 
         <Controller
+          name="voiceId"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("tests.editor.voice")}</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isVoicesPending || voiceOptions.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      isVoicesPending
+                        ? t("tests.editor.voiceLoading")
+                        : voiceOptions.length === 0
+                          ? t("tests.editor.voiceUnavailable")
+                          : t("tests.editor.voicePlaceholder")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {voiceOptions.map((voice) => (
+                    <SelectItem key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isVoicesError ? (
+                <FieldDescription className="text-destructive">
+                  {t("tests.editor.voiceLoadError")}
+                </FieldDescription>
+              ) : (
+                <FieldDescription>{t("tests.editor.voiceHint")}</FieldDescription>
+              )}
+            </Field>
+          )}
+        />
+
+        <Controller
           name="isPublished"
           control={form.control}
           render={({ field }) => (
@@ -185,6 +318,27 @@ export default function TestEditorForm({
           )}
         />
       </div>
+
+      {selectedVoice && (
+        <div className="rounded-md border border-border bg-card p-3">
+          <p className="text-sm font-medium text-foreground">
+            {selectedVoice.name}
+          </p>
+          {selectedVoice.category && (
+            <p className="text-xs text-muted-foreground">
+              {selectedVoice.category}
+            </p>
+          )}
+          {selectedVoice.previewUrl && (
+            <audio
+              className="mt-2 w-full"
+              controls
+              preload="none"
+              src={selectedVoice.previewUrl}
+            />
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Controller
