@@ -1,7 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { saveTestResultAction } from "@/features/tests/public-actions";
+import {
+  getTestAnalysisStatusAction,
+  saveTestResultAction,
+} from "@/features/tests/public-actions";
 import type { TestViewerProps } from "@/features/tests/types";
 import { urls } from "@/lib/urls";
 import { cn } from "@/lib/utils";
@@ -109,6 +112,7 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
     null,
   );
   const [analysisText, setAnalysisText] = useState<string | null>(null);
+  const [analysisRunId, setAnalysisRunId] = useState<string | null>(null);
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>("idle");
   const [isPending, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -141,6 +145,60 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
     return test.profiles[winnerProfileIndex] ?? null;
   }, [test.profiles, winnerProfileIndex]);
 
+  useEffect(() => {
+    if (phase !== "completed" || test.resultType !== "analysis") {
+      return;
+    }
+
+    if (!analysisRunId || analysisStatus !== "loading") {
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const poll = async () => {
+      try {
+        const { data, serverError } = await getTestAnalysisStatusAction({
+          runId: analysisRunId,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (serverError || !data) {
+          setAnalysisStatus("failed");
+          return;
+        }
+
+        if (data.status === "processing") {
+          timeoutId = setTimeout(() => {
+            void poll();
+          }, 1500);
+          return;
+        }
+
+        const nextAnalysis = data.analysisText?.trim() || null;
+        setAnalysisText(nextAnalysis);
+        setAnalysisStatus(nextAnalysis ? "ready" : "failed");
+      } catch {
+        if (!cancelled) {
+          setAnalysisStatus("failed");
+        }
+      }
+    };
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [analysisRunId, analysisStatus, phase, test.resultType]);
+
   const handleStart = () => {
     setCurrentIndex(0);
     setScoreTotals([0, 0, 0, 0]);
@@ -148,6 +206,7 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
     setSelectedAnswerOrder(null);
     setWinnerProfileIndex(null);
     setAnalysisText(null);
+    setAnalysisRunId(null);
     setAnalysisStatus("idle");
     setPhase("question");
 
@@ -185,6 +244,7 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
       setWinnerProfileIndex(profileIndex);
       setPhase("completed");
       setAnalysisText(null);
+      setAnalysisRunId(null);
       setAnalysisStatus(test.resultType === "analysis" ? "loading" : "idle");
 
       if (!winnerProfileId) return;
@@ -201,9 +261,16 @@ function TestViewerContent({ test }: Pick<TestViewerProps, "test">) {
           if (serverError) throw new Error();
 
           if (test.resultType === "analysis") {
-            const nextAnalysis = data?.analysisText?.trim() || null;
-            setAnalysisText(nextAnalysis);
-            setAnalysisStatus(nextAnalysis ? "ready" : "failed");
+            const nextRunId = data?.analysisRunId?.trim() || null;
+
+            setAnalysisText(null);
+            setAnalysisRunId(nextRunId);
+
+            if (data?.analysisStatus === "processing" && nextRunId) {
+              setAnalysisStatus("loading");
+            } else {
+              setAnalysisStatus("failed");
+            }
           }
         } catch {
           if (test.resultType === "analysis") {
