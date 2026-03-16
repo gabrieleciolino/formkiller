@@ -172,6 +172,7 @@
       "voiceHint": "Choose which ElevenLabs voice will be used for question audio generation.",
       "voiceLoadError": "Unable to load ElevenLabs voices. The default voice will be used.",
       "defaultVoiceName": "Default voice",
+      "creating": "Creating...",
       "submit": "Create form",
       "success": "Form successfully created.",
       "error": "Form creation failed."

@@ -3,17 +3,20 @@
 import {
   createTestSchema,
   deleteTestSchema,
+  editableTestSchema,
   editTestCustomizationSchema,
   generateTestDraftSchema,
   getTestVoicesSchema,
   TEST_ANSWERS_PER_QUESTION,
   TEST_PROFILES_COUNT,
+  testResultTypeSchema,
+  testToneSchema,
   updateTestSchema,
   type EditableTestType,
 } from "@/features/tests/schema";
-import type { FormLanguage } from "@/features/forms/schema";
+import { formLanguageSchema, type FormLanguage } from "@/features/forms/schema";
 import { adminActionClient } from "@/lib/actions";
-import { generateViralTest } from "@/lib/ai/functions";
+import { generateViralTestOutputSchema } from "@/lib/ai/schema";
 import {
   generateTTS,
   getDefaultElevenLabsVoiceId,
@@ -21,8 +24,11 @@ import {
 } from "@/lib/elevenlabs/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
+import { testDraftGenerationTask } from "@/trigger/test-draft-generation";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
+import { runs } from "@trigger.dev/sdk/v3";
+import { z } from "zod";
 
 const DEFAULT_TEST_BACKGROUND_ASSET_ID = "b0e66024-24c6-482a-b857-ffdb1a121c03";
 
@@ -236,6 +242,33 @@ function normalizeEditableDraft(input: {
   };
 }
 
+const getGenerateTestDraftStatusSchema = z.object({
+  runId: z.string().trim().min(1),
+});
+
+const generateTestDraftStatusResultSchema = z.object({
+  status: z.enum(["processing", "completed", "failed"]),
+  draft: editableTestSchema.nullable(),
+});
+
+const TERMINAL_FAILURE_STATUSES = new Set([
+  "CANCELED",
+  "FAILED",
+  "CRASHED",
+  "SYSTEM_FAILURE",
+  "EXPIRED",
+  "TIMED_OUT",
+]);
+
+const parseWithFallback = <T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  fallback: T,
+): T => {
+  const parsed = schema.safeParse(value);
+  return parsed.success ? parsed.data : fallback;
+};
+
 export const generateTestDraftAction = adminActionClient
   .inputSchema(generateTestDraftSchema)
   .action(async ({ parsedInput, ctx }) => {
@@ -244,27 +277,107 @@ export const generateTestDraftAction = adminActionClient
       language: parsedInput.language,
     });
 
-    const output = await generateViralTest({
-      additionalPrompt: parsedInput.additionalPrompt,
+    const handle = await testDraftGenerationTask.trigger({
+      ...parsedInput,
       existingTestsDigest,
-      language: parsedInput.language,
-      questionsCount: parsedInput.questionsCount,
-      tone: parsedInput.tone,
-      resultType: parsedInput.resultType,
-    });
-
-    const normalized = normalizeEditableDraft({
-      ...output,
-      tone: parsedInput.tone,
-      resultType: parsedInput.resultType,
     });
 
     return {
-      ...normalized,
-      language: parsedInput.language,
-      tone: parsedInput.tone,
-      resultType: parsedInput.resultType,
+      runId: handle.id,
     };
+  });
+
+export const getGenerateTestDraftStatusAction = adminActionClient
+  .inputSchema(getGenerateTestDraftStatusSchema)
+  .action(async ({ parsedInput }) => {
+    try {
+      const run = await runs.retrieve(parsedInput.runId);
+
+      if (run.taskIdentifier !== "test-draft-generation") {
+        return generateTestDraftStatusResultSchema.parse({
+          status: "failed",
+          draft: null,
+        });
+      }
+
+      if (run.status === "COMPLETED") {
+        const output = run.output as
+          | {
+              status?: unknown;
+              language?: unknown;
+              tone?: unknown;
+              resultType?: unknown;
+              draft?: unknown;
+            }
+          | undefined;
+
+        if (
+          output?.status === "completed" &&
+          output.draft &&
+          typeof output === "object"
+        ) {
+          const parsedDraft = generateViralTestOutputSchema.safeParse(output.draft);
+
+          if (!parsedDraft.success) {
+            return generateTestDraftStatusResultSchema.parse({
+              status: "failed",
+              draft: null,
+            });
+          }
+
+          const language = parseWithFallback(formLanguageSchema, output.language, "it");
+          const tone = parseWithFallback(testToneSchema, output.tone, "fun");
+          const resultType = parseWithFallback(
+            testResultTypeSchema,
+            output.resultType,
+            "profile",
+          );
+
+          const normalized = normalizeEditableDraft({
+            ...parsedDraft.data,
+            tone,
+            resultType,
+          });
+
+          return generateTestDraftStatusResultSchema.parse({
+            status: "completed",
+            draft: {
+              ...normalized,
+              language,
+              tone,
+              resultType,
+            },
+          });
+        }
+
+        return generateTestDraftStatusResultSchema.parse({
+          status: "failed",
+          draft: null,
+        });
+      }
+
+      if (TERMINAL_FAILURE_STATUSES.has(run.status)) {
+        return generateTestDraftStatusResultSchema.parse({
+          status: "failed",
+          draft: null,
+        });
+      }
+
+      return generateTestDraftStatusResultSchema.parse({
+        status: "processing",
+        draft: null,
+      });
+    } catch (error) {
+      console.log("[get_generate_test_draft_status_failed]", {
+        runId: parsedInput.runId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+
+      return generateTestDraftStatusResultSchema.parse({
+        status: "failed",
+        draft: null,
+      });
+    }
   });
 
 export const getTestVoicesAction = adminActionClient

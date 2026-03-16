@@ -30,6 +30,7 @@ import {
 } from "@/features/forms/schema";
 import {
   createFormAction,
+  getCreateFormStatusAction,
   getElevenLabsVoicesAction,
 } from "@/features/forms/actions";
 import { useZodLocale } from "@/hooks/use-zod-locale";
@@ -51,6 +52,7 @@ export default function CreateFormForm({
   detailPathPrefix?: string;
 } = {}) {
   const [isPending, startTransition] = useTransition();
+  const [isCreatingAsync, setIsCreatingAsync] = useState(false);
   const [manualQuestions, setManualQuestions] = useState<
     NonNullable<CreateFormType["questions"]>
   >([]);
@@ -75,6 +77,7 @@ export default function CreateFormForm({
   const selectedLanguage = form.watch("language") ?? "it";
   const selectedVoiceId = form.watch("voiceId");
   const selectedVoice = voiceOptions.find((voice) => voice.id === selectedVoiceId);
+  const isSubmitting = isPending || isCreatingAsync;
 
   useEffect(() => {
     form.setValue("questions", manualQuestions, {
@@ -152,6 +155,8 @@ export default function CreateFormForm({
 
   const onSubmit = (values: CreateFormType) => {
     startTransition(async () => {
+      setIsCreatingAsync(true);
+
       try {
         const payload: CreateFormType = {
           ...values,
@@ -159,21 +164,57 @@ export default function CreateFormForm({
         };
 
         const {
-          data: form,
+          data: triggerData,
           serverError,
           validationErrors,
         } = await createFormAction(payload);
 
-        if (serverError || validationErrors || !form) {
+        const runId = triggerData?.runId?.trim();
+
+        if (serverError || validationErrors || !runId) {
+          throw new Error();
+        }
+
+        const maxPollAttempts = 240;
+        const pollDelayMs = 1500;
+        let createdFormId: string | null = null;
+
+        for (let attempt = 0; attempt < maxPollAttempts; attempt += 1) {
+          const {
+            data: statusData,
+            serverError: statusError,
+          } = await getCreateFormStatusAction({ runId });
+
+          if (statusError || !statusData) {
+            throw new Error();
+          }
+
+          if (statusData.status === "completed" && statusData.formId) {
+            createdFormId = statusData.formId;
+            break;
+          }
+
+          if (statusData.status === "failed") {
+            throw new Error();
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, pollDelayMs));
+        }
+
+        if (!createdFormId) {
           throw new Error();
         }
 
         toast(t("forms.create.success"));
-        router.push(`${detailPathPrefix.replace(/\/$/, "")}/${form.id}`);
+        router.push(
+          `${detailPathPrefix.replace(/\/$/, "")}/${createdFormId}`,
+        );
       } catch (error) {
         console.log(error);
 
         toast(t("forms.create.error"));
+      } finally {
+        setIsCreatingAsync(false);
       }
     });
   };
@@ -336,9 +377,9 @@ export default function CreateFormForm({
       <Button
         type="submit"
         className="mt-2 w-full md:w-auto"
-        disabled={isPending}
+        disabled={isSubmitting}
       >
-        {t("forms.create.submit")}
+        {isSubmitting ? t("forms.create.creating") : t("forms.create.submit")}
       </Button>
     </form>
   );

@@ -172,6 +172,7 @@
       "voiceHint": "Elige qué voz de ElevenLabs se usará para generar el audio de las preguntas.",
       "voiceLoadError": "No se pudieron cargar las voces de ElevenLabs. Se usará la voz por defecto.",
       "defaultVoiceName": "Voz por defecto",
+      "creating": "Creando...",
       "submit": "Crear formulario",
       "success": "Formulario creado con éxito.",
       "error": "Error al crear el formulario."

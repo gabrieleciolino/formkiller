@@ -15,7 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import TestEditorForm, {
   createEmptyEditableTest,
 } from "@/features/tests/components/test-editor-form";
-import { generateTestDraftAction } from "@/features/tests/actions";
+import {
+  generateTestDraftAction,
+  getGenerateTestDraftStatusAction,
+} from "@/features/tests/actions";
 import {
   generateTestDraftSchema,
   testResultTypeSchema,
@@ -35,6 +38,7 @@ export default function CreateTestForm() {
   const t = useTranslations();
   const [draft, setDraft] = useState<EditableTestType | null>(null);
   const [isGenerating, startGenerating] = useTransition();
+  const [isPollingDraft, setIsPollingDraft] = useState(false);
   useZodLocale();
 
   const form = useForm<GenerateTestDraftType>({
@@ -50,22 +54,60 @@ export default function CreateTestForm() {
 
   const handleGenerate = (values: GenerateTestDraftType) => {
     startGenerating(async () => {
-      try {
-        const { data, serverError, validationErrors } = await generateTestDraftAction(
-          values,
-        );
+      setIsPollingDraft(true);
 
-        if (serverError || validationErrors || !data) {
+      try {
+        const {
+          data: triggerData,
+          serverError,
+          validationErrors,
+        } = await generateTestDraftAction(values);
+        const runId = triggerData?.runId?.trim();
+
+        if (serverError || validationErrors || !runId) {
           throw new Error();
         }
 
-        setDraft(data);
+        const maxPollAttempts = 180;
+        const pollDelayMs = 1500;
+        let generatedDraft: EditableTestType | null = null;
+
+        for (let attempt = 0; attempt < maxPollAttempts; attempt += 1) {
+          const {
+            data: statusData,
+            serverError: statusError,
+          } = await getGenerateTestDraftStatusAction({ runId });
+
+          if (statusError || !statusData) {
+            throw new Error();
+          }
+
+          if (statusData.status === "completed" && statusData.draft) {
+            generatedDraft = statusData.draft;
+            break;
+          }
+
+          if (statusData.status === "failed") {
+            throw new Error();
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, pollDelayMs));
+        }
+
+        if (!generatedDraft) {
+          throw new Error();
+        }
+
+        setDraft(generatedDraft);
         toast(t("tests.create.generated"));
       } catch {
         toast(t("tests.create.generateError"));
+      } finally {
+        setIsPollingDraft(false);
       }
     });
   };
+  const isGeneratingDraft = isGenerating || isPollingDraft;
   const selectedLanguage = form.watch("language");
   const selectedTone = form.watch("tone");
   const selectedResultType = form.watch("resultType");
@@ -203,14 +245,16 @@ export default function CreateTestForm() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit" variant="secondary" disabled={isGenerating}>
+          <Button type="submit" variant="secondary" disabled={isGeneratingDraft}>
             <Sparkles className="size-4" />
-            {isGenerating ? t("tests.create.generating") : t("tests.create.generate")}
+            {isGeneratingDraft
+              ? t("tests.create.generating")
+              : t("tests.create.generate")}
           </Button>
           <Button
             type="button"
             variant="outline"
-            disabled={isGenerating}
+            disabled={isGeneratingDraft}
             onClick={handleStartFromScratch}
           >
             <SquarePen className="size-4" />

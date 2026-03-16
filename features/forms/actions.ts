@@ -16,7 +16,6 @@ import {
 } from "@/features/forms/schema";
 import { adminActionClient } from "@/lib/actions";
 import {
-  generateForm,
   generateFormAnalysisInstructions,
 } from "@/lib/ai/functions";
 import {
@@ -24,155 +23,109 @@ import {
   getDefaultElevenLabsVoiceId,
   getElevenLabsVoices,
 } from "@/lib/elevenlabs/functions";
-import { deleteFile } from "@/lib/r2/functions";
+import { formCreateTask } from "@/trigger/form-create";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
+import { runs } from "@trigger.dev/sdk/v3";
+import { z } from "zod";
+
+const getCreateFormStatusSchema = z.object({
+  runId: z.string().trim().min(1),
+});
+
+const createFormStatusResultSchema = z.object({
+  status: z.enum(["processing", "completed", "failed"]),
+  formId: z.string().uuid().nullable(),
+});
+
+const TERMINAL_FAILURE_STATUSES = new Set([
+  "CANCELED",
+  "FAILED",
+  "CRASHED",
+  "SYSTEM_FAILURE",
+  "EXPIRED",
+  "TIMED_OUT",
+]);
 
 export const createFormAction = adminActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId } = ctx;
-    const { name, instructions, type, language, voiceId, questions = [] } =
-      parsedInput;
-    const normalizedInstructions = instructions.trim();
-    const normalizedVoiceId = voiceId?.trim() || null;
-    const fallbackVoiceId = getDefaultElevenLabsVoiceId();
-    const resolvedVoiceId = normalizedVoiceId ?? fallbackVoiceId;
-    const generatedTtsKeys: string[] = [];
-    let createdFormId: string | null = null;
+    const { userId } = ctx;
+    const handle = await formCreateTask.trigger(
+      {
+        ...parsedInput,
+        userId,
+      },
+      {
+        maxAttempts: 1,
+      },
+    );
 
+    return {
+      runId: handle.id,
+    };
+  });
+
+export const getCreateFormStatusAction = adminActionClient
+  .inputSchema(getCreateFormStatusSchema)
+  .action(async ({ parsedInput }) => {
     try {
-      const hasManualQuestions = questions.length > 0;
-      let introTitle: string | null = null;
-      let introMessage: string | null = null;
-      let endTitle: string | null = null;
-      let endMessage: string | null = null;
-      const questionsToInsert = hasManualQuestions
-        ? questions.map((question) => ({
-            question: question.question,
-            order: question.order,
-            defaultAnswers: question.default_answers,
-          }))
-        : [];
+      const run = await runs.retrieve(parsedInput.runId);
 
-      const toNullableText = (value: string) => {
-        const trimmed = value.trim();
-        return trimmed.length > 0 ? trimmed : null;
-      };
-
-      if (!hasManualQuestions) {
-        if (normalizedInstructions.length === 0) {
-          throw new Error("Instructions are required when questions are not provided.");
-        }
-
-        const output = await generateForm({
-          instructions: normalizedInstructions,
-          language,
+      if (run.taskIdentifier !== "form-create") {
+        return createFormStatusResultSchema.parse({
+          status: "failed",
+          formId: null,
         });
-        if (!output || output.questions.length === 0) {
-          throw new Error("Empty AI output.");
+      }
+
+      if (run.status === "COMPLETED") {
+        const output = run.output as
+          | {
+              status?: unknown;
+              formId?: unknown;
+            }
+          | undefined;
+
+        if (output?.status === "completed" && typeof output.formId === "string") {
+          revalidatePath(urls.dashboard.forms.index);
+          revalidatePath(urls.admin.forms.index);
+          revalidatePath(urls.dashboard.forms.detail(output.formId));
+          revalidatePath(urls.admin.forms.detail(output.formId));
+
+          return createFormStatusResultSchema.parse({
+            status: "completed",
+            formId: output.formId,
+          });
         }
 
-        questionsToInsert.push(...output.questions);
-        introTitle = toNullableText(output.introTitle);
-        introMessage = toNullableText(output.introMessage);
-        endTitle = toNullableText(output.endTitle);
-        endMessage = toNullableText(output.endMessage);
+        return createFormStatusResultSchema.parse({
+          status: "failed",
+          formId: null,
+        });
       }
 
-      const { data: form, error } = await supabase
-        .from("form")
-        .insert({
-          name,
-          instructions: normalizedInstructions,
-          type,
-          language,
-          voice_id: resolvedVoiceId,
-          user_id: userId,
-          intro_title: introTitle,
-          intro_message: introMessage,
-          end_title: endTitle,
-          end_message: endMessage,
-        })
-        .select()
-        .single();
-
-      if (error || !form) {
-        throw error ?? new Error("Form not created");
+      if (TERMINAL_FAILURE_STATUSES.has(run.status)) {
+        return createFormStatusResultSchema.parse({
+          status: "failed",
+          formId: null,
+        });
       }
 
-      createdFormId = form.id;
-
-      const insertedQuestions = await Promise.all(
-        questionsToInsert.map(async (question) => {
-          const { data, error: insertError } = await supabase
-            .from("question")
-            .insert({
-              question: question.question,
-              order: question.order,
-              default_answers: question.defaultAnswers,
-              form_id: form.id,
-              user_id: userId,
-            })
-            .select()
-            .single();
-
-          if (insertError || !data) {
-            throw insertError ?? new Error("Question not created");
-          }
-
-          return data;
-        }),
-      );
-
-      const ttsResults = await Promise.all(
-        insertedQuestions.map((question) =>
-          generateTTS({
-            text: question.question,
-            formId: form.id,
-            language: form.language,
-            voiceId: resolvedVoiceId,
-          }),
-        ),
-      );
-      generatedTtsKeys.push(...ttsResults.map((result) => result.key));
-
-      await Promise.all(
-        insertedQuestions.map((question, index) =>
-          supabase
-            .from("question")
-            .update({
-              file_key: ttsResults[index].key,
-              file_generated_at: new Date().toUTCString(),
-            })
-            .eq("id", question.id)
-            .throwOnError(),
-        ),
-      );
-
-      revalidatePath(urls.dashboard.forms.index);
-      revalidatePath(urls.admin.forms.index);
-
-      return form;
+      return createFormStatusResultSchema.parse({
+        status: "processing",
+        formId: null,
+      });
     } catch (error) {
-      if (createdFormId) {
-        try {
-          await supabase
-            .from("form")
-            .delete()
-            .eq("id", createdFormId)
-            .eq("user_id", userId)
-            .throwOnError();
-        } catch (cleanupError) {
-          console.log("[create_form_cleanup_error]", cleanupError);
-        }
-      }
+      console.log("[get_create_form_status_failed]", {
+        runId: parsedInput.runId,
+        message: error instanceof Error ? error.message : String(error),
+      });
 
-      if (generatedTtsKeys.length > 0) {
-        await Promise.allSettled(generatedTtsKeys.map((key) => deleteFile(key)));
-      }
-
-      throw error;
+      return createFormStatusResultSchema.parse({
+        status: "failed",
+        formId: null,
+      });
     }
   });
 
