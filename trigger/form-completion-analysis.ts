@@ -84,7 +84,11 @@ export const formCompletionAnalysisTask = task({
         .maybeSingle()
         .throwOnError();
 
-      if (!session || session.form_id !== formId || session.status !== "completed") {
+      if (
+        !session ||
+        session.form_id !== formId ||
+        (session.status !== "abandoned" && session.status !== "completed")
+      ) {
         await updateSessionAnalysisState({
           sessionId,
           status: "failed",

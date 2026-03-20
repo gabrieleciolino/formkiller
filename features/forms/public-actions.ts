@@ -328,6 +328,7 @@ export const submitAnswerAction = publicViewerClient
         await supabaseAdmin
           .from("form_session")
           .update({
+            status: "abandoned",
             completion_analysis_status: "processing",
             completion_analysis_text: null,
             completion_analysis_audio_url: null,
@@ -353,6 +354,7 @@ export const submitAnswerAction = publicViewerClient
           await supabaseAdmin
             .from("form_session")
             .update({
+              status: "abandoned",
               completion_analysis_status: "failed",
               completion_analysis_text: null,
               completion_analysis_audio_url: null,
@@ -364,6 +366,7 @@ export const submitAnswerAction = publicViewerClient
         await supabaseAdmin
           .from("form_session")
           .update({
+            status: "abandoned",
             completion_analysis_status: "unavailable",
             completion_analysis_text: null,
             completion_analysis_audio_url: null,
@@ -414,7 +417,7 @@ export const createLeadAction = publicViewerClient
       throw new Error("Invalid session/form association");
     }
 
-    if (session.status !== "completed") {
+    if (session.status !== "abandoned" && session.status !== "completed") {
       throw new Error("Session not completed");
     }
 
@@ -432,6 +435,15 @@ export const createLeadAction = publicViewerClient
       .single();
 
     if (error) throw error;
+
+    await supabaseAdmin
+      .from("form_session")
+      .update({
+        status: "completed",
+      })
+      .eq("id", session.id)
+      .throwOnError();
+
     const completionAnalysis = await getSessionCompletionAnalysisOrThrow(session.id);
 
     return {

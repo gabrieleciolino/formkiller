@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 const STATUS_COLORS: Record<string, string> = {
   completed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
+  abandoned: "border-orange-500/30 bg-orange-500/10 text-orange-700",
   in_progress: "border-amber-500/30 bg-amber-500/10 text-amber-700",
   pending: "border-border bg-muted text-muted-foreground",
 };
@@ -54,7 +55,10 @@ export function useAdminSessionsColumns(): ColumnDef<AdminSession>[] {
         const form = session.form as { questions: { id: string }[] } | null;
         const total = form?.questions?.length ?? 0;
         const current = session.current_question_index ?? 0;
-        const answered = session.status === "completed" ? total : current;
+        const answered =
+          session.status === "completed" || session.status === "abandoned"
+            ? total
+            : current;
         if (total === 0) return "—";
         return `${answered} / ${total}`;
       },

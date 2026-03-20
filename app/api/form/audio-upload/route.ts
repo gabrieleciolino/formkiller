@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unable to validate session" }, { status: 500 });
   }
 
-  if (!session || session.form_id !== formId || session.status === "completed") {
+  if (!session || session.form_id !== formId || session.status !== "in_progress") {
     return NextResponse.json({ error: "Invalid session/form association" }, { status: 400 });
   }
 

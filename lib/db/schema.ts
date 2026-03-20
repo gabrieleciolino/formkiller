@@ -355,6 +355,7 @@ export const questionTable = pgTable(
 export const formSessionStatusEnum = pgEnum("form_session_status", [
   "pending",
   "in_progress",
+  "abandoned",
   "completed",
 ]);
 

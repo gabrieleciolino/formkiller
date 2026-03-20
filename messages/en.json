@@ -68,6 +68,7 @@
       "status": {
         "pending": "Pending",
         "in_progress": "In progress",
+        "abandoned": "Abandoned",
         "completed": "Completed"
       }
     },

@@ -634,7 +634,7 @@ export type Database = {
       account_tier: "free" | "pro"
       asset_type: "image" | "video" | "audio"
       form_language: "en" | "it" | "es"
-      form_session_status: "pending" | "in_progress" | "completed"
+      form_session_status: "pending" | "in_progress" | "abandoned" | "completed"
       form_theme: "light" | "dark"
       form_type: "mixed" | "default-only" | "voice-only"
       test_result_type: "profile" | "analysis"
@@ -774,7 +774,7 @@ export const Constants = {
       account_tier: ["free", "pro"],
       asset_type: ["image", "video", "audio"],
       form_language: ["en", "it", "es"],
-      form_session_status: ["pending", "in_progress", "completed"],
+      form_session_status: ["pending", "in_progress", "abandoned", "completed"],
       form_theme: ["light", "dark"],
       form_type: ["mixed", "default-only", "voice-only"],
       test_result_type: ["profile", "analysis"],
