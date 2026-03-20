@@ -56,6 +56,7 @@ export default function EditQuestionsForm({
   const voiceLabel = normalizedVoiceId
     ? voiceNameById[normalizedVoiceId] ?? normalizedVoiceId
     : t("forms.questions.voiceDefaultName");
+  const hasGeneratedTts = Object.values(initialFileUrls).some((url) => Boolean(url));
 
   if (!isCreateMode && !formId) {
     throw new Error("formId is required in edit mode");
@@ -222,7 +223,7 @@ export default function EditQuestionsForm({
     >
       {!readOnly && (
         <div className="flex justify-end gap-2">
-          {!isCreateMode && allowVoiceControls && (
+          {!isCreateMode && allowVoiceControls && hasGeneratedTts && (
             <Button
               type="button"
               variant="outline"
@@ -311,7 +312,7 @@ export default function EditQuestionsForm({
               readOnly={readOnly}
             />
 
-            {!isCreateMode && allowVoiceControls && (
+            {!isCreateMode && allowVoiceControls && hasGeneratedTts && (
               <p className="text-xs text-muted-foreground">
                 {t("forms.questions.voiceUsed", {
                   voice: voiceLabel,
@@ -320,7 +321,7 @@ export default function EditQuestionsForm({
               </p>
             )}
 
-            {!isCreateMode && allowVoiceControls && (
+            {!isCreateMode && allowVoiceControls && hasGeneratedTts && (
               <QuestionTTSControls
                 questionId={questionField.id}
                 formId={formId!}

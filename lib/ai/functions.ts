@@ -1,13 +1,11 @@
 import { generateText, Output } from "ai";
 import { openai } from "@ai-sdk/openai";
 import {
-  generateAnalysisInstructionsOutputSchema,
   generateCompletionAnalysisOutputSchema,
   generateFormOutputSchema,
 } from "@/lib/ai/schema";
 import { FormLanguage } from "@/features/forms/schema";
 import type {
-  GenerateAnalysisInstructionsOutputType,
   GenerateCompletionAnalysisOutputType,
   GenerateFormOutputType,
 } from "@/lib/ai/types";
@@ -59,55 +57,6 @@ export const generateForm = async ({
   });
 
   return output;
-};
-
-export const generateFormAnalysisInstructions = async ({
-  language,
-  formInstructions,
-  additionalPrompt,
-  questions,
-}: {
-  language: FormLanguage;
-  formInstructions: string;
-  additionalPrompt: string;
-  questions: Array<{
-    order: number;
-    question: string;
-    defaultAnswers: Array<{ order: number; answer: string }>;
-  }>;
-}): Promise<GenerateAnalysisInstructionsOutputType["analysisInstructions"]> => {
-  const normalizedAdditionalPrompt = normalizeAnalysisPrompt(additionalPrompt);
-  const questionsText = questions
-    .map((question, index) => {
-      const answersText = question.defaultAnswers
-        .slice()
-        .sort((a, b) => a.order - b.order)
-        .map((answer) => `- ${answer.answer}`)
-        .join("\n");
-
-      return `${index + 1}. ${question.question}\nRisposte predefinite:\n${answersText}`;
-    })
-    .join("\n\n");
-
-  const { output } = await generateText({
-    model: openai("gpt-5-mini"),
-    prompt: `
-        Scrivi SOLO un'istruzione breve per guidare l'analisi finale.
-        Deve produrre un testo breve, conciso e discorsivo.
-        Niente sezioni o elenchi, niente diagnosi, niente invenzioni.
-        Interpreta solo le risposte disponibili.
-
-        Lingua: ${getLanguageName(language)}.
-        Contesto form: ${formInstructions}
-        Prompt admin: ${normalizedAdditionalPrompt || "Nessun prompt aggiuntivo"}
-        Domande: ${questionsText}
-    `,
-    output: Output.object({
-      schema: generateAnalysisInstructionsOutputSchema,
-    }),
-  });
-
-  return normalizeAnalysisPrompt(output.analysisInstructions);
 };
 
 export const generateCompletionAnalysis = async ({

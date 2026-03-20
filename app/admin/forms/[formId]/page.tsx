@@ -32,6 +32,7 @@ export default async function AdminFormDetailPage({
     file_key?: string | null;
   };
   const questionsRaw = form.questions as unknown as QuestionRaw[];
+  const hasGeneratedTts = questionsRaw.some((q) => Boolean(q.file_key));
   const initialFileUrls: Record<string, string | null> = Object.fromEntries(
     questionsRaw.map((q) => [q.id, q.file_key ? getFileUrl(q.file_key) : null]),
   );
@@ -82,6 +83,7 @@ export default async function AdminFormDetailPage({
             formId={form.id}
             initialVoiceId={form.voice_id}
             initialVoiceSpeed={form.voice_speed}
+            hasGeneratedTts={hasGeneratedTts}
           />
           <GenerateAnalysisSheet
             formId={form.id}
@@ -118,7 +120,9 @@ export default async function AdminFormDetailPage({
         </div>
         <div className="space-y-1">
           <p className="text-sm font-medium">{t("dashboard.forms.columns.owner")}</p>
-          <p className="text-sm text-muted-foreground">{form.user_id}</p>
+          <p className="text-sm text-muted-foreground">
+            {form.owner_username ?? form.user_id}
+          </p>
         </div>
         <div className="col-span-2 space-y-1 md:col-span-4">
           <p className="text-sm font-medium">

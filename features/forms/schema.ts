@@ -166,18 +166,11 @@ export const generateQuestionTTSSchema = z.object({
 
 export type GenerateQuestionTTSType = z.infer<typeof generateQuestionTTSSchema>;
 
-export const generateAnalysisInstructionsSchema = z.object({
-  formId: z.string().uuid(),
-  additionalPrompt: z.string().trim(),
-});
-
-export type GenerateAnalysisInstructionsType = z.infer<
-  typeof generateAnalysisInstructionsSchema
->;
+export const ANALYSIS_INSTRUCTIONS_MAX_LENGTH = 1000;
 
 export const saveAnalysisInstructionsSchema = z.object({
   formId: z.string().uuid(),
-  analysisInstructions: z.string().trim(),
+  analysisInstructions: z.string().trim().max(ANALYSIS_INSTRUCTIONS_MAX_LENGTH),
 });
 
 export type SaveAnalysisInstructionsType = z.infer<

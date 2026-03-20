@@ -25,10 +25,6 @@ export const generateFormOutputSchema = z.object({
   questions: z.array(generatedQuestionSchema).min(5).max(10),
 });
 
-export const generateAnalysisInstructionsOutputSchema = z.object({
-  analysisInstructions: z.string().trim().min(1),
-});
-
 export const generateCompletionAnalysisOutputSchema = z.object({
   analysis: z.string().trim().min(1),
 });

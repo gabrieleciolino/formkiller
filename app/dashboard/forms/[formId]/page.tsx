@@ -42,6 +42,9 @@ export default async function FormsDetailPage({
     file_key?: string | null;
   };
   const questionsRaw = form.questions as unknown as QuestionRaw[];
+  const hasGeneratedTts = questionsRaw.some(
+    (question) => Boolean(question.file_key),
+  );
   const initialFileUrls: Record<string, string | null> = Object.fromEntries(
     questionsRaw.map((question) => [
       question.id,
@@ -98,6 +101,7 @@ export default async function FormsDetailPage({
                 formId={form.id}
                 initialVoiceId={form.voice_id}
                 initialVoiceSpeed={form.voice_speed}
+                hasGeneratedTts={hasGeneratedTts}
               />
               <GenerateAnalysisSheet
                 formId={form.id}

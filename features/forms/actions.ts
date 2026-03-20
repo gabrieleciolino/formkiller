@@ -8,7 +8,6 @@ import {
   editFormSchema,
   editQuestionsSchema,
   type FormLanguage,
-  generateAnalysisInstructionsSchema,
   generateQuestionTTSSchema,
   getElevenLabsVoicesSchema,
   regenerateFormQuestionsTTSSchema,
@@ -17,7 +16,6 @@ import {
 } from "@/features/forms/schema";
 import { canUseProFeatures } from "@/lib/account";
 import { authenticatedActionClient } from "@/lib/actions";
-import { generateFormAnalysisInstructions } from "@/lib/ai/functions";
 import {
   generateTTS,
   getDefaultElevenLabsVoiceId,
@@ -713,51 +711,6 @@ export const generateQuestionTTSAction = authenticatedActionClient
     });
 
     return { url };
-  });
-
-export const generateFormAnalysisInstructionsAction = authenticatedActionClient
-  .inputSchema(generateAnalysisInstructionsSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
-
-    const { supabase } = ctx;
-    const { formId, additionalPrompt } = parsedInput;
-
-    const { data: form } = await supabase
-      .from("form")
-      .select("id, language, instructions, questions:question(question, order, default_answers)")
-      .eq("id", formId)
-      .order("order", { referencedTable: "question", ascending: true })
-      .single()
-      .throwOnError();
-
-    const questions = form.questions as Array<{
-      question: string;
-      order: number;
-      default_answers: Array<{ answer: string; order: number }>;
-    }>;
-
-    if (!questions || questions.length === 0) {
-      throw new Error("Form has no questions.");
-    }
-
-    const normalizedQuestions = questions.map((question) => ({
-      order: question.order,
-      question: question.question,
-      defaultAnswers: question.default_answers.map((answer) => ({
-        answer: answer.answer,
-        order: answer.order,
-      })),
-    }));
-
-    const analysisInstructions = await generateFormAnalysisInstructions({
-      language: form.language,
-      formInstructions: form.instructions,
-      additionalPrompt,
-      questions: normalizedQuestions,
-    });
-
-    return { analysisInstructions };
   });
 
 export const saveFormAnalysisInstructionsAction = authenticatedActionClient

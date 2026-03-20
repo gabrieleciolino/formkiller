@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import {
   getElevenLabsVoicesAction,
+  regenerateFormQuestionsTTSAction,
   updateFormVoiceAction,
 } from "@/features/forms/actions";
 import {
@@ -47,6 +48,7 @@ type ChangeFormVoiceSheetProps = {
   formId: string;
   initialVoiceId: string | null;
   initialVoiceSpeed: number | null;
+  hasGeneratedTts: boolean;
 };
 
 const normalizeVoiceId = (value: string | null | undefined) => value?.trim() ?? "";
@@ -60,6 +62,7 @@ export default function ChangeFormVoiceSheet({
   formId,
   initialVoiceId,
   initialVoiceSpeed,
+  hasGeneratedTts,
 }: ChangeFormVoiceSheetProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -190,30 +193,50 @@ export default function ChangeFormVoiceSheet({
     (selectedVoiceId !== savedVoiceId ||
       normalizedSelectedVoiceSpeed !== normalizedSavedVoiceSpeed);
 
-  const handleSave = () => {
-    if (!isVoiceChanged) {
+  const canGenerateVoice = hasVoiceSelection && (isVoiceChanged || !hasGeneratedTts);
+
+  const handleGenerateVoice = () => {
+    if (!canGenerateVoice) {
       return;
     }
 
     startSubmitting(async () => {
       try {
-        const { data, serverError, validationErrors } = await updateFormVoiceAction({
-          formId,
-          voiceId: selectedVoiceId,
-          voiceSpeed: normalizedSelectedVoiceSpeed,
-        });
+        if (isVoiceChanged) {
+          const { data, serverError, validationErrors } =
+            await updateFormVoiceAction({
+              formId,
+              voiceId: selectedVoiceId,
+              voiceSpeed: normalizedSelectedVoiceSpeed,
+            });
 
-        if (serverError || validationErrors || !data) {
+          if (serverError || validationErrors || !data) {
+            throw new Error();
+          }
+
+          setSavedVoiceId(data.voiceId);
+          setSavedVoiceSpeed(data.voiceSpeed);
+        }
+
+        const {
+          data: regenerateData,
+          serverError: regenerateServerError,
+          validationErrors: regenerateValidationErrors,
+        } = await regenerateFormQuestionsTTSAction({ formId });
+
+        if (
+          regenerateServerError ||
+          regenerateValidationErrors ||
+          !regenerateData
+        ) {
           throw new Error();
         }
 
-        setSavedVoiceId(data.voiceId);
-        setSavedVoiceSpeed(data.voiceSpeed);
-        toast(t("forms.edit.voiceSaveSuccess"));
+        toast(t("forms.edit.voiceGenerateSuccess"));
         setOpen(false);
         router.refresh();
       } catch {
-        toast(t("forms.edit.voiceSaveError"));
+        toast(t("forms.edit.voiceGenerateError"));
       }
     });
   };
@@ -314,17 +337,16 @@ export default function ChangeFormVoiceSheet({
           <Button
             type="button"
             className="w-full"
-            onClick={handleSave}
+            onClick={handleGenerateVoice}
             disabled={
               isSubmitting ||
               isVoicesPending ||
-              !hasVoiceSelection ||
-              !isVoiceChanged
+              !canGenerateVoice
             }
           >
             {isSubmitting
-              ? t("forms.edit.voiceSaving")
-              : t("forms.edit.voiceSave")}
+              ? t("forms.edit.voiceGenerating")
+              : t("forms.edit.voiceGenerate")}
           </Button>
         </div>
       </SheetContent>

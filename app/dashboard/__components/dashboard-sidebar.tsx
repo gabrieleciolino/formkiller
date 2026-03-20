@@ -9,8 +9,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { urls } from "@/lib/urls";
-import { Form, PersonStanding, Layers } from "lucide-react";
+import { Form, PersonStanding, Layers, LogOut } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -71,7 +72,15 @@ export default async function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-3">
-        <LocaleSwitcher currentLocale={currentLocale} />
+        <div className="space-y-2">
+          <LocaleSwitcher currentLocale={currentLocale} />
+          <form action={urls.auth.logout} method="post">
+            <Button type="submit" variant="outline" className="w-full justify-start">
+              <LogOut />
+              {t("dashboard.sidebar.logout")}
+            </Button>
+          </form>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

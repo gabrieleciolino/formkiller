@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
   Sheet,
   SheetContent,
@@ -10,12 +10,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  generateFormAnalysisInstructionsAction,
-  saveFormAnalysisInstructionsAction,
-} from "@/features/forms/actions";
+import { saveFormAnalysisInstructionsAction } from "@/features/forms/actions";
+import { ANALYSIS_INSTRUCTIONS_MAX_LENGTH } from "@/features/forms/schema";
+import { FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Sparkles } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -30,38 +28,17 @@ export default function GenerateAnalysisSheet({
 }: GenerateAnalysisSheetProps) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
-  const [additionalPrompt, setAdditionalPrompt] = useState("");
   const [analysisInstructions, setAnalysisInstructions] = useState(
-    initialAnalysisInstructions ?? "",
+    (initialAnalysisInstructions ?? "").slice(0, ANALYSIS_INSTRUCTIONS_MAX_LENGTH),
   );
-  const [isGenerating, startGenerating] = useTransition();
   const [isSaving, startSaving] = useTransition();
 
   useEffect(() => {
-    setAnalysisInstructions(initialAnalysisInstructions ?? "");
+    setAnalysisInstructions(
+      (initialAnalysisInstructions ?? "").slice(0, ANALYSIS_INSTRUCTIONS_MAX_LENGTH),
+    );
   }, [initialAnalysisInstructions]);
-
-  const handleGenerate = () => {
-    startGenerating(async () => {
-      try {
-        const { data, serverError } = await generateFormAnalysisInstructionsAction(
-          {
-            formId,
-            additionalPrompt,
-          },
-        );
-
-        if (serverError || !data) {
-          throw new Error();
-        }
-
-        setAnalysisInstructions(data.analysisInstructions);
-        toast(t("forms.analysis.generateSuccess"));
-      } catch {
-        toast(t("forms.analysis.generateError"));
-      }
-    });
-  };
+  const characterCount = analysisInstructions.length;
 
   const handleSave = () => {
     startSaving(async () => {
@@ -88,7 +65,7 @@ export default function GenerateAnalysisSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="gap-2">
-          <Sparkles className="size-4" />
+          <FileText className="size-4" />
           {t("forms.analysis.trigger")}
         </Button>
       </SheetTrigger>
@@ -98,34 +75,24 @@ export default function GenerateAnalysisSheet({
         </SheetHeader>
         <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-4 pt-2">
           <Field>
-            <FieldLabel>{t("forms.analysis.additionalPrompt")}</FieldLabel>
-            <Textarea
-              value={additionalPrompt}
-              onChange={(event) => setAdditionalPrompt(event.target.value)}
-              rows={4}
-              placeholder={t("forms.analysis.additionalPromptPlaceholder")}
-            />
-          </Field>
-
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating
-              ? t("forms.analysis.generating")
-              : t("forms.analysis.generate")}
-          </Button>
-
-          <Field>
             <FieldLabel>{t("forms.analysis.instructions")}</FieldLabel>
             <Textarea
               value={analysisInstructions}
-              onChange={(event) => setAnalysisInstructions(event.target.value)}
+              onChange={(event) =>
+                setAnalysisInstructions(
+                  event.target.value.slice(0, ANALYSIS_INSTRUCTIONS_MAX_LENGTH),
+                )
+              }
               rows={14}
+              maxLength={ANALYSIS_INSTRUCTIONS_MAX_LENGTH}
               placeholder={t("forms.analysis.instructionsPlaceholder")}
             />
+            <FieldDescription className="text-right">
+              {t("forms.analysis.characterCount", {
+                count: characterCount,
+                max: ANALYSIS_INSTRUCTIONS_MAX_LENGTH,
+              })}
+            </FieldDescription>
           </Field>
 
           <Button
