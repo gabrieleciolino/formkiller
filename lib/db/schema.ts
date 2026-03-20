@@ -186,6 +186,7 @@ export const formTable = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     isPublished: boolean("is_published").notNull().default(false),
+    isHome: boolean("is_home").notNull().default(false),
     instructions: text("instructions").notNull(),
     type: formTypeEnum("type").notNull().default("mixed"),
     language: formLanguageEnum("language").notNull().default("en"),

@@ -178,6 +178,7 @@ export type Database = {
           instructions: string
           intro_message: string | null
           intro_title: string | null
+          is_home: boolean
           is_published: boolean
           language: Database["public"]["Enums"]["form_language"]
           name: string
@@ -200,6 +201,7 @@ export type Database = {
           instructions: string
           intro_message?: string | null
           intro_title?: string | null
+          is_home?: boolean
           is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name: string
@@ -222,6 +224,7 @@ export type Database = {
           instructions?: string
           intro_message?: string | null
           intro_title?: string | null
+          is_home?: boolean
           is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name?: string

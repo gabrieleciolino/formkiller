@@ -212,4 +212,5 @@ export type EditFormSheetProps = {
   backgroundMusicUrl: string | null;
   allowProFeatures?: boolean;
   showAssetControls?: boolean;
+  showIsHomeToggle?: boolean;
 };

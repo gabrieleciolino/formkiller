@@ -59,6 +59,10 @@ function roundMs(value: number) {
   return Math.round(value * 10) / 10;
 }
 
+const BACKGROUND_MUSIC_BASE_VOLUME = 0.1;
+const BACKGROUND_MUSIC_DUCKED_VOLUME = 0.05;
+const QUESTION_VOICEOVER_VOLUME = 1;
+
 export default function FormViewer({ form }: FormViewerProps) {
   const [phase, setPhase] = useState<FormViewerPhase>("welcome");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -124,12 +128,25 @@ export default function FormViewer({ form }: FormViewerProps) {
     const url = currentQuestion?.audioUrl;
     if (!url) return;
 
+    const restoreBackgroundVolume = () => {
+      if (!bgMusicRef.current) return;
+      bgMusicRef.current.volume = BACKGROUND_MUSIC_BASE_VOLUME;
+    };
+
+    if (bgMusicRef.current) {
+      bgMusicRef.current.volume = BACKGROUND_MUSIC_DUCKED_VOLUME;
+    }
+
     const audio = new Audio(url);
+    audio.volume = QUESTION_VOICEOVER_VOLUME;
     audioRef.current = audio;
+    audio.addEventListener("ended", restoreBackgroundVolume);
     audio.play().catch(() => {});
 
     return () => {
       audio.pause();
+      audio.removeEventListener("ended", restoreBackgroundVolume);
+      restoreBackgroundVolume();
     };
   }, [currentIndex, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -202,7 +219,7 @@ export default function FormViewer({ form }: FormViewerProps) {
         }
 
         if (hasBackgroundMusic && bgMusicRef.current) {
-          bgMusicRef.current.volume = 0.15;
+          bgMusicRef.current.volume = BACKGROUND_MUSIC_BASE_VOLUME;
           void bgMusicRef.current.play().catch(() => {});
         }
 

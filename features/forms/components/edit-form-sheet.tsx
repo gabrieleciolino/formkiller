@@ -42,12 +42,14 @@ export default function EditFormSheet({
   backgroundMusicUrl,
   allowProFeatures = true,
   showAssetControls = true,
+  showIsHomeToggle = false,
 }: EditFormSheetProps) {
   const [open, setOpen] = useState(false);
   const {
     id,
     name,
     type,
+    is_home,
     is_published,
     theme,
     background_image_key,
@@ -74,6 +76,7 @@ export default function EditFormSheet({
       name,
       type: (allowProFeatures ? type : "default-only") as FormType,
       isPublished: is_published ?? false,
+      isHome: showIsHomeToggle ? (is_home ?? false) : undefined,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
@@ -90,6 +93,7 @@ export default function EditFormSheet({
       name,
       type: (allowProFeatures ? type : "default-only") as FormType,
       isPublished: is_published ?? false,
+      isHome: showIsHomeToggle ? (is_home ?? false) : undefined,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
@@ -105,11 +109,13 @@ export default function EditFormSheet({
     name,
     theme,
     type,
+    is_home,
     backgroundImageUrl,
     backgroundMusicUrl,
     background_image_key,
     background_music_key,
     is_published,
+    showIsHomeToggle,
     allowProFeatures,
     intro_title,
     intro_message,
@@ -231,6 +237,33 @@ export default function EditFormSheet({
                 </Field>
               )}
             />
+            {showIsHomeToggle && (
+              <Controller
+                name="isHome"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>{t("forms.edit.home")}</FieldLabel>
+                    <Select
+                      value={field.value ? "home" : "not-home"}
+                      onValueChange={(value) => field.onChange(value === "home")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-home">
+                          {t("forms.edit.homeOptions.disabled")}
+                        </SelectItem>
+                        <SelectItem value="home">
+                          {t("forms.edit.homeOptions.enabled")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              />
+            )}
             <Controller
               name="theme"
               control={form.control}

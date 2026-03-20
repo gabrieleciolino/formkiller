@@ -150,7 +150,7 @@ async function getFormsTableQuery({
     supabase
       .from("form")
       .select(
-        "id, user_id, name, slug, type, language, is_published, instructions, theme, created_at, updated_at, voice_id, voice_speed, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, analysis_instructions, questions:question(*)",
+        "id, user_id, name, slug, type, language, is_published, is_home, instructions, theme, created_at, updated_at, voice_id, voice_speed, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, analysis_instructions, questions:question(*)",
         { count: "exact" },
       ),
     {
@@ -397,4 +397,26 @@ export const getPublishedFormViewerByUsernameAndSlugQuery = async ({
     owner_username: account.username,
     questions: [...(row.questions ?? [])].sort((left, right) => left.order - right.order),
   } satisfies PublicViewerForm;
+};
+
+export const getPublishedHomeFormQuery = async () => {
+  const { data, error } = await supabaseAdmin
+    .from("form")
+    .select("slug, user_id")
+    .eq("is_home", true)
+    .eq("is_published", true)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const ownerUsername = await getUsernameByUserId(data.user_id);
+  if (!ownerUsername) return null;
+
+  return {
+    username: ownerUsername,
+    slug: data.slug,
+  };
 };

@@ -1,9 +1,8 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
+import { getPublishedHomeFormQuery } from "@/features/forms/queries";
 import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
 export const metadata = getHomeMetadata("it");
-const contactFormUsername = (process.env.CONTACT_FORM_USERNAME ?? "").trim();
-const contactFormSlug = (process.env.CONTACT_FORM_SLUG ?? "").trim();
 
 const content: LandingContent = {
   nav: {
@@ -141,7 +140,7 @@ const content: LandingContent = {
     "Raccontaci il tuo obiettivo e ti aiutiamo a disegnare il flusso conversazionale giusto.",
   ctaSectionFormTitle: "Form di contatto FormKiller",
   ctaSectionFormUnavailable:
-    "Imposta CONTACT_FORM_USERNAME e CONTACT_FORM_SLUG per mostrare il form di contatto incorporato.",
+    "Nessun form home configurato al momento.",
   cookieBanner: {
     title: "Questo sito utilizza cookie",
     description:
@@ -159,12 +158,14 @@ const content: LandingContent = {
   },
 };
 
-export default function HomePageIT() {
+export default async function HomePageIT() {
+  const homeForm = await getPublishedHomeFormQuery();
+
   return (
     <LandingPage
       content={content}
-      contactFormUsername={contactFormUsername}
-      contactFormSlug={contactFormSlug}
+      contactFormUsername={homeForm?.username ?? ""}
+      contactFormSlug={homeForm?.slug ?? ""}
     />
   );
 }

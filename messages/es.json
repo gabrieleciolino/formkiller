@@ -100,6 +100,7 @@
         "type": "Tipo",
         "language": "Idioma",
         "owner": "Propietario",
+        "home": "Home",
         "createdAt": "Creado el",
         "actions": "Acciones",
         "view": "Ver",
@@ -288,6 +289,11 @@
       "instructions": "Instrucciones",
       "instructionsPlaceholder": "Instrucciones",
       "type": "Tipo",
+      "home": "Formulario home",
+      "homeOptions": {
+        "enabled": "Sí",
+        "disabled": "No"
+      },
       "voiceTrigger": "Generar voz",
       "voiceTitle": "Generar voz del formulario",
       "voice": "Voz AI",

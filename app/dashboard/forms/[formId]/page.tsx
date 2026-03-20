@@ -114,7 +114,8 @@ export default async function FormsDetailPage({
             backgroundImageUrl={backgroundImageUrl}
             backgroundMusicUrl={backgroundMusicUrl}
             allowProFeatures={isProEnabled}
-            showAssetControls={false}
+            showAssetControls
+            showIsHomeToggle={false}
           />
         </div>
       }

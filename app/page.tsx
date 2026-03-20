@@ -1,9 +1,8 @@
 import LandingPage, { LandingContent } from "@/app/_components/landing-page";
+import { getPublishedHomeFormQuery } from "@/features/forms/queries";
 import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
 export const metadata = getHomeMetadata("en");
-const contactFormUsername = (process.env.CONTACT_FORM_USERNAME ?? "").trim();
-const contactFormSlug = (process.env.CONTACT_FORM_SLUG ?? "").trim();
 
 const content: LandingContent = {
   nav: {
@@ -133,7 +132,7 @@ const content: LandingContent = {
     "Tell us your goal and we'll help you design the right conversational flow.",
   ctaSectionFormTitle: "FormKiller contact form",
   ctaSectionFormUnavailable:
-    "Set CONTACT_FORM_USERNAME and CONTACT_FORM_SLUG to display the embedded contact form.",
+    "No home form is configured yet.",
   cookieBanner: {
     title: "This site uses cookies",
     description:
@@ -151,12 +150,14 @@ const content: LandingContent = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const homeForm = await getPublishedHomeFormQuery();
+
   return (
     <LandingPage
       content={content}
-      contactFormUsername={contactFormUsername}
-      contactFormSlug={contactFormSlug}
+      contactFormUsername={homeForm?.username ?? ""}
+      contactFormSlug={homeForm?.slug ?? ""}
     />
   );
 }

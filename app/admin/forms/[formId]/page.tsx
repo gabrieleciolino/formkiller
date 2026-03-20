@@ -95,6 +95,7 @@ export default async function AdminFormDetailPage({
             backgroundMusicUrl={backgroundMusicUrl}
             allowProFeatures
             showAssetControls
+            showIsHomeToggle
           />
         </div>
       </div>
@@ -122,6 +123,14 @@ export default async function AdminFormDetailPage({
           <p className="text-sm font-medium">{t("dashboard.forms.columns.owner")}</p>
           <p className="text-sm text-muted-foreground">
             {form.owner_username ?? form.user_id}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{t("dashboard.forms.columns.home")}</p>
+          <p className="text-sm text-muted-foreground">
+            {form.is_home
+              ? t("forms.edit.homeOptions.enabled")
+              : t("forms.edit.homeOptions.disabled")}
           </p>
         </div>
         <div className="col-span-2 space-y-1 md:col-span-4">

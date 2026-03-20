@@ -232,6 +232,10 @@ export default function ChangeFormVoiceSheet({
           throw new Error();
         }
 
+        if (regenerateData.regeneratedQuestionsCount === 0) {
+          throw new Error();
+        }
+
         toast(t("forms.edit.voiceGenerateSuccess"));
         setOpen(false);
         router.refresh();

@@ -100,6 +100,7 @@
         "type": "Type",
         "language": "Language",
         "owner": "Owner",
+        "home": "Home",
         "createdAt": "Created at",
         "actions": "Actions",
         "view": "View",
@@ -250,6 +251,11 @@
       "instructions": "Instructions",
       "instructionsPlaceholder": "Instructions",
       "type": "Type",
+      "home": "Home form",
+      "homeOptions": {
+        "enabled": "Yes",
+        "disabled": "No"
+      },
       "voiceTrigger": "Generate voice",
       "voiceTitle": "Generate form voice",
       "voice": "AI voice",

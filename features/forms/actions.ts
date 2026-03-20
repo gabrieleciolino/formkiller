@@ -141,6 +141,12 @@ async function revalidateFormPaths({
   }
 }
 
+function revalidateHomePaths() {
+  revalidatePath("/");
+  revalidatePath("/it");
+  revalidatePath("/es");
+}
+
 export const createFormAction = authenticatedActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
@@ -333,11 +339,13 @@ export const editFormAction = authenticatedActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { supabase, userRole, userTier } = ctx;
     const isProEnabled = canUseProFeatures({ role: userRole, tier: userTier });
+    const isAdmin = userRole === "admin";
     const {
       formId,
       name,
       type,
       isPublished,
+      isHome,
       theme,
       backgroundImageKey,
       backgroundMusicKey,
@@ -347,9 +355,13 @@ export const editFormAction = authenticatedActionClient
       endMessage,
     } = parsedInput;
 
+    if (!isAdmin && typeof isHome !== "undefined") {
+      throw new Error("Forbidden");
+    }
+
     const { data: currentForm } = await supabase
       .from("form")
-      .select("id, slug, user_id")
+      .select("id, slug, user_id, is_home")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -363,21 +375,49 @@ export const editFormAction = authenticatedActionClient
         }))
       : currentForm.slug;
 
+    if (isAdmin && isHome === true) {
+      await supabase
+        .from("form")
+        .update({ is_home: false })
+        .eq("is_home", true)
+        .neq("id", formId)
+        .throwOnError();
+    }
+
+    const updatePayload: {
+      name: string;
+      type: "mixed" | "default-only" | "voice-only";
+      is_published: boolean;
+      slug: string;
+      theme: "light" | "dark";
+      background_image_key: string | null;
+      background_music_key: string | null;
+      intro_title: string | null;
+      intro_message: string | null;
+      end_title: string | null;
+      end_message: string | null;
+      is_home?: boolean;
+    } = {
+      name,
+      type: isProEnabled ? type : "default-only",
+      is_published: isPublished,
+      slug: nextSlug,
+      theme: theme ?? "dark",
+      background_image_key: backgroundImageKey ?? null,
+      background_music_key: backgroundMusicKey ?? null,
+      intro_title: toNullableText(introTitle),
+      intro_message: toNullableText(introMessage),
+      end_title: toNullableText(endTitle),
+      end_message: toNullableText(endMessage),
+    };
+
+    if (isAdmin && typeof isHome === "boolean") {
+      updatePayload.is_home = isHome;
+    }
+
     const { data: form, error } = await supabase
       .from("form")
-      .update({
-        name,
-        type: isProEnabled ? type : "default-only",
-        is_published: isPublished,
-        slug: nextSlug,
-        theme: theme ?? "dark",
-        background_image_key: backgroundImageKey ?? null,
-        background_music_key: backgroundMusicKey ?? null,
-        intro_title: toNullableText(introTitle),
-        intro_message: toNullableText(introMessage),
-        end_title: toNullableText(endTitle),
-        end_message: toNullableText(endMessage),
-      })
+      .update(updatePayload)
       .eq("id", formId)
       .select()
       .single();
@@ -391,6 +431,10 @@ export const editFormAction = authenticatedActionClient
       formSlug: nextSlug,
       formUserId: currentForm.user_id,
     });
+
+    if (currentForm.is_home || form.is_home) {
+      revalidateHomePaths();
+    }
 
     return form;
   });
@@ -452,8 +496,9 @@ export const regenerateFormQuestionsTTSAction = authenticatedActionClient
       id: string;
       question: string;
     }>;
+    let regeneratedQuestionsCount = 0;
 
-    if (questions.length > 0 && form.type !== "default-only") {
+    if (questions.length > 0) {
       const ttsResults = await Promise.all(
         questions.map((question) =>
           generateTTS({
@@ -465,6 +510,8 @@ export const regenerateFormQuestionsTTSAction = authenticatedActionClient
           }),
         ),
       );
+
+      regeneratedQuestionsCount = ttsResults.length;
 
       await Promise.all(
         questions.map((question, index) =>
@@ -488,7 +535,7 @@ export const regenerateFormQuestionsTTSAction = authenticatedActionClient
     });
 
     return {
-      regeneratedQuestionsCount: questions.length,
+      regeneratedQuestionsCount,
     };
   });
 
@@ -537,7 +584,7 @@ export const editQuestionsAction = authenticatedActionClient
       ),
     );
 
-    if (changedQuestions.length > 0 && isProEnabled && form.type !== "default-only") {
+    if (changedQuestions.length > 0 && isProEnabled) {
       const ttsResults = await Promise.all(
         changedQuestions.map((question) =>
           generateTTS({
@@ -653,12 +700,22 @@ export const deleteFormAction = authenticatedActionClient
     const { supabase } = ctx;
     const { formId } = parsedInput;
 
+    const { data: existingForm } = await supabase
+      .from("form")
+      .select("is_home")
+      .eq("id", formId)
+      .maybeSingle();
+
     const { error } = await supabase.from("form").delete().eq("id", formId);
 
     if (error) throw error;
 
     revalidatePath(urls.dashboard.forms.index);
     revalidatePath(urls.admin.forms.index);
+
+    if (existingForm?.is_home) {
+      revalidateHomePaths();
+    }
   });
 
 export const generateQuestionTTSAction = authenticatedActionClient

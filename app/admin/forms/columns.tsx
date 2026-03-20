@@ -70,6 +70,16 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
       },
     },
     {
+      accessorKey: "is_home",
+      header: t("dashboard.forms.columns.home"),
+      cell: ({ getValue }) => {
+        const isHome = getValue<boolean>();
+        return isHome
+          ? t("forms.edit.homeOptions.enabled")
+          : t("forms.edit.homeOptions.disabled");
+      },
+    },
+    {
       accessorKey: "created_at",
       header: t("dashboard.forms.columns.createdAt"),
       cell: ({ getValue }) => {

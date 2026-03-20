@@ -78,6 +78,7 @@ export const editFormSchema = z.object({
   name: z.string().trim().min(1),
   type: formTypeSchema,
   isPublished: z.boolean(),
+  isHome: z.boolean().optional(),
   theme: formThemeSchema,
   backgroundImageKey: z.string().nullable().optional(),
   backgroundMusicKey: z.string().nullable().optional(),
