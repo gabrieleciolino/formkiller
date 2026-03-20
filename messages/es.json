@@ -88,7 +88,9 @@
         "name": "Nombre",
         "type": "Tipo",
         "language": "Idioma",
-        "instructions": "Instrucciones"
+        "instructions": "Instrucciones",
+        "publish": "Publicar",
+        "publishing": "Publicando..."
       }
     },
     "tests": {

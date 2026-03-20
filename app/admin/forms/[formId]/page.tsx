@@ -1,13 +1,17 @@
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ChangeFormVoiceSheet from "@/features/forms/components/change-form-voice-sheet";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 import GenerateAnalysisSheet from "@/features/forms/components/generate-analysis-sheet";
+import PublishFormButton from "@/features/forms/components/publish-form-button";
 import { getFormByIdQuery } from "@/features/forms/queries";
 import { EditQuestionsType } from "@/features/forms/schema";
 import { adminQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
+import { urls } from "@/lib/urls";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function AdminFormDetailPage({
@@ -44,6 +48,32 @@ export default async function AdminFormDetailPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-medium text-foreground">{form.name}</h2>
         <div className="flex flex-wrap items-center gap-2">
+          {form.is_published ? (
+            form.slug ? (
+              <Button asChild variant="outline">
+                <Link href={urls.form(form.slug)} target="_blank" rel="noreferrer">
+                  {t("dashboard.forms.columns.open")}
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" disabled>
+                {t("dashboard.forms.columns.open")}
+              </Button>
+            )
+          ) : (
+            <PublishFormButton
+              formId={form.id}
+              name={form.name}
+              type={form.type}
+              theme={form.theme}
+              backgroundImageKey={form.background_image_key}
+              backgroundMusicKey={form.background_music_key}
+              introTitle={form.intro_title}
+              introMessage={form.intro_message}
+              endTitle={form.end_title}
+              endMessage={form.end_message}
+            />
+          )}
           <ChangeFormVoiceSheet
             formId={form.id}
             initialVoiceId={form.voice_id}

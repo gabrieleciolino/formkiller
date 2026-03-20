@@ -179,14 +179,25 @@ export default function CreateFormForm({
         };
 
         const {
-          data: triggerData,
+          data: createData,
           serverError,
           validationErrors,
         } = await createFormAction(payload);
 
-        const runId = triggerData?.runId?.trim();
+        if (serverError || validationErrors || !createData) {
+          throw new Error();
+        }
 
-        if (serverError || validationErrors || !runId) {
+        if (createData.status === "completed" && createData.formId) {
+          toast(t("forms.create.success"));
+          router.push(
+            `${detailPathPrefix.replace(/\/$/, "")}/${createData.formId}`,
+          );
+          return;
+        }
+
+        const runId = createData.runId?.trim();
+        if (createData.status !== "processing" || !runId) {
           throw new Error();
         }
 

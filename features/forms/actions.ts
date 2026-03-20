@@ -34,6 +34,12 @@ const getCreateFormStatusSchema = z.object({
   runId: z.string().trim().min(1),
 });
 
+const createFormStartResultSchema = z.object({
+  status: z.enum(["processing", "completed"]),
+  runId: z.string().trim().min(1).nullable(),
+  formId: z.string().uuid().nullable(),
+});
+
 const createFormStatusResultSchema = z.object({
   status: z.enum(["processing", "completed", "failed"]),
   formId: z.string().uuid().nullable(),
@@ -140,14 +146,76 @@ export const createFormAction = authenticatedActionClient
       source: parsedInput.name,
     });
 
+    if (!isProEnabled) {
+      const manualQuestions = (parsedInput.questions ?? [])
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map((question, questionIndex) => ({
+          question: question.question,
+          order: questionIndex,
+          default_answers: question.default_answers
+            .slice()
+            .sort((a, b) => a.order - b.order)
+            .map((answer, answerIndex) => ({
+              answer: answer.answer,
+              order: answerIndex,
+            })),
+        }));
+
+      const { data: form } = await supabase
+        .from("form")
+        .insert({
+          user_id: userId,
+          name: parsedInput.name,
+          slug,
+          is_published: parsedInput.isPublished ?? false,
+          instructions: "",
+          type: "default-only",
+          language: parsedInput.language,
+          voice_id: null,
+        })
+        .select("id, slug")
+        .single()
+        .throwOnError();
+
+      try {
+        if (manualQuestions.length > 0) {
+          await supabase
+            .from("question")
+            .insert(
+              manualQuestions.map((question) => ({
+                ...question,
+                user_id: userId,
+                form_id: form.id,
+              })),
+            )
+            .throwOnError();
+        }
+      } catch (error) {
+        await supabase.from("form").delete().eq("id", form.id).throwOnError();
+        throw error;
+      }
+
+      await revalidateFormPaths({
+        formId: form.id,
+        formSlug: form.slug,
+      });
+
+      return createFormStartResultSchema.parse({
+        status: "completed",
+        runId: null,
+        formId: form.id,
+      });
+    }
+
     const handle = await formCreateTask.trigger(
       {
         ...parsedInput,
         userId,
-        type: isProEnabled ? parsedInput.type : "default-only",
-        instructions: isProEnabled ? parsedInput.instructions : "",
-        voiceId: isProEnabled ? parsedInput.voiceId : undefined,
-        allowAiAndVoice: isProEnabled,
+        type: parsedInput.type,
+        instructions: parsedInput.instructions,
+        voiceId: parsedInput.voiceId,
+        allowAiAndVoice: true,
         slug,
         isPublished: parsedInput.isPublished ?? false,
       },
@@ -156,9 +224,11 @@ export const createFormAction = authenticatedActionClient
       },
     );
 
-    return {
+    return createFormStartResultSchema.parse({
+      status: "processing",
       runId: handle.id,
-    };
+      formId: null,
+    });
   });
 
 export const getCreateFormStatusAction = authenticatedActionClient
