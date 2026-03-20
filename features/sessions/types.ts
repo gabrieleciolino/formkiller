@@ -1,7 +1,11 @@
 import {
-  getAdminSessionsQuery,
-  getUserSessionsQuery,
+  getAdminSessionsTableQuery,
+  getUserSessionsTableQuery,
 } from "@/features/sessions/queries";
 
-export type UserSession = Awaited<ReturnType<typeof getUserSessionsQuery>>[0];
-export type AdminSession = Awaited<ReturnType<typeof getAdminSessionsQuery>>[0];
+export type UserSession = Awaited<
+  ReturnType<typeof getUserSessionsTableQuery>
+>["items"][number];
+export type AdminSession = Awaited<
+  ReturnType<typeof getAdminSessionsTableQuery>
+>["items"][number];

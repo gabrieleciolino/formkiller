@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -32,10 +33,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} ${openSans.variable}`}>
       <body className="antialiased">
-        <NextIntlClientProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-          <Toaster />
-        </NextIntlClientProvider>
+        <NuqsAdapter>
+          <NextIntlClientProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+            <Toaster />
+          </NextIntlClientProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

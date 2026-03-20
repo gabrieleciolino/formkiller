@@ -63,7 +63,7 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
       },
     },
     {
-      accessorKey: "user_id",
+      accessorKey: "owner_username",
       header: t("dashboard.forms.columns.owner"),
       cell: ({ getValue }) => {
         return getValue<string | null>() ?? "—";

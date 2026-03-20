@@ -1,11 +1,23 @@
 import AdminSessionsTable from "@/app/admin/sessions/table";
-import { getAdminSessionsQuery } from "@/features/sessions/queries";
+import SessionsTableControls from "@/features/sessions/components/sessions-table-controls";
+import { getAdminSessionsTableQuery } from "@/features/sessions/queries";
+import { sessionsTableSearchParamsParsers } from "@/features/sessions/table-search-params";
 import { adminQuery } from "@/lib/queries";
 import { getTranslations } from "next-intl/server";
+import { createLoader } from "nuqs/server";
 
-export default async function AdminSessionsPage() {
-  const [sessions, t] = await Promise.all([
-    adminQuery(async ({ supabase }) => getAdminSessionsQuery({ supabase })),
+const loadSessionsTableSearchParams = createLoader(sessionsTableSearchParamsParsers);
+
+export default async function AdminSessionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await loadSessionsTableSearchParams(searchParams);
+  const [sessionsResult, t] = await Promise.all([
+    adminQuery(async ({ supabase }) =>
+      getAdminSessionsTableQuery({ supabase, params }),
+    ),
     getTranslations(),
   ]);
 
@@ -14,7 +26,12 @@ export default async function AdminSessionsPage() {
       <h2 className="text-lg font-medium text-foreground">
         {t("dashboard.sessions.title")}
       </h2>
-      <AdminSessionsTable data={sessions} />
+      <SessionsTableControls
+        page={params.page}
+        total={sessionsResult.total}
+        totalPages={sessionsResult.totalPages}
+      />
+      <AdminSessionsTable data={sessionsResult.items} />
     </div>
   );
 }

@@ -39,6 +39,21 @@
       "library": "Library",
       "logout": "Logout"
     },
+    "table": {
+      "search": "Search",
+      "clear": "Reset",
+      "all": "All",
+      "sortBy": "Sort by",
+      "direction": {
+        "label": "Direction",
+        "desc": "Descending",
+        "asc": "Ascending"
+      },
+      "results": "{count} results",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {totalPages}"
+    },
     "library": {
       "title": "Library",
       "empty": "No files uploaded yet.",
@@ -59,6 +74,9 @@
     },
     "sessions": {
       "title": "Sessions",
+      "search": {
+        "placeholder": "Search by form or username"
+      },
       "columns": {
         "form": "Form",
         "status": "Status",
@@ -74,6 +92,9 @@
     },
     "forms": {
       "title": "Forms",
+      "search": {
+        "placeholder": "Search by name or owner"
+      },
       "columns": {
         "name": "Name",
         "type": "Type",
@@ -125,6 +146,9 @@
     },
     "leads": {
       "title": "Leads",
+      "search": {
+        "placeholder": "Search by name, email or phone"
+      },
       "detail": {
         "back": "Back",
         "contact": "Contact",
@@ -147,9 +171,13 @@
     },
     "users": {
       "title": "Users",
+      "search": {
+        "placeholder": "Search by username or email"
+      },
       "empty": "No users found.",
       "columns": {
         "userId": "User ID",
+        "username": "Username",
         "email": "Email",
         "role": "Role",
         "tier": "Plan",

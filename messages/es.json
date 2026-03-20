@@ -39,6 +39,21 @@
       "library": "Biblioteca",
       "logout": "Cerrar sesión"
     },
+    "table": {
+      "search": "Buscar",
+      "clear": "Restablecer",
+      "all": "Todos",
+      "sortBy": "Ordenar por",
+      "direction": {
+        "label": "Dirección",
+        "desc": "Descendente",
+        "asc": "Ascendente"
+      },
+      "results": "{count} resultados",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Página {page} de {totalPages}"
+    },
     "library": {
       "title": "Biblioteca",
       "empty": "No hay archivos cargados.",
@@ -59,6 +74,9 @@
     },
     "sessions": {
       "title": "Sesiones",
+      "search": {
+        "placeholder": "Buscar por formulario o usuario"
+      },
       "columns": {
         "form": "Formulario",
         "status": "Estado",
@@ -74,6 +92,9 @@
     },
     "forms": {
       "title": "Formularios",
+      "search": {
+        "placeholder": "Buscar por nombre o propietario"
+      },
       "columns": {
         "name": "Nombre",
         "type": "Tipo",
@@ -125,6 +146,9 @@
     },
     "leads": {
       "title": "Contactos",
+      "search": {
+        "placeholder": "Buscar por nombre, email o teléfono"
+      },
       "detail": {
         "back": "Volver",
         "contact": "Contacto",
@@ -147,9 +171,13 @@
     },
     "users": {
       "title": "Usuarios",
+      "search": {
+        "placeholder": "Buscar por usuario o email"
+      },
       "empty": "No se encontraron usuarios.",
       "columns": {
         "userId": "User ID",
+        "username": "Usuario",
         "email": "Email",
         "role": "Rol",
         "tier": "Plan",

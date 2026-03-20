@@ -1,11 +1,26 @@
 import AdminLeadsTable from "@/app/admin/leads/table";
-import { getAdminLeadsQuery } from "@/features/leads/queries";
+import LeadsTableControls from "@/features/leads/components/leads-table-controls";
+import { getAdminLeadsTableQuery } from "@/features/leads/queries";
+import { leadsTableSearchParamsParsers } from "@/features/leads/table-search-params";
 import { adminQuery } from "@/lib/queries";
 import { getTranslations } from "next-intl/server";
+import { createLoader } from "nuqs/server";
 
-export default async function AdminLeadsPage() {
-  const [leads, t] = await Promise.all([
-    adminQuery(async ({ supabase }) => getAdminLeadsQuery({ supabase })),
+const loadLeadsTableSearchParams = createLoader(leadsTableSearchParamsParsers);
+
+export default async function AdminLeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await loadLeadsTableSearchParams(searchParams);
+  const [leadsResult, t] = await Promise.all([
+    adminQuery(async ({ supabase }) =>
+      getAdminLeadsTableQuery({
+        supabase,
+        params,
+      }),
+    ),
     getTranslations(),
   ]);
 
@@ -14,7 +29,12 @@ export default async function AdminLeadsPage() {
       <h2 className="text-lg font-medium text-foreground">
         {t("dashboard.leads.title")}
       </h2>
-      <AdminLeadsTable data={leads} />
+      <LeadsTableControls
+        page={params.page}
+        total={leadsResult.total}
+        totalPages={leadsResult.totalPages}
+      />
+      <AdminLeadsTable data={leadsResult.items} />
     </div>
   );
 }

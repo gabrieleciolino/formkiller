@@ -7,14 +7,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateUserSheet from "@/features/users/components/create-user-sheet";
+import UsersTableControls from "@/features/users/components/users-table-controls";
 import UserTierToggle from "@/features/users/components/user-tier-toggle";
-import { getAdminUsersQuery } from "@/features/users/queries";
+import { getAdminUsersTableQuery } from "@/features/users/queries";
+import { usersTableSearchParamsParsers } from "@/features/users/table-search-params";
 import { adminQuery } from "@/lib/queries";
 import { getTranslations } from "next-intl/server";
+import { createLoader } from "nuqs/server";
 
-export default async function AdminUsersPage() {
-  const [users, t] = await Promise.all([
-    adminQuery(async () => getAdminUsersQuery()),
+const loadUsersTableSearchParams = createLoader(usersTableSearchParamsParsers);
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await loadUsersTableSearchParams(searchParams);
+  const [usersResult, t] = await Promise.all([
+    adminQuery(async () => getAdminUsersTableQuery({ params })),
     getTranslations(),
   ]);
 
@@ -27,11 +37,17 @@ export default async function AdminUsersPage() {
         <CreateUserSheet />
       </div>
 
+      <UsersTableControls
+        page={params.page}
+        total={usersResult.total}
+        totalPages={usersResult.totalPages}
+      />
+
       <div className="rounded-lg border border-border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("dashboard.users.columns.userId")}</TableHead>
+              <TableHead>{t("dashboard.users.columns.username")}</TableHead>
               <TableHead>{t("dashboard.users.columns.email")}</TableHead>
               <TableHead>{t("dashboard.users.columns.role")}</TableHead>
               <TableHead>{t("dashboard.users.columns.tier")}</TableHead>
@@ -40,7 +56,7 @@ export default async function AdminUsersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
+            {usersResult.items.length === 0 ? (
               <TableRow>
                 <TableCell
                   className="text-muted-foreground"
@@ -50,9 +66,9 @@ export default async function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              usersResult.items.map((user) => (
                 <TableRow key={user.user_id}>
-                  <TableCell className="font-mono text-xs">{user.user_id}</TableCell>
+                  <TableCell className="font-mono text-xs">{user.username}</TableCell>
                   <TableCell>{user.email ?? "—"}</TableCell>
                   <TableCell>
                     {t(

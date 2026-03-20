@@ -25,8 +25,8 @@ export function useAdminSessionsColumns(): ColumnDef<AdminSession>[] {
       },
     },
     {
-      accessorKey: "user_id",
-      header: t("dashboard.users.columns.userId"),
+      accessorKey: "username",
+      header: t("dashboard.users.columns.username"),
       cell: ({ getValue }) => (
         <span className="font-mono text-xs">{getValue<string | null>() ?? "—"}</span>
       ),

@@ -1,5 +1,13 @@
 import { TypedSupabaseClient } from "@/lib/supabase/types";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { FormTableSearchParams } from "@/features/forms/table-search-params";
+import { getUserIdsByUsernameSearch, getUsernamesByUserId } from "@/lib/account-usernames";
+import {
+  TABLE_PAGE_SIZE,
+  buildPaginatedResult,
+  getPageRange,
+  type PaginatedResult,
+} from "@/lib/pagination";
 import {
   endAdminTrace,
   startAdminTrace,
@@ -35,27 +43,169 @@ type PublicViewerFormRow = {
 
 export type PublicViewerForm = PublicViewerFormRow;
 
-async function getUsernamesByUserId(userIds: string[]) {
-  const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
-  if (uniqueUserIds.length === 0) {
-    return new Map<string, string>();
-  }
-
-  const { data: accounts, error } = await supabaseAdmin
-    .from("account")
-    .select("user_id, username")
-    .in("user_id", uniqueUserIds);
-
-  if (error) throw error;
-
-  return new Map(
-    (accounts ?? []).map((account) => [account.user_id, account.username]),
-  );
-}
-
 async function getUsernameByUserId(userId: string) {
   const usernamesByUserId = await getUsernamesByUserId([userId]);
   return usernamesByUserId.get(userId) ?? null;
+}
+
+function normalizeSearchTerm(value: string) {
+  return value.trim();
+}
+
+type EqFilterQuery<T> = {
+  eq: (column: string, value: string) => T;
+};
+
+function applyFormListFilters<T extends EqFilterQuery<T>>(
+  query: T,
+  {
+    userId,
+    language,
+    type,
+  }: {
+    userId?: string;
+    language: FormTableSearchParams["language"];
+    type: FormTableSearchParams["type"];
+  },
+): T {
+  let nextQuery = query;
+
+  if (userId) {
+    nextQuery = nextQuery.eq("user_id", userId);
+  }
+
+  if (language !== "all") {
+    nextQuery = nextQuery.eq("language", language);
+  }
+
+  if (type !== "all") {
+    nextQuery = nextQuery.eq("type", type);
+  }
+
+  return nextQuery;
+}
+
+async function getMatchingFormIdsForSearch({
+  supabase,
+  userId,
+  searchTerm,
+  language,
+  type,
+}: {
+  supabase: TypedSupabaseClient;
+  userId?: string;
+  searchTerm: string;
+  language: FormTableSearchParams["language"];
+  type: FormTableSearchParams["type"];
+}) {
+  const ownerUserIds = await getUserIdsByUsernameSearch(searchTerm);
+
+  const [formsByNameResult, formsByOwnerResult] = await Promise.all([
+    applyFormListFilters(
+      supabase.from("form").select("id").ilike("name", `%${searchTerm}%`),
+      { userId, language, type },
+    ),
+    ownerUserIds.length > 0
+      ? applyFormListFilters(
+          supabase
+            .from("form")
+            .select("id")
+            .in("user_id", ownerUserIds),
+          { userId, language, type },
+        )
+      : Promise.resolve({ data: [] as Array<{ id: string }>, error: null }),
+  ]);
+
+  if (formsByNameResult.error) throw formsByNameResult.error;
+  if (formsByOwnerResult.error) throw formsByOwnerResult.error;
+
+  const ids = new Set<string>();
+
+  for (const row of formsByNameResult.data ?? []) {
+    ids.add(row.id);
+  }
+
+  for (const row of formsByOwnerResult.data ?? []) {
+    ids.add(row.id);
+  }
+
+  return [...ids];
+}
+
+type FormListItem = Awaited<ReturnType<typeof getUserFormsQuery>>[number];
+
+async function getFormsTableQuery({
+  supabase,
+  params,
+  userId,
+}: {
+  supabase: TypedSupabaseClient;
+  params: FormTableSearchParams;
+  userId?: string;
+}): Promise<PaginatedResult<FormListItem>> {
+  const { safePage, from, to } = getPageRange(params.page, TABLE_PAGE_SIZE);
+  const searchTerm = normalizeSearchTerm(params.q);
+
+  let query = applyFormListFilters(
+    supabase
+      .from("form")
+      .select(
+        "id, user_id, name, slug, type, language, is_published, instructions, theme, created_at, updated_at, voice_id, voice_speed, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, analysis_instructions, questions:question(*)",
+        { count: "exact" },
+      ),
+    {
+      userId,
+      language: params.language,
+      type: params.type,
+    },
+  );
+
+  if (searchTerm) {
+    const matchingIds = await getMatchingFormIdsForSearch({
+      supabase,
+      userId,
+      searchTerm,
+      language: params.language,
+      type: params.type,
+    });
+
+    if (matchingIds.length === 0) {
+      return buildPaginatedResult({
+        items: [],
+        total: 0,
+        page: safePage,
+        pageSize: TABLE_PAGE_SIZE,
+      });
+    }
+
+    query = query.in("id", matchingIds);
+  }
+
+  if (params.sort === "name") {
+    query = query.order("name", { ascending: params.dir === "asc" });
+  } else {
+    query = query.order("created_at", { ascending: params.dir === "asc" });
+  }
+
+  const { data, error, count } = await query.range(from, to);
+
+  if (error) throw error;
+
+  const forms = data ?? [];
+  const usernamesByUserId = await getUsernamesByUserId(
+    forms.map((form) => form.user_id),
+  );
+  const items = forms.map((form) => ({
+    ...form,
+    owner_username: usernamesByUserId.get(form.user_id) ?? null,
+  }));
+
+  return buildPaginatedResult({
+    items,
+    total: count ?? 0,
+    page: safePage,
+    pageSize: TABLE_PAGE_SIZE,
+  });
 }
 
 export const getUserFormsQuery = async ({
@@ -121,6 +271,35 @@ export const getAdminFormsQuery = async ({
   } finally {
     endAdminTrace(trace, { status, rowCount });
   }
+};
+
+export const getUserFormsTableQuery = async ({
+  userId,
+  supabase,
+  params,
+}: {
+  userId: string;
+  supabase: TypedSupabaseClient;
+  params: FormTableSearchParams;
+}) => {
+  return getFormsTableQuery({
+    userId,
+    supabase,
+    params,
+  });
+};
+
+export const getAdminFormsTableQuery = async ({
+  supabase,
+  params,
+}: {
+  supabase: TypedSupabaseClient;
+  params: FormTableSearchParams;
+}) => {
+  return getFormsTableQuery({
+    supabase,
+    params,
+  });
 };
 
 export const getFormByIdQuery = async ({
