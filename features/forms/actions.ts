@@ -2,27 +2,28 @@
 
 import {
   addQuestionSchema,
-  assignFormUserSchema,
   createFormSchema,
   deleteFormSchema,
   deleteQuestionSchema,
   editFormSchema,
   editQuestionsSchema,
+  type FormLanguage,
   generateAnalysisInstructionsSchema,
-  getElevenLabsVoicesSchema,
   generateQuestionTTSSchema,
+  getElevenLabsVoicesSchema,
+  regenerateFormQuestionsTTSSchema,
   saveAnalysisInstructionsSchema,
-  unassignFormUserSchema,
+  updateFormVoiceSchema,
 } from "@/features/forms/schema";
-import { adminActionClient } from "@/lib/actions";
-import {
-  generateFormAnalysisInstructions,
-} from "@/lib/ai/functions";
+import { canUseProFeatures } from "@/lib/account";
+import { authenticatedActionClient } from "@/lib/actions";
+import { generateFormAnalysisInstructions } from "@/lib/ai/functions";
 import {
   generateTTS,
   getDefaultElevenLabsVoiceId,
   getElevenLabsVoices,
 } from "@/lib/elevenlabs/functions";
+import type { TypedSupabaseClient } from "@/lib/supabase/types";
 import { formCreateTask } from "@/trigger/form-create";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
@@ -47,14 +48,108 @@ const TERMINAL_FAILURE_STATUSES = new Set([
   "TIMED_OUT",
 ]);
 
-export const createFormAction = adminActionClient
+const toNullableText = (value: string) => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const slugify = (value: string) => {
+  const base = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 72);
+
+  return base.length > 0 ? base : "form";
+};
+
+async function createUniqueFormSlug({
+  supabase,
+  source,
+  excludeFormId,
+}: {
+  supabase: TypedSupabaseClient;
+  source: string;
+  excludeFormId?: string;
+}) {
+  const base = slugify(source);
+  let slug = base;
+  let suffix = 2;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("form")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data || data.id === excludeFormId) {
+      return slug;
+    }
+
+    slug = `${base}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+function requireProFeatures(params: { userRole: "admin" | "user"; userTier: "free" | "pro" }) {
+  if (!canUseProFeatures({ role: params.userRole, tier: params.userTier })) {
+    throw new Error("Pro feature not available on your account");
+  }
+}
+
+async function revalidateFormPaths({
+  formId,
+  formSlug,
+}: {
+  formId: string;
+  formSlug?: string | null;
+}) {
+  revalidatePath(urls.dashboard.forms.index);
+  revalidatePath(urls.dashboard.forms.detail(formId));
+  revalidatePath(urls.admin.forms.index);
+  revalidatePath(urls.admin.forms.detail(formId));
+  if (formSlug) {
+    revalidatePath(urls.form(formSlug));
+  }
+}
+
+export const createFormAction = authenticatedActionClient
   .inputSchema(createFormSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { userId } = ctx;
+    const { userId, userRole, userTier, supabase } = ctx;
+    const isProEnabled = canUseProFeatures({ role: userRole, tier: userTier });
+    const hasManualQuestions = (parsedInput.questions?.length ?? 0) > 0;
+    const hasInstructions = parsedInput.instructions.trim().length > 0;
+
+    if (!isProEnabled && !hasManualQuestions) {
+      throw new Error("Free users can create forms only with manual questions");
+    }
+    if (isProEnabled && !hasManualQuestions && !hasInstructions) {
+      throw new Error("Provide instructions or manual questions");
+    }
+
+    const slug = await createUniqueFormSlug({
+      supabase,
+      source: parsedInput.name,
+    });
+
     const handle = await formCreateTask.trigger(
       {
         ...parsedInput,
         userId,
+        type: isProEnabled ? parsedInput.type : "default-only",
+        instructions: isProEnabled ? parsedInput.instructions : "",
+        voiceId: isProEnabled ? parsedInput.voiceId : undefined,
+        allowAiAndVoice: isProEnabled,
+        slug,
+        isPublished: parsedInput.isPublished ?? false,
       },
       {
         maxAttempts: 1,
@@ -66,7 +161,7 @@ export const createFormAction = adminActionClient
     };
   });
 
-export const getCreateFormStatusAction = adminActionClient
+export const getCreateFormStatusAction = authenticatedActionClient
   .inputSchema(getCreateFormStatusSchema)
   .action(async ({ parsedInput }) => {
     try {
@@ -88,10 +183,7 @@ export const getCreateFormStatusAction = adminActionClient
           | undefined;
 
         if (output?.status === "completed" && typeof output.formId === "string") {
-          revalidatePath(urls.dashboard.forms.index);
-          revalidatePath(urls.admin.forms.index);
-          revalidatePath(urls.dashboard.forms.detail(output.formId));
-          revalidatePath(urls.admin.forms.detail(output.formId));
+          await revalidateFormPaths({ formId: output.formId });
 
           return createFormStatusResultSchema.parse({
             status: "completed",
@@ -129,23 +221,27 @@ export const getCreateFormStatusAction = adminActionClient
     }
   });
 
-export const getElevenLabsVoicesAction = adminActionClient
+export const getElevenLabsVoicesAction = authenticatedActionClient
   .inputSchema(getElevenLabsVoicesSchema)
-  .action(async () => {
+  .action(async ({ ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
     const voices = await getElevenLabsVoices();
     const defaultVoiceId = getDefaultElevenLabsVoiceId();
 
     return { voices, defaultVoiceId };
   });
 
-export const editFormAction = adminActionClient
+export const editFormAction = authenticatedActionClient
   .inputSchema(editFormSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase } = ctx;
+    const { supabase, userRole, userTier } = ctx;
+    const isProEnabled = canUseProFeatures({ role: userRole, tier: userTier });
     const {
       formId,
       name,
       type,
+      isPublished,
       theme,
       backgroundImageKey,
       backgroundMusicKey,
@@ -155,16 +251,29 @@ export const editFormAction = adminActionClient
       endMessage,
     } = parsedInput;
 
-    const toNullableText = (value: string) => {
-      const trimmed = value.trim();
-      return trimmed.length > 0 ? trimmed : null;
-    };
+    const { data: currentForm } = await supabase
+      .from("form")
+      .select("id, slug")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
+
+    const nextSlug = isPublished
+      ? currentForm.slug?.trim() ||
+        (await createUniqueFormSlug({
+          supabase,
+          source: name,
+          excludeFormId: formId,
+        }))
+      : currentForm.slug;
 
     const { data: form, error } = await supabase
       .from("form")
       .update({
         name,
-        type,
+        type: isProEnabled ? type : "default-only",
+        is_published: isPublished,
+        slug: nextSlug,
         theme: theme ?? "dark",
         background_image_key: backgroundImageKey ?? null,
         background_music_key: backgroundMusicKey ?? null,
@@ -181,19 +290,113 @@ export const editFormAction = adminActionClient
       throw error;
     }
 
-    revalidatePath(urls.dashboard.forms.index);
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.index);
-    revalidatePath(urls.admin.forms.detail(formId));
+    await revalidateFormPaths({
+      formId,
+      formSlug: nextSlug,
+    });
 
     return form;
   });
 
-export const editQuestionsAction = adminActionClient
+export const updateFormVoiceAction = authenticatedActionClient
+  .inputSchema(updateFormVoiceSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
+    const { supabase } = ctx;
+    const { formId, voiceId, voiceSpeed } = parsedInput;
+    const normalizedVoiceId = voiceId.trim();
+    const normalizedVoiceSpeed = Math.round(voiceSpeed * 100) / 100;
+
+    const { data: form } = await supabase
+      .from("form")
+      .update({
+        voice_id: normalizedVoiceId,
+        voice_speed: normalizedVoiceSpeed,
+      })
+      .eq("id", formId)
+      .select("id, slug")
+      .single()
+      .throwOnError();
+
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
+
+    return {
+      voiceId: normalizedVoiceId,
+      voiceSpeed: normalizedVoiceSpeed,
+    };
+  });
+
+export const regenerateFormQuestionsTTSAction = authenticatedActionClient
+  .inputSchema(regenerateFormQuestionsTTSSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
+    const { supabase } = ctx;
+    const { formId } = parsedInput;
+
+    const { data: form } = await supabase
+      .from("form")
+      .select("language, type, slug, voice_id, voice_speed, questions:question(id, question)")
+      .eq("id", formId)
+      .order("order", { referencedTable: "question", ascending: true })
+      .single()
+      .throwOnError();
+
+    const language = (form.language ?? "it") as FormLanguage;
+    const voiceSpeed = typeof form.voice_speed === "number" ? form.voice_speed : null;
+    const questions = (form.questions ?? []) as Array<{
+      id: string;
+      question: string;
+    }>;
+
+    if (questions.length > 0 && form.type !== "default-only") {
+      const ttsResults = await Promise.all(
+        questions.map((question) =>
+          generateTTS({
+            text: question.question,
+            formId,
+            language,
+            voiceId: form.voice_id,
+            voiceSpeed,
+          }),
+        ),
+      );
+
+      await Promise.all(
+        questions.map((question, index) =>
+          supabase
+            .from("question")
+            .update({
+              file_key: ttsResults[index].key,
+              file_generated_at: new Date().toUTCString(),
+            })
+            .eq("id", question.id)
+            .eq("form_id", formId)
+            .throwOnError(),
+        ),
+      );
+    }
+
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
+
+    return {
+      regeneratedQuestionsCount: questions.length,
+    };
+  });
+
+export const editQuestionsAction = authenticatedActionClient
   .inputSchema(editQuestionsSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { supabase } = ctx;
+    const { supabase, userRole, userTier } = ctx;
     const { questions, formId, language } = parsedInput;
+    const isProEnabled = canUseProFeatures({ role: userRole, tier: userTier });
 
     const ids = questions.map((question) => question.id);
 
@@ -214,7 +417,7 @@ export const editQuestionsAction = adminActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("voice_id")
+      .select("slug, type, voice_id, voice_speed")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -233,7 +436,7 @@ export const editQuestionsAction = adminActionClient
       ),
     );
 
-    if (changedQuestions.length > 0) {
+    if (changedQuestions.length > 0 && isProEnabled && form.type !== "default-only") {
       const ttsResults = await Promise.all(
         changedQuestions.map((question) =>
           generateTTS({
@@ -241,6 +444,7 @@ export const editQuestionsAction = adminActionClient
             formId,
             language,
             voiceId: form.voice_id,
+            voiceSpeed: form.voice_speed,
           }),
         ),
       );
@@ -260,13 +464,15 @@ export const editQuestionsAction = adminActionClient
       );
     }
 
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.detail(formId));
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
 
     return questions;
   });
 
-export const addQuestionAction = adminActionClient
+export const addQuestionAction = authenticatedActionClient
   .inputSchema(addQuestionSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
@@ -274,7 +480,7 @@ export const addQuestionAction = adminActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("user_id")
+      .select("user_id, slug")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -304,15 +510,24 @@ export const addQuestionAction = adminActionClient
       })
       .throwOnError();
 
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.detail(formId));
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
   });
 
-export const deleteQuestionAction = adminActionClient
+export const deleteQuestionAction = authenticatedActionClient
   .inputSchema(deleteQuestionSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
     const { questionId, formId } = parsedInput;
+
+    const { data: form } = await supabase
+      .from("form")
+      .select("slug")
+      .eq("id", formId)
+      .single()
+      .throwOnError();
 
     const { error } = await supabase
       .from("question")
@@ -322,11 +537,13 @@ export const deleteQuestionAction = adminActionClient
 
     if (error) throw error;
 
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.detail(formId));
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
   });
 
-export const deleteFormAction = adminActionClient
+export const deleteFormAction = authenticatedActionClient
   .inputSchema(deleteFormSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
@@ -340,9 +557,11 @@ export const deleteFormAction = adminActionClient
     revalidatePath(urls.admin.forms.index);
   });
 
-export const generateQuestionTTSAction = adminActionClient
+export const generateQuestionTTSAction = authenticatedActionClient
   .inputSchema(generateQuestionTTSSchema)
   .action(async ({ parsedInput, ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
     const { supabase } = ctx;
     const { questionId, formId, language } = parsedInput;
 
@@ -358,7 +577,7 @@ export const generateQuestionTTSAction = adminActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("voice_id")
+      .select("slug, voice_id, voice_speed")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -368,6 +587,7 @@ export const generateQuestionTTSAction = adminActionClient
       formId,
       language,
       voiceId: form.voice_id,
+      voiceSpeed: form.voice_speed,
     });
 
     await supabase
@@ -380,15 +600,19 @@ export const generateQuestionTTSAction = adminActionClient
       .eq("form_id", formId)
       .throwOnError();
 
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.detail(formId));
+    await revalidateFormPaths({
+      formId,
+      formSlug: form.slug,
+    });
 
     return { url };
   });
 
-export const generateFormAnalysisInstructionsAction = adminActionClient
+export const generateFormAnalysisInstructionsAction = authenticatedActionClient
   .inputSchema(generateAnalysisInstructionsSchema)
   .action(async ({ parsedInput, ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
     const { supabase } = ctx;
     const { formId, additionalPrompt } = parsedInput;
 
@@ -405,6 +629,7 @@ export const generateFormAnalysisInstructionsAction = adminActionClient
       order: number;
       default_answers: Array<{ answer: string; order: number }>;
     }>;
+
     if (!questions || questions.length === 0) {
       throw new Error("Form has no questions.");
     }
@@ -412,10 +637,7 @@ export const generateFormAnalysisInstructionsAction = adminActionClient
     const normalizedQuestions = questions.map((question) => ({
       order: question.order,
       question: question.question,
-      defaultAnswers: (question.default_answers as Array<{
-        answer: string;
-        order: number;
-      }>).map((answer) => ({
+      defaultAnswers: question.default_answers.map((answer) => ({
         answer: answer.answer,
         order: answer.order,
       })),
@@ -431,66 +653,30 @@ export const generateFormAnalysisInstructionsAction = adminActionClient
     return { analysisInstructions };
   });
 
-export const saveFormAnalysisInstructionsAction = adminActionClient
+export const saveFormAnalysisInstructionsAction = authenticatedActionClient
   .inputSchema(saveAnalysisInstructionsSchema)
   .action(async ({ parsedInput, ctx }) => {
+    requireProFeatures({ userRole: ctx.userRole, userTier: ctx.userTier });
+
     const { supabase } = ctx;
     const { formId, analysisInstructions } = parsedInput;
 
     const trimmed = analysisInstructions.trim();
 
-    await supabase
+    const { data: form } = await supabase
       .from("form")
       .update({
         analysis_instructions: trimmed.length > 0 ? trimmed : null,
       })
       .eq("id", formId)
+      .select("id, slug")
+      .single()
       .throwOnError();
 
-    revalidatePath(urls.dashboard.forms.detail(formId));
-    revalidatePath(urls.admin.forms.detail(formId));
-    revalidatePath(urls.dashboard.forms.index);
-    revalidatePath(urls.admin.forms.index);
+    await revalidateFormPaths({
+      formId: form.id,
+      formSlug: form.slug,
+    });
 
     return { analysisInstructions: trimmed.length > 0 ? trimmed : null };
-  });
-
-export const assignUserToFormAction = adminActionClient
-  .inputSchema(assignFormUserSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const { supabase, userId: adminUserId } = ctx;
-    const { formId, userId } = parsedInput;
-
-    await supabase
-      .from("form_assignment")
-      .upsert(
-        {
-          form_id: formId,
-          user_id: userId,
-          assigned_by: adminUserId,
-          active: true,
-        },
-        { onConflict: "form_id,user_id" },
-      )
-      .throwOnError();
-
-    revalidatePath(urls.admin.forms.detail(formId));
-    revalidatePath(urls.dashboard.forms.index);
-  });
-
-export const unassignUserFromFormAction = adminActionClient
-  .inputSchema(unassignFormUserSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const { supabase } = ctx;
-    const { formId, userId } = parsedInput;
-
-    await supabase
-      .from("form_assignment")
-      .update({ active: false })
-      .eq("form_id", formId)
-      .eq("user_id", userId)
-      .throwOnError();
-
-    revalidatePath(urls.admin.forms.detail(formId));
-    revalidatePath(urls.dashboard.forms.index);
   });

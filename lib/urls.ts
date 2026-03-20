@@ -2,6 +2,7 @@ export const urls = {
   home: "/",
   auth: {
     login: "/auth/login",
+    register: "/auth/register",
   },
   admin: {
     index: "/admin",
@@ -9,11 +10,6 @@ export const urls = {
       index: "/admin/forms",
       create: "/admin/forms/create",
       detail: (formId: string) => `/admin/forms/${formId}`,
-    },
-    tests: {
-      index: "/admin/tests",
-      create: "/admin/tests/create",
-      detail: (testId: string) => `/admin/tests/${testId}`,
     },
     users: {
       index: "/admin/users",
@@ -47,7 +43,5 @@ export const urls = {
       index: "/dashboard/library",
     },
   },
-  form: (assignmentId: string) => `/form/${assignmentId}`,
-  test: (slug: string) => `/test/${slug}`,
-  tests: "/tests",
+  form: (slug: string) => `/form/${slug}`,
 };

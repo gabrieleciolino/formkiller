@@ -1,5 +1,11 @@
 import "server-only";
 
+import {
+  DEFAULT_ACCOUNT_TIER,
+  isAdminRole,
+  type AccountRole,
+  type AccountTier,
+} from "@/lib/account";
 import { setZodLocale } from "@/lib/zod/locale";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -78,25 +84,33 @@ export const authenticatedActionClient = publicActionClient.use(
       throw new ActionAccessError("Unauthorized");
     }
 
-    return next({ ctx: { ...ctx, userId } });
+    const { data: account } = await supabase
+      .from("account")
+      .select("role, tier")
+      .eq("user_id", userId)
+      .single()
+      .throwOnError();
+
+    const role = account.role as AccountRole;
+    const tier = (account.tier ?? DEFAULT_ACCOUNT_TIER) as AccountTier;
+
+    return next({
+      ctx: {
+        ...ctx,
+        userId,
+        userRole: role,
+        userTier: tier,
+      },
+    });
   },
 );
 
 export const adminActionClient = authenticatedActionClient.use(
   async ({ next, ctx }) => {
-    const { supabase, userId } = ctx;
-
-    const { data: account } = await supabase
-      .from("account")
-      .select()
-      .eq("user_id", userId)
-      .single()
-      .throwOnError();
-
-    if (account.role !== "admin") {
+    if (!isAdminRole(ctx.userRole)) {
       throw new ActionAccessError("Unauthorized");
     }
 
-    return next({ ctx: { ...ctx, userId } });
+    return next({ ctx });
   },
 );

@@ -13,7 +13,18 @@
       "password": "Contraseña",
       "submit": "Iniciar sesión",
       "success": "Sesión iniciada.",
-      "error": "Error al iniciar sesión."
+      "error": "Error al iniciar sesión.",
+      "registerCta": "Crea una cuenta gratis"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "description": "Empieza gratis en segundos.",
+      "email": "Email",
+      "password": "Contraseña",
+      "submit": "Crear cuenta",
+      "success": "Cuenta creada correctamente.",
+      "error": "No se pudo crear la cuenta.",
+      "loginCta": "¿Ya tienes cuenta? Inicia sesión"
     }
   },
   "dashboard": {
@@ -136,12 +147,24 @@
         "userId": "User ID",
         "email": "Email",
         "role": "Rol",
-        "createdAt": "Creado el"
+        "tier": "Plan",
+        "createdAt": "Creado el",
+        "actions": "Acciones"
       },
       "roles": {
         "admin": "Admin",
         "user": "User"
       },
+      "tiers": {
+        "free": "Free",
+        "pro": "Pro"
+      },
+      "actions": {
+        "makePro": "Pasar a Pro",
+        "makeFree": "Pasar a Free"
+      },
+      "tierUpdated": "Plan del usuario actualizado.",
+      "tierUpdateError": "No se pudo actualizar el plan del usuario.",
       "create": {
         "trigger": "Nuevo usuario",
         "title": "Crear usuario",
@@ -149,6 +172,7 @@
         "emailPlaceholder": "usuario@email.com",
         "password": "Password",
         "role": "Rol",
+        "tier": "Plan",
         "submit": "Crear usuario",
         "success": "Usuario creado correctamente.",
         "error": "No se pudo crear el usuario."
@@ -172,6 +196,12 @@
       "voiceHint": "Elige qué voz de ElevenLabs se usará para generar el audio de las preguntas.",
       "voiceLoadError": "No se pudieron cargar las voces de ElevenLabs. Se usará la voz por defecto.",
       "defaultVoiceName": "Voz por defecto",
+      "publish": "Publicación",
+      "publishOptions": {
+        "draft": "Borrador",
+        "published": "Publicado"
+      },
+      "freeManualQuestionsRequired": "El plan free requiere al menos una pregunta manual.",
       "creating": "Creando...",
       "submit": "Crear formulario",
       "success": "Formulario creado con éxito.",
@@ -223,7 +253,28 @@
       "instructions": "Instrucciones",
       "instructionsPlaceholder": "Instrucciones",
       "type": "Tipo",
+      "voiceTrigger": "Cambiar voz",
+      "voiceTitle": "Cambiar voz del formulario",
+      "voice": "Voz AI",
+      "voicePlaceholder": "Selecciona una voz",
+      "voiceLoading": "Cargando voces...",
+      "voiceUnavailable": "No hay voces disponibles",
+      "voiceHint": "Guarda voz y velocidad: estas opciones se usaran para regenerar el audio de las preguntas.",
+      "voiceLoadError": "No se pudieron cargar las voces de ElevenLabs.",
+      "defaultVoiceName": "Voz por defecto",
+      "voiceSpeed": "Velocidad de voz",
+      "voiceSpeedHint": "Controla la velocidad de sintesis de ElevenLabs.",
+      "voicePreviewUnavailable": "Vista previa no disponible para esta voz.",
+      "voiceSave": "Guardar opciones de voz",
+      "voiceSaving": "Guardando...",
+      "voiceSaveSuccess": "Opciones de voz guardadas.",
+      "voiceSaveError": "Error al guardar opciones de voz.",
       "theme": "Tema",
+      "publish": "Publicación",
+      "publishOptions": {
+        "draft": "Borrador",
+        "published": "Publicado"
+      },
       "introTitle": "Título de intro",
       "introTitlePlaceholder": "Introduce el título de la pantalla inicial",
       "introMessage": "Mensaje de intro",
@@ -268,12 +319,18 @@
       "defaultAnswers": "Respuestas predeterminadas",
       "answerPlaceholder": "Respuesta {index}",
       "questionLabel": "Pregunta {index}",
+      "voiceUsed": "Voz en uso: {voice} · Velocidad: {speed}x",
+      "voiceDefaultName": "Voz por defecto",
+      "regenerateAll": "Regenerar todas",
+      "regeneratingAll": "Regenerando...",
       "play": "Reproducir",
       "generateTts": "Generar TTS",
       "generating": "Generando...",
       "submit": "Actualizar",
       "ttsSuccess": "TTS generado.",
+      "ttsAllSuccess": "Audio regenerado para todas las preguntas.",
       "ttsError": "Error al generar TTS.",
+      "ttsAllError": "Error en la regeneracion global de audio.",
       "success": "Preguntas actualizadas con éxito.",
       "error": "Error al actualizar las preguntas."
     },

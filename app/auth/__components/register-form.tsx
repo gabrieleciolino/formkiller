@@ -1,52 +1,47 @@
 "use client";
 
+import { registerAction } from "@/app/auth/__components/actions";
+import { registerFormSchema, type RegisterFormType } from "@/app/auth/__components/schema";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
-import { toast } from "sonner";
-import { loginFormSchema, LoginFormType } from "@/app/auth/__components/schema";
-import { loginAction } from "@/app/auth/__components/actions";
 import { useZodLocale } from "@/hooks/use-zod-locale";
-import { useRouter, useSearchParams } from "next/navigation";
 import { urls } from "@/lib/urls";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations();
   useZodLocale();
 
-  const redirectTo = searchParams.get("redirect_to");
-
-  const form = useForm<LoginFormType>({
-    resolver: zodResolver(loginFormSchema),
+  const form = useForm<RegisterFormType>({
+    resolver: zodResolver(registerFormSchema),
     values: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: LoginFormType) => {
+  const onSubmit = (values: RegisterFormType) => {
     startTransition(async () => {
       try {
-        const { serverError, validationErrors } = await loginAction(values);
+        const { data, serverError, validationErrors } = await registerAction(values);
 
-        if (serverError || validationErrors) {
+        if (serverError || validationErrors || !data) {
           throw new Error();
         }
 
-        router.push(redirectTo ? redirectTo : urls.dashboard.index);
-        toast(t("auth.login.success"));
-      } catch (error) {
-        console.log(error);
-
-        toast(t("auth.login.error"));
+        toast(t("auth.register.success"));
+        router.push(urls.dashboard.index);
+      } catch {
+        toast(t("auth.register.error"));
       }
     });
   };
@@ -58,12 +53,13 @@ export default function LoginForm() {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>{t("auth.login.email")}</FieldLabel>
+            <FieldLabel htmlFor={field.name}>{t("auth.register.email")}</FieldLabel>
             <Input
               {...field}
               id={field.name}
+              type="email"
               aria-invalid={fieldState.invalid}
-              placeholder={t("auth.login.email")}
+              placeholder={t("auth.register.email")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -76,25 +72,26 @@ export default function LoginForm() {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor={field.name}>
-              {t("auth.login.password")}
+              {t("auth.register.password")}
             </FieldLabel>
             <Input
               {...field}
               id={field.name}
+              type="password"
               aria-invalid={fieldState.invalid}
-              placeholder={t("auth.login.password")}
+              placeholder={t("auth.register.password")}
               autoComplete="off"
             />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />
-      <Button type="submit" className="mt-2 w-full">
-        {t("auth.login.submit")}
+      <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+        {t("auth.register.submit")}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        <Link href={urls.auth.register} className="underline underline-offset-2">
-          {t("auth.login.registerCta")}
+        <Link href={urls.auth.login} className="underline underline-offset-2">
+          {t("auth.register.loginCta")}
         </Link>
       </p>
     </form>

@@ -81,16 +81,32 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
     {
       id: "actions",
       header: t("dashboard.forms.columns.actions"),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link href={urls.admin.forms.detail(row.original.id)}>
-              {t("dashboard.forms.columns.view")}
-            </Link>
-          </Button>
-          <DeleteFormButton formId={row.original.id} />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isPublished = row.original.is_published;
+        const formSlug = row.original.slug;
+
+        return (
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href={urls.admin.forms.detail(row.original.id)}>
+                {t("dashboard.forms.columns.view")}
+              </Link>
+            </Button>
+            {isPublished && formSlug ? (
+              <Button asChild size="sm" variant="outline">
+                <Link href={urls.form(formSlug)} target="_blank">
+                  {t("dashboard.forms.columns.open")}
+                </Link>
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" disabled>
+                {t("dashboard.forms.columns.open")}
+              </Button>
+            )}
+            <DeleteFormButton formId={row.original.id} />
+          </div>
+        );
+      },
     },
   ];
 }

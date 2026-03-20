@@ -1,5 +1,6 @@
 "use server";
 
+import { canUseProFeatures } from "@/lib/account";
 import { PUBLIC_FORM_TURNSTILE_ACTION } from "@/features/forms/constants";
 import {
   completionAnalysisStatusSchema,
@@ -95,18 +96,53 @@ async function submitPublicFormAnswerRpc({
   return submitAnswerRpcResultSchema.parse(data);
 }
 
-async function getFormAssignmentOrThrow(assignmentId: string) {
-  const { data: assignment, error } = await supabaseAdmin
-    .from("form_assignment")
-    .select("id, form_id, user_id, active")
-    .eq("id", assignmentId)
+async function getPublishedFormBySlugOrThrow(formSlug: string) {
+  const { data: form, error } = await supabaseAdmin
+    .from("form")
+    .select("id, slug, user_id, is_published")
+    .eq("slug", formSlug)
+    .eq("is_published", true)
     .maybeSingle();
 
   if (error) throw error;
-  if (!assignment) throw new Error("Form assignment not found");
-  if (!assignment.active) throw new Error("Form assignment is not active");
+  if (!form) throw new Error("Published form not found");
 
-  return assignment;
+  return form;
+}
+
+async function getAccountForUserOrThrow(userId: string) {
+  const { data: account, error } = await supabaseAdmin
+    .from("account")
+    .select("role, tier")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!account) throw new Error("Account not found");
+
+  return account;
+}
+
+async function getFormOwnerCapabilitiesOrThrow(formId: string) {
+  const { data: form, error } = await supabaseAdmin
+    .from("form")
+    .select("user_id")
+    .eq("id", formId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!form) throw new Error("Form not found");
+
+  const account = await getAccountForUserOrThrow(form.user_id);
+  const isProEnabled = canUseProFeatures({
+    role: account.role,
+    tier: account.tier ?? "free",
+  });
+
+  return {
+    ownerUserId: form.user_id,
+    isProEnabled,
+  };
 }
 
 async function getFormSessionOrThrow(sessionId: string) {
@@ -146,7 +182,7 @@ async function getSessionCompletionAnalysisOrThrow(
 export const startFormSessionAction = publicViewerClient
   .inputSchema(
     z.object({
-      assignmentId: z.string().uuid(),
+      formSlug: z.string().trim().min(1),
       turnstileToken: turnstileTokenSchema,
     }),
   )
@@ -160,11 +196,11 @@ export const startFormSessionAction = publicViewerClient
     });
     const turnstileVerifyMs = Date.now() - turnstileVerifyStartAt;
 
-    const assignmentLookupStartAt = Date.now();
-    const assignment = await getFormAssignmentOrThrow(parsedInput.assignmentId);
-    const assignmentLookupMs = Date.now() - assignmentLookupStartAt;
-    const formId = assignment.form_id;
-    const userId = assignment.user_id;
+    const formLookupStartAt = Date.now();
+    const form = await getPublishedFormBySlugOrThrow(parsedInput.formSlug);
+    const formLookupMs = Date.now() - formLookupStartAt;
+    const formId = form.id;
+    const userId = form.user_id;
 
     const insertSessionStartAt = Date.now();
     const { data, error } = await supabaseAdmin
@@ -185,7 +221,7 @@ export const startFormSessionAction = publicViewerClient
     const timings = {
       totalMs,
       turnstileVerifyMs,
-      assignmentLookupMs,
+      formLookupMs,
       insertSessionMs,
     };
 
@@ -233,7 +269,13 @@ export const submitAnswerAction = publicViewerClient
       fileGeneratedAt,
     });
 
+    const { isProEnabled } = await getFormOwnerCapabilitiesOrThrow(formId);
+
     if (fileKey) {
+      if (!isProEnabled) {
+        throw new Error("Voice answers are available only for pro forms");
+      }
+
       try {
         await formAnswerSttTask.trigger({
           answerId: submitResult.answerId,
@@ -255,35 +297,47 @@ export const submitAnswerAction = publicViewerClient
     }
 
     if (submitResult.completed) {
-      await supabaseAdmin
-        .from("form_session")
-        .update({
-          completion_analysis_status: "processing",
-          completion_analysis_text: null,
-          completion_analysis_audio_url: null,
-        })
-        .eq("id", sessionId)
-        .throwOnError();
-
-      try {
-        await formCompletionAnalysisTask.trigger({
-          sessionId,
-          formId,
-        });
-      } catch (enqueueError) {
-        console.log("[enqueue_completion_analysis_failed]", {
-          formId,
-          sessionId,
-          message:
-            enqueueError instanceof Error
-              ? enqueueError.message
-              : String(enqueueError),
-        });
-
+      if (isProEnabled) {
         await supabaseAdmin
           .from("form_session")
           .update({
-            completion_analysis_status: "failed",
+            completion_analysis_status: "processing",
+            completion_analysis_text: null,
+            completion_analysis_audio_url: null,
+          })
+          .eq("id", sessionId)
+          .throwOnError();
+
+        try {
+          await formCompletionAnalysisTask.trigger({
+            sessionId,
+            formId,
+          });
+        } catch (enqueueError) {
+          console.log("[enqueue_completion_analysis_failed]", {
+            formId,
+            sessionId,
+            message:
+              enqueueError instanceof Error
+                ? enqueueError.message
+                : String(enqueueError),
+          });
+
+          await supabaseAdmin
+            .from("form_session")
+            .update({
+              completion_analysis_status: "failed",
+              completion_analysis_text: null,
+              completion_analysis_audio_url: null,
+            })
+            .eq("id", sessionId)
+            .throwOnError();
+        }
+      } else {
+        await supabaseAdmin
+          .from("form_session")
+          .update({
+            completion_analysis_status: "unavailable",
             completion_analysis_text: null,
             completion_analysis_audio_url: null,
           })

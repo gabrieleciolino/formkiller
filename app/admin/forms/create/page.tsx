@@ -19,7 +19,10 @@ export default async function AdminFormsCreatePage() {
           </Link>
         </Button>
       </div>
-      <CreateFormForm detailPathPrefix={urls.admin.forms.index} />
+      <CreateFormForm
+        detailPathPrefix={urls.admin.forms.index}
+        allowProFeatures
+      />
     </div>
   );
 }

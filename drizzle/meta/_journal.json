@@ -232,6 +232,20 @@
       "when": 1773682139494,
       "tag": "0032_young_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1773692363711,
+      "tag": "0033_soft_master_mold",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1773987649800,
+      "tag": "0034_gigantic_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

@@ -1,14 +1,10 @@
 import { Separator } from "@/components/ui/separator";
+import ChangeFormVoiceSheet from "@/features/forms/components/change-form-voice-sheet";
 import EditFormSheet from "@/features/forms/components/edit-form-sheet";
-import FormAssignmentsManager from "@/features/forms/components/form-assignments-manager";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
 import GenerateAnalysisSheet from "@/features/forms/components/generate-analysis-sheet";
-import {
-  getFormAssignmentsForAdminQuery,
-  getFormByIdQuery,
-} from "@/features/forms/queries";
+import { getFormByIdQuery } from "@/features/forms/queries";
 import { EditQuestionsType } from "@/features/forms/schema";
-import { getAssignableUsersQuery } from "@/features/users/queries";
 import { adminQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { getTranslations } from "next-intl/server";
@@ -21,12 +17,8 @@ export default async function AdminFormDetailPage({
 }) {
   const { formId } = await params;
 
-  const [form, assignments, users, t] = await Promise.all([
+  const [form, t] = await Promise.all([
     adminQuery(async ({ supabase }) => getFormByIdQuery({ formId, supabase })),
-    adminQuery(async ({ supabase }) =>
-      getFormAssignmentsForAdminQuery({ formId, supabase }),
-    ),
-    adminQuery(async () => getAssignableUsersQuery()),
     getTranslations(),
   ]);
 
@@ -52,6 +44,11 @@ export default async function AdminFormDetailPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-medium text-foreground">{form.name}</h2>
         <div className="flex flex-wrap items-center gap-2">
+          <ChangeFormVoiceSheet
+            formId={form.id}
+            initialVoiceId={form.voice_id}
+            initialVoiceSpeed={form.voice_speed}
+          />
           <GenerateAnalysisSheet
             formId={form.id}
             initialAnalysisInstructions={form.analysis_instructions}
@@ -60,6 +57,8 @@ export default async function AdminFormDetailPage({
             formData={form}
             backgroundImageUrl={backgroundImageUrl}
             backgroundMusicUrl={backgroundMusicUrl}
+            allowProFeatures
+            showAssetControls
           />
         </div>
       </div>
@@ -99,19 +98,12 @@ export default async function AdminFormDetailPage({
 
       <Separator />
 
-      <FormAssignmentsManager
-        formId={formId}
-        formName={form.name}
-        assignments={assignments}
-        users={users}
-      />
-
-      <Separator />
-
       <EditQuestionsForm
         questionsData={questionsRaw as unknown as EditQuestionsType["questions"]}
         formId={formId}
         language={form.language}
+        voiceId={form.voice_id}
+        voiceSpeed={form.voice_speed}
         initialFileUrls={initialFileUrls}
       />
     </div>

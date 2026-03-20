@@ -19,7 +19,9 @@ import {
 } from "@/components/ui/sheet";
 import { createUserAction } from "@/features/users/actions";
 import {
+  accountTierSchema,
   accountRoleSchema,
+  type AccountTier,
   createUserSchema,
   type AccountRole,
 } from "@/features/users/schema";
@@ -46,6 +48,7 @@ export default function CreateUserSheet() {
       email: "",
       password: "",
       role: "user",
+      tier: "free",
     },
   });
 
@@ -63,6 +66,7 @@ export default function CreateUserSheet() {
         form.reset({
           email: "",
           role: "user",
+          tier: "free",
         });
         setOpen(false);
         router.refresh();
@@ -161,6 +165,40 @@ export default function CreateUserSheet() {
                         </SelectItem>
                       ),
                     )}
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="tier"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>{t("dashboard.users.create.tier")}</FieldLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) =>
+                    field.onChange(value as AccountTier)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(accountTierSchema.options as AccountTier[]).map((tier) => (
+                      <SelectItem key={tier} value={tier}>
+                        {t(
+                          `dashboard.users.tiers.${tier}` as Parameters<
+                            typeof t
+                          >[0],
+                        )}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {fieldState.invalid && (

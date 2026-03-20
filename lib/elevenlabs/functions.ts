@@ -1,6 +1,11 @@
 import { uploadFile } from "@/lib/r2/functions";
 import { elevenlabs } from "@/lib/elevenlabs";
-import { FormLanguage } from "@/features/forms/schema";
+import {
+  FORM_VOICE_SPEED_DEFAULT,
+  FORM_VOICE_SPEED_MAX,
+  FORM_VOICE_SPEED_MIN,
+  FormLanguage,
+} from "@/features/forms/schema";
 
 const DEFAULT_VOICE_ID = process.env.ELEVENLABS_DEFAULT_VOICE_ID?.trim() ?? null;
 
@@ -46,21 +51,38 @@ const resolveVoiceId = (voiceId?: string | null) => {
   throw new Error("Missing ElevenLabs voice id.");
 };
 
+const resolveVoiceSpeed = (voiceSpeed?: number | null) => {
+  const normalizedVoiceSpeed =
+    typeof voiceSpeed === "number" && Number.isFinite(voiceSpeed)
+      ? voiceSpeed
+      : FORM_VOICE_SPEED_DEFAULT;
+
+  return Math.min(
+    FORM_VOICE_SPEED_MAX,
+    Math.max(FORM_VOICE_SPEED_MIN, normalizedVoiceSpeed),
+  );
+};
+
 export const generateTTS = async ({
   text,
   formId,
   language,
   voiceId,
+  voiceSpeed,
 }: {
   text: string;
   formId: string;
   language: FormLanguage;
   voiceId?: string | null;
+  voiceSpeed?: number | null;
 }) => {
   const audio = await elevenlabs.textToSpeech.convert(resolveVoiceId(voiceId), {
     text,
     modelId: "eleven_multilingual_v2",
     languageCode: language,
+    voiceSettings: {
+      speed: resolveVoiceSpeed(voiceSpeed),
+    },
   });
 
   const buffer = Buffer.from(await new Response(audio).arrayBuffer());

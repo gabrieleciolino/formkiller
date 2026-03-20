@@ -1,6 +1,5 @@
 "use client";
 
-import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { FormViewerCompletedPhaseProps } from "@/features/forms/types";
 import { CheckCircleIcon, LoaderCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,7 +14,6 @@ export function CompletedPhase({
   analysisStatus,
   isAnalyzing,
   hasBackgroundImage,
-  showLandingContactTechBackground,
   isDark,
   tk,
 }: FormViewerCompletedPhaseProps) {
@@ -25,8 +23,7 @@ export function CompletedPhase({
   const resolvedMessage = endMessage?.trim() || t("viewer.completed.message");
   const analysisLoadingMessage = t("viewer.completed.analysisLoading");
   const analysisErrorFallbackMessage = t("viewer.completed.analysisErrorFallback");
-  const shouldShowAnalysisErrorFallback =
-    analysisStatus !== "processing" && !analysisMessage && !analysisAudioUrl;
+  const shouldShowAnalysisErrorFallback = analysisStatus === "failed";
   const analysisAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -42,8 +39,6 @@ export function CompletedPhase({
       className={`relative flex h-dvh flex-col items-center justify-center overflow-hidden p-6 ${tk.bg} ${tk.text}`}
       style={bgStyle}
     >
-      {showLandingContactTechBackground && <LandingContactTechBackground />}
-
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${tk.overlay}`} />
       )}
@@ -69,7 +64,9 @@ export function CompletedPhase({
         <h1 className="text-4xl font-black">{resolvedTitle}</h1>
 
         {isAnalyzing && (
-          <div className={`flex items-center gap-2 text-sm ${tk.textSecondary}`}>
+          <div
+            className={`flex items-center gap-2 text-sm ${tk.textSecondary}`}
+          >
             <LoaderCircleIcon className="size-4 animate-spin" />
             <span>{analysisLoadingMessage}</span>
           </div>
@@ -85,7 +82,7 @@ export function CompletedPhase({
           </p>
         )}
 
-        <p className={`text-sm font-bold ${tk.textSecondary}`}>
+        <p className={`text-lg font-bold ${tk.textSecondary}`}>
           {resolvedMessage}
         </p>
       </div>

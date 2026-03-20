@@ -15,26 +15,23 @@ type PublicViewerQuestionRow = {
 
 type PublicViewerFormRow = {
   id: string;
+  slug: string | null;
   name: string;
   type: string | null;
   theme: string | null;
   language: string | null;
+  user_id: string;
   background_image_key: string | null;
   background_music_key: string | null;
   intro_title: string | null;
   intro_message: string | null;
   end_title: string | null;
   end_message: string | null;
+  is_published: boolean;
   questions: PublicViewerQuestionRow[] | null;
 };
 
-export type PublicViewerAssignmentWithForm = {
-  id: string;
-  form_id: string;
-  user_id: string;
-  active: boolean;
-  form: PublicViewerFormRow | null;
-};
+export type PublicViewerForm = PublicViewerFormRow;
 
 export const getUserFormsQuery = async ({
   userId,
@@ -43,36 +40,15 @@ export const getUserFormsQuery = async ({
   userId: string;
   supabase: TypedSupabaseClient;
 }) => {
-  const { data: assignments, error: assignmentsError } = await supabase
-    .from("form_assignment")
-    .select("id, form_id")
-    .eq("user_id", userId)
-    .eq("active", true)
-    .order("created_at", { ascending: false });
-
-  if (assignmentsError) throw assignmentsError;
-  if (!assignments || assignments.length === 0) return [];
-
-  const formIds = [...new Set(assignments.map((assignment) => assignment.form_id))];
-
   const { data, error } = await supabase
     .from("form")
     .select("*, questions:question(*)")
-    .in("id", formIds)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
 
-  const assignmentByFormId = new Map(
-    assignments.map((assignment) => [assignment.form_id, assignment.id]),
-  );
-
-  return data
-    .map((form) => ({
-      ...form,
-      assignment_id: assignmentByFormId.get(form.id) ?? null,
-    }))
-    .filter((form) => form.assignment_id !== null);
+  return data;
 };
 
 export const getFormsQuery = getUserFormsQuery;
@@ -133,109 +109,42 @@ export const getUserFormByIdQuery = async ({
   userId: string;
   supabase: TypedSupabaseClient;
 }) => {
-  const { data: assignment, error: assignmentError } = await supabase
-    .from("form_assignment")
-    .select("id")
-    .eq("form_id", formId)
-    .eq("user_id", userId)
-    .eq("active", true)
-    .maybeSingle();
-
-  if (assignmentError) throw assignmentError;
-  if (!assignment) return null;
-
   const { data, error } = await supabase
     .from("form")
     .select("*, questions:question(*)")
     .eq("id", formId)
+    .eq("user_id", userId)
+    .order("order", { referencedTable: "question", ascending: true })
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getPublishedFormViewerBySlugQuery = async ({
+  slug,
+  supabase,
+}: {
+  slug: string;
+  supabase: TypedSupabaseClient;
+}) => {
+  const { data, error } = await supabase
+    .from("form")
+    .select(
+      "id, slug, name, type, theme, language, user_id, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, is_published, questions:question(id, question, order, file_key, default_answers)",
+    )
+    .eq("slug", slug)
+    .eq("is_published", true)
     .order("order", { referencedTable: "question", ascending: true })
     .maybeSingle();
 
   if (error) throw error;
   if (!data) return null;
 
-  return {
-    ...data,
-    assignment_id: assignment.id,
-  };
-};
-
-export const getPublicFormViewerByAssignmentIdQuery = async ({
-  assignmentId,
-  supabase,
-}: {
-  assignmentId: string;
-  supabase: TypedSupabaseClient;
-}) => {
-  const { data, error } = await supabase
-    .from("form_assignment")
-    .select(
-      "id, form_id, user_id, active, form:form_id(id, name, type, theme, language, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, questions:question(id, question, order, file_key, default_answers))",
-    )
-    .eq("id", assignmentId)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) return null;
-
-  const row = data as unknown as {
-    id: string;
-    form_id: string;
-    user_id: string;
-    active: boolean;
-    form: PublicViewerFormRow | PublicViewerFormRow[] | null;
-  };
-
-  const rawForm = Array.isArray(row.form) ? row.form[0] : row.form;
+  const row = data as unknown as PublicViewerFormRow;
 
   return {
-    id: row.id,
-    form_id: row.form_id,
-    user_id: row.user_id,
-    active: row.active,
-    form: rawForm
-      ? {
-          ...rawForm,
-          questions: [...(rawForm.questions ?? [])].sort(
-            (left, right) => left.order - right.order,
-          ),
-        }
-      : null,
-  } satisfies PublicViewerAssignmentWithForm;
-};
-
-export const getFormAssignmentByIdQuery = async ({
-  assignmentId,
-  supabase,
-}: {
-  assignmentId: string;
-  supabase: TypedSupabaseClient;
-}) => {
-  const { data, error } = await supabase
-    .from("form_assignment")
-    .select("id, form_id, user_id, active")
-    .eq("id", assignmentId)
-    .maybeSingle();
-
-  if (error) throw error;
-
-  return data;
-};
-
-export const getFormAssignmentsForAdminQuery = async ({
-  formId,
-  supabase,
-}: {
-  formId: string;
-  supabase: TypedSupabaseClient;
-}) => {
-  const { data, error } = await supabase
-    .from("form_assignment")
-    .select("id, form_id, user_id, active, created_at")
-    .eq("form_id", formId)
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-
-  return data;
+    ...row,
+    questions: [...(row.questions ?? [])].sort((left, right) => left.order - right.order),
+  } satisfies PublicViewerForm;
 };

@@ -40,12 +40,15 @@ export default function EditFormSheet({
   formData,
   backgroundImageUrl,
   backgroundMusicUrl,
+  allowProFeatures = true,
+  showAssetControls = true,
 }: EditFormSheetProps) {
   const [open, setOpen] = useState(false);
   const {
     id,
     name,
     type,
+    is_published,
     theme,
     background_image_key,
     background_music_key,
@@ -69,7 +72,8 @@ export default function EditFormSheet({
     defaultValues: {
       formId: id,
       name,
-      type: (type ?? "mixed") as FormType,
+      type: (allowProFeatures ? type : "default-only") as FormType,
+      isPublished: is_published ?? false,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
@@ -84,7 +88,8 @@ export default function EditFormSheet({
     form.reset({
       formId: id,
       name,
-      type: (type ?? "mixed") as FormType,
+      type: (allowProFeatures ? type : "default-only") as FormType,
+      isPublished: is_published ?? false,
       theme: (theme ?? "dark") as FormTheme,
       backgroundImageKey: background_image_key ?? null,
       backgroundMusicKey: background_music_key ?? null,
@@ -104,6 +109,8 @@ export default function EditFormSheet({
     backgroundMusicUrl,
     background_image_key,
     background_music_key,
+    is_published,
+    allowProFeatures,
     intro_title,
     intro_message,
     end_title,
@@ -163,24 +170,62 @@ export default function EditFormSheet({
                 </Field>
               )}
             />
+            {allowProFeatures ? (
+              <Controller
+                name="type"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>{t("forms.edit.type")}</FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(formTypeSchema.options as FormType[]).map((typeKey) => (
+                          <SelectItem key={typeKey} value={typeKey}>
+                            {t(
+                              `forms.types.${typeKey}` as Parameters<typeof t>[0],
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              />
+            ) : (
+              <Field>
+                <FieldLabel>{t("forms.edit.type")}</FieldLabel>
+                <Input
+                  value={t("forms.types.default-only")}
+                  readOnly
+                  aria-readonly="true"
+                />
+              </Field>
+            )}
             <Controller
-              name="type"
+              name="isPublished"
               control={form.control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>{t("forms.edit.type")}</FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <FieldLabel>{t("forms.edit.publish")}</FieldLabel>
+                  <Select
+                    value={field.value ? "published" : "draft"}
+                    onValueChange={(value) =>
+                      field.onChange(value === "published")
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(formTypeSchema.options as FormType[]).map((typeKey) => (
-                        <SelectItem key={typeKey} value={typeKey}>
-                          {t(
-                            `forms.types.${typeKey}` as Parameters<typeof t>[0],
-                          )}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="draft">
+                        {t("forms.edit.publishOptions.draft")}
+                      </SelectItem>
+                      <SelectItem value="published">
+                        {t("forms.edit.publishOptions.published")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -283,50 +328,54 @@ export default function EditFormSheet({
                 </Field>
               )}
             />
-            <Controller
-              name="backgroundImageKey"
-              control={form.control}
-              render={({ field }) => (
-                <LibraryPickerDialog
-                  type="image"
-                  value={field.value ?? null}
-                  previewUrl={field.value ? imagePreviewUrl : null}
-                  onChange={(nextKey, nextPreview) => {
-                    field.onChange(nextKey);
-                    if (!nextKey) {
-                      setImagePreviewUrl(null);
-                      return;
-                    }
+            {showAssetControls && (
+              <>
+                <Controller
+                  name="backgroundImageKey"
+                  control={form.control}
+                  render={({ field }) => (
+                    <LibraryPickerDialog
+                      type="image"
+                      value={field.value ?? null}
+                      previewUrl={field.value ? imagePreviewUrl : null}
+                      onChange={(nextKey, nextPreview) => {
+                        field.onChange(nextKey);
+                        if (!nextKey) {
+                          setImagePreviewUrl(null);
+                          return;
+                        }
 
-                    if (nextPreview) {
-                      setImagePreviewUrl(nextPreview);
-                    }
-                  }}
+                        if (nextPreview) {
+                          setImagePreviewUrl(nextPreview);
+                        }
+                      }}
+                    />
+                  )}
                 />
-              )}
-            />
-            <Controller
-              name="backgroundMusicKey"
-              control={form.control}
-              render={({ field }) => (
-                <LibraryPickerDialog
-                  type="audio"
-                  value={field.value ?? null}
-                  previewUrl={field.value ? musicPreviewUrl : null}
-                  onChange={(nextKey, nextPreview) => {
-                    field.onChange(nextKey);
-                    if (!nextKey) {
-                      setMusicPreviewUrl(null);
-                      return;
-                    }
+                <Controller
+                  name="backgroundMusicKey"
+                  control={form.control}
+                  render={({ field }) => (
+                    <LibraryPickerDialog
+                      type="audio"
+                      value={field.value ?? null}
+                      previewUrl={field.value ? musicPreviewUrl : null}
+                      onChange={(nextKey, nextPreview) => {
+                        field.onChange(nextKey);
+                        if (!nextKey) {
+                          setMusicPreviewUrl(null);
+                          return;
+                        }
 
-                    if (nextPreview) {
-                      setMusicPreviewUrl(nextPreview);
-                    }
-                  }}
+                        if (nextPreview) {
+                          setMusicPreviewUrl(nextPreview);
+                        }
+                      }}
+                    />
+                  )}
                 />
-              )}
-            />
+              </>
+            )}
             <Button type="submit" className="mt-2 w-full" disabled={isPending}>
               {t("forms.edit.submit")}
             </Button>

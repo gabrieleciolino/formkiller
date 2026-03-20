@@ -1,6 +1,12 @@
 import "server-only";
 
 import {
+  DEFAULT_ACCOUNT_TIER,
+  isAdminRole,
+  type AccountRole,
+  type AccountTier,
+} from "@/lib/account";
+import {
   endAdminTrace,
   startAdminTrace,
   traceAdminStep,
@@ -18,6 +24,12 @@ type PublicQueryContext = {
 
 type AuthenticatedQueryContext = PublicQueryContext & {
   userId: string;
+  userRole: AccountRole;
+  userTier: AccountTier;
+};
+
+type AuthenticatedRequestContext = PublicQueryContext & {
+  userId: string;
 };
 
 class QueryAccessError extends Error {
@@ -32,7 +44,7 @@ const getSupabaseForRequest = cache(async (): Promise<SupabaseClient<Database>> 
 });
 
 const getAuthenticatedContextForRequest = cache(
-  async (): Promise<AuthenticatedQueryContext> => {
+  async (): Promise<AuthenticatedRequestContext> => {
     const supabase = await getSupabaseForRequest();
     const { data, error } = await supabase.auth.getClaims();
 
@@ -44,16 +56,19 @@ const getAuthenticatedContextForRequest = cache(
   },
 );
 
-const getAccountRoleForRequest = cache(async () => {
+const getAccountContextForRequest = cache(async () => {
   const { supabase, userId } = await getAuthenticatedContextForRequest();
   const { data: account } = await supabase
     .from("account")
-    .select("role")
+    .select("role, tier")
     .eq("user_id", userId)
     .single()
     .throwOnError();
 
-  return { userId, role: account.role };
+  const role = account.role as AccountRole;
+  const tier = (account.tier ?? DEFAULT_ACCOUNT_TIER) as AccountTier;
+
+  return { userId, role, tier };
 });
 
 export async function publicQuery<T>(
@@ -67,8 +82,14 @@ export async function authenticatedQuery<T>(
   fn: (ctx: AuthenticatedQueryContext) => Promise<T>,
 ): Promise<T> {
   try {
-    const { supabase, userId } = await getAuthenticatedContextForRequest();
-    return fn({ supabase, userId });
+    const { supabase } = await getAuthenticatedContextForRequest();
+    const { userId, role, tier } = await getAccountContextForRequest();
+    return fn({
+      supabase,
+      userId,
+      userRole: role,
+      userTier: tier,
+    });
   } catch (error) {
     if (error instanceof QueryAccessError) {
       throw new Error("Unauthorized");
@@ -91,20 +112,25 @@ export async function adminQuery<T>(
       getAuthenticatedContextForRequest(),
     );
 
-    const { role } = await traceAdminStep(
+    const { role, tier } = await traceAdminStep(
       trace,
       "db.account",
-      () => getAccountRoleForRequest(),
+      () => getAccountContextForRequest(),
       { userId },
     );
 
-    if (role !== "admin") {
+    if (!isAdminRole(role)) {
       status = "unauthorized_role";
       redirect(urls.dashboard.index);
     }
 
     const result = await traceAdminStep(trace, "handler", () =>
-      fn({ supabase, userId }),
+      fn({
+        supabase,
+        userId,
+        userRole: role,
+        userTier: tier,
+      }),
     );
 
     return result;

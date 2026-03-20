@@ -13,7 +13,18 @@
       "password": "Password",
       "submit": "Accedi",
       "success": "Accesso effettuato.",
-      "error": "Accesso fallito."
+      "error": "Accesso fallito.",
+      "registerCta": "Crea un account gratuito"
+    },
+    "register": {
+      "title": "Crea account",
+      "description": "Inizia gratis in pochi secondi.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Crea account",
+      "success": "Account creato con successo.",
+      "error": "Creazione account fallita.",
+      "loginCta": "Hai già un account? Accedi"
     }
   },
   "dashboard": {
@@ -136,12 +147,24 @@
         "userId": "User ID",
         "email": "Email",
         "role": "Ruolo",
-        "createdAt": "Creato il"
+        "tier": "Piano",
+        "createdAt": "Creato il",
+        "actions": "Azioni"
       },
       "roles": {
         "admin": "Admin",
         "user": "User"
       },
+      "tiers": {
+        "free": "Free",
+        "pro": "Pro"
+      },
+      "actions": {
+        "makePro": "Imposta Pro",
+        "makeFree": "Imposta Free"
+      },
+      "tierUpdated": "Piano utente aggiornato.",
+      "tierUpdateError": "Aggiornamento piano utente fallito.",
       "create": {
         "trigger": "Nuovo utente",
         "title": "Crea utente",
@@ -149,6 +172,7 @@
         "emailPlaceholder": "utente@email.com",
         "password": "Password",
         "role": "Ruolo",
+        "tier": "Piano",
         "submit": "Crea utente",
         "success": "Utente creato con successo.",
         "error": "Creazione utente fallita."
@@ -172,6 +196,12 @@
       "voiceHint": "Scegli la voce ElevenLabs usata per generare l'audio delle domande.",
       "voiceLoadError": "Impossibile caricare le voci ElevenLabs. Verrà usata la voce di default.",
       "defaultVoiceName": "Voce di default",
+      "publish": "Pubblicazione",
+      "publishOptions": {
+        "draft": "Bozza",
+        "published": "Pubblicato"
+      },
+      "freeManualQuestionsRequired": "Il piano free richiede almeno una domanda manuale.",
       "creating": "Creazione in corso...",
       "submit": "Crea form",
       "success": "Form creato con successo.",
@@ -185,7 +215,28 @@
       "instructions": "Istruzioni",
       "instructionsPlaceholder": "Istruzioni",
       "type": "Tipo",
+      "voiceTrigger": "Cambia voce",
+      "voiceTitle": "Cambia voce form",
+      "voice": "Voce AI",
+      "voicePlaceholder": "Seleziona una voce",
+      "voiceLoading": "Caricamento voci...",
+      "voiceUnavailable": "Nessuna voce disponibile",
+      "voiceHint": "Salva voce e speed: queste opzioni verranno usate per la rigenerazione audio delle domande.",
+      "voiceLoadError": "Impossibile caricare le voci ElevenLabs.",
+      "defaultVoiceName": "Voce di default",
+      "voiceSpeed": "Speed voce",
+      "voiceSpeedHint": "Controlla la velocita della sintesi ElevenLabs.",
+      "voicePreviewUnavailable": "Anteprima non disponibile per questa voce.",
+      "voiceSave": "Salva opzioni voce",
+      "voiceSaving": "Salvataggio...",
+      "voiceSaveSuccess": "Opzioni voce salvate.",
+      "voiceSaveError": "Salvataggio opzioni voce fallito.",
       "theme": "Tema",
+      "publish": "Pubblicazione",
+      "publishOptions": {
+        "draft": "Bozza",
+        "published": "Pubblicato"
+      },
       "introTitle": "Titolo intro",
       "introTitlePlaceholder": "Inserisci il titolo della schermata iniziale",
       "introMessage": "Messaggio intro",
@@ -268,12 +319,18 @@
       "defaultAnswers": "Risposte predefinite",
       "answerPlaceholder": "Risposta {index}",
       "questionLabel": "Domanda {index}",
+      "voiceUsed": "Voce usata: {voice} · Speed: {speed}x",
+      "voiceDefaultName": "Voce di default",
+      "regenerateAll": "Rigenera tutte",
+      "regeneratingAll": "Rigenerazione...",
       "play": "Riproduci",
       "generateTts": "Genera TTS",
       "generating": "Generando...",
       "submit": "Aggiorna",
       "ttsSuccess": "TTS generato.",
+      "ttsAllSuccess": "Audio di tutte le domande rigenerato.",
       "ttsError": "Generazione TTS fallita.",
+      "ttsAllError": "Rigenerazione audio globale fallita.",
       "success": "Domande aggiornate con successo.",
       "error": "Aggiornamento domande fallito."
     },

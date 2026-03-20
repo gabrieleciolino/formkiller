@@ -16,7 +16,6 @@ import {
   Layers,
   LibraryBig,
   Users,
-  Flame,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
@@ -34,11 +33,6 @@ export default async function AdminSidebar() {
       label: t("dashboard.sidebar.forms"),
       icon: Form,
       url: urls.admin.forms.index,
-    },
-    {
-      label: t("dashboard.sidebar.tests"),
-      icon: Flame,
-      url: urls.admin.tests.index,
     },
     {
       label: t("dashboard.sidebar.users"),

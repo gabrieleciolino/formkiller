@@ -44,10 +44,13 @@ export type EditQuestionsFormProps = {
   questionsData: EditQuestionsType["questions"];
   formId?: string;
   language: FormLanguage;
+  voiceId?: string | null;
+  voiceSpeed?: number | null;
   initialFileUrls?: Record<string, string | null>;
   mode?: "edit" | "create";
   onQuestionsChange?: (questions: NonNullable<CreateFormType["questions"]>) => void;
   readOnly?: boolean;
+  allowVoiceControls?: boolean;
 };
 
 export type LibraryPickerAsset = {
@@ -76,8 +79,7 @@ export type ViewerQuestion = {
 
 export type ViewerFormData = {
   id: string;
-  assignmentId: string;
-  isLandingContactForm: boolean;
+  slug: string;
   name: string;
   userId: string;
   type: FormType;
@@ -119,7 +121,6 @@ export type LeadFormProps = {
   onCompleted: (payload: FormViewerCompletionPayload) => void;
   bgStyle: FormViewerBackgroundStyle;
   hasBackgroundImage: boolean;
-  showLandingContactTechBackground: boolean;
   overlayClassName: string;
   isDark: boolean;
 };
@@ -157,7 +158,6 @@ export type FormViewerWelcomePhaseProps = {
   bgStyle: FormViewerBackgroundStyle;
   formName: string;
   hasBackgroundImage: boolean;
-  showLandingContactTechBackground: boolean;
   isDark: boolean;
   introTitle: string | null;
   introMessage: string | null;
@@ -176,7 +176,6 @@ export type FormViewerCompletedPhaseProps = {
   analysisStatus: CompletionAnalysisStatus;
   isAnalyzing: boolean;
   hasBackgroundImage: boolean;
-  showLandingContactTechBackground: boolean;
   isDark: boolean;
   tk: FormViewerThemeTokens;
 };
@@ -189,7 +188,6 @@ export type FormViewerQuestionPhaseProps = {
   displayedText: string;
   hasBackgroundImage: boolean;
   hasBackgroundMusic: boolean;
-  showLandingContactTechBackground: boolean;
   isDark: boolean;
   isLast: boolean;
   isMuted: boolean;
@@ -211,4 +209,6 @@ export type EditFormSheetProps = {
   formData: AdminForm;
   backgroundImageUrl: string | null;
   backgroundMusicUrl: string | null;
+  allowProFeatures?: boolean;
+  showAssetControls?: boolean;
 };

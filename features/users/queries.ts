@@ -32,7 +32,7 @@ async function getAccountsWithEmail({
 }) {
   let query = supabaseAdmin
     .from("account")
-    .select("user_id, role, created_at")
+    .select("user_id, role, tier, created_at")
     .order("created_at", { ascending: false });
 
   if (role) {
@@ -55,8 +55,4 @@ async function getAccountsWithEmail({
 
 export const getAdminUsersQuery = async () => {
   return getAccountsWithEmail({});
-};
-
-export const getAssignableUsersQuery = async () => {
-  return getAccountsWithEmail({ role: "user" });
 };

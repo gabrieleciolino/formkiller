@@ -48,8 +48,10 @@ type VoiceOption = {
 
 export default function CreateFormForm({
   detailPathPrefix = urls.dashboard.forms.index,
+  allowProFeatures = false,
 }: {
   detailPathPrefix?: string;
+  allowProFeatures?: boolean;
 } = {}) {
   const [isPending, startTransition] = useTransition();
   const [isCreatingAsync, setIsCreatingAsync] = useState(false);
@@ -68,9 +70,10 @@ export default function CreateFormForm({
     defaultValues: {
       name: "",
       instructions: "",
-      type: "mixed",
+      type: allowProFeatures ? "mixed" : "default-only",
       language: "it",
       voiceId: undefined,
+      isPublished: false,
       questions: [],
     },
   });
@@ -86,6 +89,10 @@ export default function CreateFormForm({
   }, [form, manualQuestions]);
 
   useEffect(() => {
+    if (!allowProFeatures) {
+      return;
+    }
+
     let isActive = true;
 
     const loadVoices = async () => {
@@ -151,15 +158,23 @@ export default function CreateFormForm({
     return () => {
       isActive = false;
     };
-  }, [form, t]);
+  }, [allowProFeatures, form, t]);
 
   const onSubmit = (values: CreateFormType) => {
     startTransition(async () => {
       setIsCreatingAsync(true);
 
       try {
+        if (!allowProFeatures && manualQuestions.length === 0) {
+          toast(t("forms.create.freeManualQuestionsRequired"));
+          return;
+        }
+
         const payload: CreateFormType = {
           ...values,
+          type: allowProFeatures ? values.type : "default-only",
+          instructions: allowProFeatures ? values.instructions : "",
+          voiceId: allowProFeatures ? values.voiceId : undefined,
           questions: manualQuestions,
         };
 
@@ -240,47 +255,60 @@ export default function CreateFormForm({
           </Field>
         )}
       />
-      <Controller
-        name="instructions"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={field.name}>
-              {t("forms.create.instructions")}
-            </FieldLabel>
-            <Textarea
-              {...field}
-              id={field.name}
-              aria-invalid={fieldState.invalid}
-              placeholder={t("forms.create.instructionsPlaceholder")}
-              autoComplete="off"
-              className="min-h-[150px]"
-            />
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        )}
-      />
-      <Controller
-        name="type"
-        control={form.control}
-        render={({ field }) => (
-          <Field>
-            <FieldLabel>{t("forms.create.type")}</FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(formTypeSchema.options as FormType[]).map((typeKey) => (
-                  <SelectItem key={typeKey} value={typeKey}>
-                    {t(`forms.types.${typeKey}` as Parameters<typeof t>[0])}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        )}
-      />
+      {allowProFeatures && (
+        <Controller
+          name="instructions"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>
+                {t("forms.create.instructions")}
+              </FieldLabel>
+              <Textarea
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                placeholder={t("forms.create.instructionsPlaceholder")}
+                autoComplete="off"
+                className="min-h-[150px]"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      )}
+      {allowProFeatures ? (
+        <Controller
+          name="type"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("forms.create.type")}</FieldLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(formTypeSchema.options as FormType[]).map((typeKey) => (
+                    <SelectItem key={typeKey} value={typeKey}>
+                      {t(`forms.types.${typeKey}` as Parameters<typeof t>[0])}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+      ) : (
+        <Field>
+          <FieldLabel>{t("forms.create.type")}</FieldLabel>
+          <Input
+            value={t("forms.types.default-only")}
+            readOnly
+            aria-readonly="true"
+          />
+        </Field>
+      )}
       <Controller
         name="language"
         control={form.control}
@@ -306,65 +334,92 @@ export default function CreateFormForm({
           </Field>
         )}
       />
+      {allowProFeatures && (
+        <Controller
+          name="voiceId"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>{t("forms.create.voice")}</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isVoicesPending || voiceOptions.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      isVoicesPending
+                        ? t("forms.create.voiceLoading")
+                        : voiceOptions.length === 0
+                          ? t("forms.create.voiceUnavailable")
+                          : t("forms.create.voicePlaceholder")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {voiceOptions.map((voice) => (
+                    <SelectItem key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {selectedVoice && (
+                <div className="rounded-md border border-border bg-card p-3">
+                  <p className="text-sm font-medium text-foreground">
+                    {selectedVoice.name}
+                  </p>
+                  {selectedVoice.category && (
+                    <p className="text-xs text-muted-foreground">
+                      {selectedVoice.category}
+                    </p>
+                  )}
+                  {selectedVoice.previewUrl && (
+                    <audio
+                      className="mt-2 w-full"
+                      controls
+                      preload="none"
+                      src={selectedVoice.previewUrl}
+                    />
+                  )}
+                </div>
+              )}
+
+              {isVoicesError ? (
+                <FieldDescription className="text-destructive">
+                  {t("forms.create.voiceLoadError")}
+                </FieldDescription>
+              ) : (
+                <FieldDescription>{t("forms.create.voiceHint")}</FieldDescription>
+              )}
+            </Field>
+          )}
+        />
+      )}
       <Controller
-        name="voiceId"
+        name="isPublished"
         control={form.control}
         render={({ field }) => (
           <Field>
-            <FieldLabel>{t("forms.create.voice")}</FieldLabel>
+            <FieldLabel>{t("forms.create.publish")}</FieldLabel>
             <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={isVoicesPending || voiceOptions.length === 0}
+              value={field.value ? "published" : "draft"}
+              onValueChange={(value) => field.onChange(value === "published")}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={
-                    isVoicesPending
-                      ? t("forms.create.voiceLoading")
-                      : voiceOptions.length === 0
-                        ? t("forms.create.voiceUnavailable")
-                        : t("forms.create.voicePlaceholder")
-                  }
-                />
+              <SelectTrigger>
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {voiceOptions.map((voice) => (
-                  <SelectItem key={voice.id} value={voice.id}>
-                    {voice.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="draft">
+                  {t("forms.create.publishOptions.draft")}
+                </SelectItem>
+                <SelectItem value="published">
+                  {t("forms.create.publishOptions.published")}
+                </SelectItem>
               </SelectContent>
             </Select>
-
-            {selectedVoice && (
-              <div className="rounded-md border border-border bg-card p-3">
-                <p className="text-sm font-medium text-foreground">
-                  {selectedVoice.name}
-                </p>
-                {selectedVoice.category && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedVoice.category}
-                  </p>
-                )}
-                {selectedVoice.previewUrl && (
-                  <audio
-                    className="mt-2 w-full"
-                    controls
-                    preload="none"
-                    src={selectedVoice.previewUrl}
-                  />
-                )}
-              </div>
-            )}
-
-            {isVoicesError ? (
-              <FieldDescription className="text-destructive">
-                {t("forms.create.voiceLoadError")}
-              </FieldDescription>
-            ) : (
-              <FieldDescription>{t("forms.create.voiceHint")}</FieldDescription>
-            )}
           </Field>
         )}
       />
@@ -373,6 +428,7 @@ export default function CreateFormForm({
         questionsData={[]}
         language={selectedLanguage}
         onQuestionsChange={setManualQuestions}
+        allowVoiceControls={allowProFeatures}
       />
       <Button
         type="submit"

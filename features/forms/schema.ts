@@ -12,6 +12,16 @@ export const FORM_TYPE_LABELS: Record<FormType, string> = {
 export const formLanguageSchema = z.enum(["en", "it", "es"]);
 export type FormLanguage = z.infer<typeof formLanguageSchema>;
 
+export const FORM_VOICE_SPEED_MIN = 0.7;
+export const FORM_VOICE_SPEED_MAX = 1.2;
+export const FORM_VOICE_SPEED_STEP = 0.05;
+export const FORM_VOICE_SPEED_DEFAULT = 1;
+
+export const formVoiceSpeedSchema = z
+  .number()
+  .min(FORM_VOICE_SPEED_MIN)
+  .max(FORM_VOICE_SPEED_MAX);
+
 export const completionAnalysisStatusSchema = z.enum([
   "idle",
   "processing",
@@ -45,32 +55,17 @@ const createFormQuestionSchema = z.object({
     .length(4),
 });
 
-export const createFormSchema = z
-  .object({
-    name: z.string().min(1),
-    instructions: z.string(),
-    type: formTypeSchema,
-    language: formLanguageSchema,
-    voiceId: z.string().trim().min(1).optional(),
-    questions: z.array(createFormQuestionSchema).optional(),
-  })
-  .superRefine((value, ctx) => {
-    const hasManualQuestions = (value.questions?.length ?? 0) > 0;
-    const hasInstructions = value.instructions.trim().length > 0;
+export const createFormSchema = z.object({
+  name: z.string().min(1),
+  instructions: z.string(),
+  type: formTypeSchema,
+  language: formLanguageSchema,
+  voiceId: z.string().trim().min(1).optional(),
+  isPublished: z.boolean().optional().default(false),
+  questions: z.array(createFormQuestionSchema).optional(),
+});
 
-    if (!hasManualQuestions && !hasInstructions) {
-      ctx.addIssue({
-        code: "too_small",
-        minimum: 1,
-        inclusive: true,
-        origin: "string",
-        path: ["instructions"],
-        input: value.instructions,
-      });
-    }
-  });
-
-export type CreateFormType = z.infer<typeof createFormSchema>;
+export type CreateFormType = z.input<typeof createFormSchema>;
 
 export const getElevenLabsVoicesSchema = z.object({});
 export type GetElevenLabsVoicesType = z.infer<typeof getElevenLabsVoicesSchema>;
@@ -82,6 +77,7 @@ export const editFormSchema = z.object({
   formId: z.string().uuid(),
   name: z.string().trim().min(1),
   type: formTypeSchema,
+  isPublished: z.boolean(),
   theme: formThemeSchema,
   backgroundImageKey: z.string().nullable().optional(),
   backgroundMusicKey: z.string().nullable().optional(),
@@ -92,6 +88,22 @@ export const editFormSchema = z.object({
 });
 
 export type EditFormType = z.infer<typeof editFormSchema>;
+
+export const updateFormVoiceSchema = z.object({
+  formId: z.string().uuid(),
+  voiceId: z.string().trim().min(1),
+  voiceSpeed: formVoiceSpeedSchema,
+});
+
+export type UpdateFormVoiceType = z.infer<typeof updateFormVoiceSchema>;
+
+export const regenerateFormQuestionsTTSSchema = z.object({
+  formId: z.string().uuid(),
+});
+
+export type RegenerateFormQuestionsTTSType = z.infer<
+  typeof regenerateFormQuestionsTTSSchema
+>;
 
 export const editQuestionsSchema = z.object({
   formId: z.string().uuid(),
@@ -171,17 +183,3 @@ export const saveAnalysisInstructionsSchema = z.object({
 export type SaveAnalysisInstructionsType = z.infer<
   typeof saveAnalysisInstructionsSchema
 >;
-
-export const assignFormUserSchema = z.object({
-  formId: z.string().uuid(),
-  userId: z.string().uuid(),
-});
-
-export type AssignFormUserType = z.infer<typeof assignFormUserSchema>;
-
-export const unassignFormUserSchema = z.object({
-  formId: z.string().uuid(),
-  userId: z.string().uuid(),
-});
-
-export type UnassignFormUserType = z.infer<typeof unassignFormUserSchema>;

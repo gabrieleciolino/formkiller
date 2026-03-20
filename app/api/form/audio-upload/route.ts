@@ -1,6 +1,7 @@
 import { uploadFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
+import { canUseProFeatures } from "@/lib/account";
 import { z } from "zod";
 
 const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB
@@ -76,6 +77,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Invalid question/form association" },
       { status: 400 },
+    );
+  }
+
+  const { data: formOwner, error: formOwnerError } = await supabaseAdmin
+    .from("form")
+    .select("user_id")
+    .eq("id", formId)
+    .maybeSingle();
+
+  if (formOwnerError || !formOwner) {
+    return NextResponse.json({ error: "Unable to validate form owner" }, { status: 500 });
+  }
+
+  const { data: account, error: accountError } = await supabaseAdmin
+    .from("account")
+    .select("role, tier")
+    .eq("user_id", formOwner.user_id)
+    .maybeSingle();
+
+  if (accountError || !account) {
+    return NextResponse.json({ error: "Unable to validate owner account" }, { status: 500 });
+  }
+
+  const isProEnabled = canUseProFeatures({
+    role: account.role,
+    tier: account.tier ?? "free",
+  });
+  if (!isProEnabled) {
+    return NextResponse.json(
+      { error: "Voice answers are available only for pro forms" },
+      { status: 403 },
     );
   }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { isLikelyInAppBrowser } from "@/features/forms/components/form-viewer/browser-utils";
-import { LandingContactTechBackground } from "@/features/forms/components/form-viewer/landing-contact-tech-background";
 import type { LeadFormProps } from "@/features/forms/types";
 import { createLeadAction } from "@/features/forms/public-actions";
 import { createLeadSchema, type CreateLeadType } from "@/features/leads/schema";
@@ -21,7 +20,6 @@ export function LeadForm({
   onCompleted,
   bgStyle,
   hasBackgroundImage,
-  showLandingContactTechBackground,
   overlayClassName,
   isDark,
 }: LeadFormProps) {
@@ -174,8 +172,6 @@ export function LeadForm({
       className={`relative flex h-dvh flex-col items-center justify-center overflow-hidden px-6 ${isDark ? "bg-black text-white" : "bg-white text-foreground"}`}
       style={bgStyle}
     >
-      {showLandingContactTechBackground && <LandingContactTechBackground />}
-
       {hasBackgroundImage && (
         <div className={`absolute inset-0 ${overlayClassName}`} />
       )}

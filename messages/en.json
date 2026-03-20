@@ -13,7 +13,18 @@
       "password": "Password",
       "submit": "Login",
       "success": "Logged in.",
-      "error": "Login failed."
+      "error": "Login failed.",
+      "registerCta": "Create a free account"
+    },
+    "register": {
+      "title": "Create account",
+      "description": "Start with a free plan in seconds.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account",
+      "success": "Account created successfully.",
+      "error": "Account creation failed.",
+      "loginCta": "Already have an account? Sign in"
     }
   },
   "dashboard": {
@@ -136,12 +147,24 @@
         "userId": "User ID",
         "email": "Email",
         "role": "Role",
-        "createdAt": "Created at"
+        "tier": "Plan",
+        "createdAt": "Created at",
+        "actions": "Actions"
       },
       "roles": {
         "admin": "Admin",
         "user": "User"
       },
+      "tiers": {
+        "free": "Free",
+        "pro": "Pro"
+      },
+      "actions": {
+        "makePro": "Set Pro",
+        "makeFree": "Set Free"
+      },
+      "tierUpdated": "User plan updated.",
+      "tierUpdateError": "Failed to update user plan.",
       "create": {
         "trigger": "New user",
         "title": "Create user",
@@ -149,6 +172,7 @@
         "emailPlaceholder": "user@email.com",
         "password": "Password",
         "role": "Role",
+        "tier": "Plan",
         "submit": "Create user",
         "success": "User created successfully.",
         "error": "User creation failed."
@@ -172,6 +196,12 @@
       "voiceHint": "Choose which ElevenLabs voice will be used for question audio generation.",
       "voiceLoadError": "Unable to load ElevenLabs voices. The default voice will be used.",
       "defaultVoiceName": "Default voice",
+      "publish": "Publication",
+      "publishOptions": {
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "freeManualQuestionsRequired": "Free plan requires at least one manual question.",
       "creating": "Creating...",
       "submit": "Create form",
       "success": "Form successfully created.",
@@ -185,7 +215,28 @@
       "instructions": "Instructions",
       "instructionsPlaceholder": "Instructions",
       "type": "Type",
+      "voiceTrigger": "Change voice",
+      "voiceTitle": "Change form voice",
+      "voice": "AI voice",
+      "voicePlaceholder": "Select a voice",
+      "voiceLoading": "Loading voices...",
+      "voiceUnavailable": "No voices available",
+      "voiceHint": "Save voice and speed: these options will be used for question audio regeneration.",
+      "voiceLoadError": "Unable to load ElevenLabs voices.",
+      "defaultVoiceName": "Default voice",
+      "voiceSpeed": "Voice speed",
+      "voiceSpeedHint": "Control ElevenLabs speech speed.",
+      "voicePreviewUnavailable": "Preview unavailable for this voice.",
+      "voiceSave": "Save voice options",
+      "voiceSaving": "Saving...",
+      "voiceSaveSuccess": "Voice options saved.",
+      "voiceSaveError": "Failed to save voice options.",
       "theme": "Theme",
+      "publish": "Publication",
+      "publishOptions": {
+        "draft": "Draft",
+        "published": "Published"
+      },
       "introTitle": "Intro title",
       "introTitlePlaceholder": "Enter the welcome screen title",
       "introMessage": "Intro message",
@@ -268,12 +319,18 @@
       "defaultAnswers": "Default answers",
       "answerPlaceholder": "Answer {index}",
       "questionLabel": "Question {index}",
+      "voiceUsed": "Voice in use: {voice} · Speed: {speed}x",
+      "voiceDefaultName": "Default voice",
+      "regenerateAll": "Regenerate all",
+      "regeneratingAll": "Regenerating...",
       "play": "Play",
       "generateTts": "Generate TTS",
       "generating": "Generating...",
       "submit": "Update",
       "ttsSuccess": "TTS generated.",
+      "ttsAllSuccess": "Audio regenerated for all questions.",
       "ttsError": "TTS generation failed.",
+      "ttsAllError": "Global audio regeneration failed.",
       "success": "Questions successfully updated.",
       "error": "Questions update failed."
     },

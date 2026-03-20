@@ -1,6 +1,6 @@
 "use server";
 
-import { createUserSchema } from "@/features/users/schema";
+import { createUserSchema, updateUserTierSchema } from "@/features/users/schema";
 import { adminActionClient } from "@/lib/actions";
 import { urls } from "@/lib/urls";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -28,6 +28,7 @@ export const createUserAction = adminActionClient
         .insert({
           user_id: data.user.id,
           role: parsedInput.role,
+          tier: parsedInput.tier,
         })
         .throwOnError();
     } catch (accountError) {
@@ -48,4 +49,20 @@ export const createUserAction = adminActionClient
     revalidatePath(urls.admin.users.index);
 
     return { userId: data.user.id };
+  });
+
+export const updateUserTierAction = adminActionClient
+  .inputSchema(updateUserTierSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { supabase } = ctx;
+    const { userId, tier } = parsedInput;
+
+    await supabase
+      .from("account")
+      .update({ tier })
+      .eq("user_id", userId)
+      .eq("role", "user")
+      .throwOnError();
+
+    revalidatePath(urls.admin.users.index);
   });

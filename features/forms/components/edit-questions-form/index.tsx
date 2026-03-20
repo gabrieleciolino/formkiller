@@ -3,17 +3,23 @@
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { editQuestionsAction } from "@/features/forms/actions";
 import {
+  editQuestionsAction,
+  getElevenLabsVoicesAction,
+  regenerateFormQuestionsTTSAction,
+} from "@/features/forms/actions";
+import {
+  FORM_VOICE_SPEED_DEFAULT,
   editQuestionsSchema,
   EditQuestionsType,
 } from "@/features/forms/schema";
 import type { EditQuestionsFormProps } from "@/features/forms/types";
 import { useZodLocale } from "@/hooks/use-zod-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusIcon, Trash2 } from "lucide-react";
+import { PlusIcon, Trash2, WandSparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import AddQuestionSheet from "@/features/forms/components/edit-questions-form/add-question-sheet";
@@ -25,17 +31,31 @@ export default function EditQuestionsForm({
   questionsData,
   formId,
   language,
+  voiceId = null,
+  voiceSpeed = FORM_VOICE_SPEED_DEFAULT,
   initialFileUrls = {},
   mode = "edit",
   onQuestionsChange,
   readOnly = false,
+  allowVoiceControls = true,
 }: EditQuestionsFormProps) {
   const t = useTranslations();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isRegeneratingAll, startRegeneratingAll] = useTransition();
+  const [voiceNameById, setVoiceNameById] = useState<Record<string, string>>({});
   useZodLocale();
   const isCreateMode = mode === "create";
   const resolvedFormId =
     formId ?? "00000000-0000-0000-0000-000000000000";
+  const normalizedVoiceSpeed =
+    typeof voiceSpeed === "number" && Number.isFinite(voiceSpeed)
+      ? voiceSpeed
+      : FORM_VOICE_SPEED_DEFAULT;
+  const normalizedVoiceId = voiceId?.trim() || null;
+  const voiceLabel = normalizedVoiceId
+    ? voiceNameById[normalizedVoiceId] ?? normalizedVoiceId
+    : t("forms.questions.voiceDefaultName");
 
   if (!isCreateMode && !formId) {
     throw new Error("formId is required in edit mode");
@@ -87,6 +107,55 @@ export default function EditQuestionsForm({
     onQuestionsChange(normalizedQuestions);
   }, [isCreateMode, onQuestionsChange, watchedQuestions]);
 
+  useEffect(() => {
+    if (isCreateMode || !allowVoiceControls) {
+      return;
+    }
+
+    let isActive = true;
+
+    const loadVoices = async () => {
+      try {
+        const {
+          data,
+          serverError,
+          validationErrors,
+        } = await getElevenLabsVoicesAction({});
+
+        if (serverError || validationErrors || !data) {
+          throw new Error();
+        }
+
+        if (!isActive) {
+          return;
+        }
+
+        const nextVoiceNameById: Record<string, string> = Object.fromEntries(
+          data.voices.map((voice) => [voice.id, voice.name]),
+        );
+        const defaultVoiceId = data.defaultVoiceId?.trim();
+
+        if (defaultVoiceId && !nextVoiceNameById[defaultVoiceId]) {
+          nextVoiceNameById[defaultVoiceId] = t("forms.questions.voiceDefaultName");
+        }
+
+        setVoiceNameById(nextVoiceNameById);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setVoiceNameById({});
+      }
+    };
+
+    void loadVoices();
+
+    return () => {
+      isActive = false;
+    };
+  }, [allowVoiceControls, isCreateMode, t]);
+
   const handleAddLocalQuestion = () => {
     append({
       id: crypto.randomUUID(),
@@ -118,6 +187,28 @@ export default function EditQuestionsForm({
     });
   };
 
+  const handleRegenerateAll = () => {
+    if (readOnly || isCreateMode || !formId) {
+      return;
+    }
+
+    startRegeneratingAll(async () => {
+      try {
+        const { data, serverError, validationErrors } =
+          await regenerateFormQuestionsTTSAction({ formId });
+
+        if (serverError || validationErrors || !data) {
+          throw new Error();
+        }
+
+        toast(t("forms.questions.ttsAllSuccess"));
+        router.refresh();
+      } catch {
+        toast(t("forms.questions.ttsAllError"));
+      }
+    });
+  };
+
   return (
     <form
       onSubmit={
@@ -130,7 +221,21 @@ export default function EditQuestionsForm({
       className="space-y-4"
     >
       {!readOnly && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {!isCreateMode && allowVoiceControls && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerateAll}
+              disabled={isRegeneratingAll}
+            >
+              <WandSparklesIcon />
+              {isRegeneratingAll
+                ? t("forms.questions.regeneratingAll")
+                : t("forms.questions.regenerateAll")}
+            </Button>
+          )}
           {isCreateMode ? (
             <Button
               type="button"
@@ -206,7 +311,16 @@ export default function EditQuestionsForm({
               readOnly={readOnly}
             />
 
-            {!isCreateMode && (
+            {!isCreateMode && allowVoiceControls && (
+              <p className="text-xs text-muted-foreground">
+                {t("forms.questions.voiceUsed", {
+                  voice: voiceLabel,
+                  speed: normalizedVoiceSpeed.toFixed(2),
+                })}
+              </p>
+            )}
+
+            {!isCreateMode && allowVoiceControls && (
               <QuestionTTSControls
                 questionId={questionField.id}
                 formId={formId!}

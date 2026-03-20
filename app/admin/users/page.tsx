@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateUserSheet from "@/features/users/components/create-user-sheet";
+import UserTierToggle from "@/features/users/components/user-tier-toggle";
 import { getAdminUsersQuery } from "@/features/users/queries";
 import { adminQuery } from "@/lib/queries";
 import { getTranslations } from "next-intl/server";
@@ -33,7 +34,9 @@ export default async function AdminUsersPage() {
               <TableHead>{t("dashboard.users.columns.userId")}</TableHead>
               <TableHead>{t("dashboard.users.columns.email")}</TableHead>
               <TableHead>{t("dashboard.users.columns.role")}</TableHead>
+              <TableHead>{t("dashboard.users.columns.tier")}</TableHead>
               <TableHead>{t("dashboard.users.columns.createdAt")}</TableHead>
+              <TableHead>{t("dashboard.users.columns.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -41,7 +44,7 @@ export default async function AdminUsersPage() {
               <TableRow>
                 <TableCell
                   className="text-muted-foreground"
-                  colSpan={4}
+                  colSpan={6}
                 >
                   {t("dashboard.users.empty")}
                 </TableCell>
@@ -59,9 +62,26 @@ export default async function AdminUsersPage() {
                     )}
                   </TableCell>
                   <TableCell>
+                    {t(
+                      `dashboard.users.tiers.${user.tier ?? "free"}` as Parameters<
+                        typeof t
+                      >[0],
+                    )}
+                  </TableCell>
+                  <TableCell>
                     {user.created_at
                       ? new Date(user.created_at).toLocaleString()
                       : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {user.role === "user" ? (
+                      <UserTierToggle
+                        userId={user.user_id}
+                        currentTier={user.tier ?? "free"}
+                      />
+                    ) : (
+                      "—"
+                    )}
                   </TableCell>
                 </TableRow>
               ))

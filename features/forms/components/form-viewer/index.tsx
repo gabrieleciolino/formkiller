@@ -108,15 +108,10 @@ export default function FormViewer({ form }: FormViewerProps) {
   const isLast = currentIndex === questions.length - 1;
   const showDefaultAnswers = form.type !== "voice-only";
   const showRecording = form.type !== "default-only";
-  const isLandingContactForm = form.isLandingContactForm;
-  const isDark = isLandingContactForm ? false : form.theme !== "light";
+  const isDark = form.theme !== "light";
   const tk = getFormViewerThemeTokens(isDark);
-  const hasBackgroundImage = isLandingContactForm
-    ? false
-    : Boolean(form.backgroundImageUrl);
-  const hasBackgroundMusic = isLandingContactForm
-    ? false
-    : Boolean(form.backgroundMusicUrl);
+  const hasBackgroundImage = Boolean(form.backgroundImageUrl);
+  const hasBackgroundMusic = Boolean(form.backgroundMusicUrl);
   const displayedText = useTypewriter(
     phase === "question" ? (currentQuestion?.question ?? "") : "",
   );
@@ -237,7 +232,7 @@ export default function FormViewer({ form }: FormViewerProps) {
 
         const actionStartAt = performance.now();
         let { data, serverError } = await startFormSessionAction({
-          assignmentId: form.assignmentId,
+          formSlug: form.slug,
           turnstileToken,
         });
         startActionMs = performance.now() - actionStartAt;
@@ -266,7 +261,7 @@ export default function FormViewer({ form }: FormViewerProps) {
 
           const retryActionStartAt = performance.now();
           ({ data, serverError } = await startFormSessionAction({
-            assignmentId: form.assignmentId,
+            formSlug: form.slug,
             turnstileToken,
           }));
           startActionMs += performance.now() - retryActionStartAt;
@@ -547,7 +542,6 @@ export default function FormViewer({ form }: FormViewerProps) {
         bgStyle={bgStyle}
         formName={form.name}
         hasBackgroundImage={hasBackgroundImage}
-        showLandingContactTechBackground={isLandingContactForm}
         isDark={isDark}
         introMessage={form.introMessage}
         introTitle={form.introTitle}
@@ -564,7 +558,6 @@ export default function FormViewer({ form }: FormViewerProps) {
         formId={form.id}
         bgStyle={bgStyle}
         hasBackgroundImage={hasBackgroundImage}
-        showLandingContactTechBackground={isLandingContactForm}
         overlayClassName={tk.overlay}
         isDark={isDark}
         getTurnstileToken={getTurnstileToken}
@@ -601,7 +594,6 @@ export default function FormViewer({ form }: FormViewerProps) {
         analysisStatus={completionPayload.analysisStatus}
         isAnalyzing={completionPayload.analysisStatus === "processing"}
         hasBackgroundImage={hasBackgroundImage}
-        showLandingContactTechBackground={isLandingContactForm}
         isDark={isDark}
         tk={tk}
       />
@@ -616,7 +608,6 @@ export default function FormViewer({ form }: FormViewerProps) {
         displayedText={displayedText}
         hasBackgroundImage={hasBackgroundImage}
         hasBackgroundMusic={hasBackgroundMusic}
-        showLandingContactTechBackground={isLandingContactForm}
         isDark={isDark}
         isLast={isLast}
         isMuted={isMuted}

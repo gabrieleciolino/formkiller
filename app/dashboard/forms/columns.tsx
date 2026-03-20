@@ -1,12 +1,40 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { deleteFormAction } from "@/features/forms/actions";
 import { DashboardForm } from "@/features/forms/types";
 import { urls } from "@/lib/urls";
 import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTransition } from "react";
+
+function DeleteFormButton({ formId }: { formId: string }) {
+  const t = useTranslations();
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    if (!confirm(t("dashboard.forms.columns.confirmDelete"))) return;
+    startTransition(async () => {
+      await deleteFormAction({ formId });
+    });
+  };
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      onClick={handleDelete}
+      disabled={isPending}
+      title={t("dashboard.forms.columns.delete")}
+    >
+      <Trash2 className="size-4" />
+    </Button>
+  );
+}
 
 export function useFormsColumns(): ColumnDef<DashboardForm>[] {
   const t = useTranslations();
@@ -47,7 +75,8 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
       id: "actions",
       header: t("dashboard.forms.columns.actions"),
       cell: ({ row }) => {
-        const assignmentId = row.original.assignment_id;
+        const formSlug = row.original.slug;
+        const isPublished = row.original.is_published;
 
         return (
           <div className="flex items-center gap-2">
@@ -56,9 +85,9 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
                 {t("dashboard.forms.columns.view")}
               </Link>
             </Button>
-            {assignmentId ? (
+            {isPublished && formSlug ? (
               <Button asChild size="sm" variant="outline">
-                <Link href={urls.form(assignmentId)} target="_blank">
+                <Link href={urls.form(formSlug)} target="_blank">
                   {t("dashboard.forms.columns.open")}
                 </Link>
               </Button>
@@ -67,6 +96,7 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
                 {t("dashboard.forms.columns.open")}
               </Button>
             )}
+            <DeleteFormButton formId={row.original.id} />
           </div>
         );
       },

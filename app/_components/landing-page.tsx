@@ -86,12 +86,12 @@ const modeIcons = [Layers, Mic, MousePointerClick];
 
 interface LandingPageProps {
   content: LandingContent;
-  contactFormId: string;
+  contactFormSlug: string;
 }
 
 export default function LandingPage({
   content,
-  contactFormId,
+  contactFormSlug,
 }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
@@ -332,9 +332,9 @@ export default function LandingPage({
               {content.ctaSectionDescription}
             </p>
             <div className="mx-auto mt-10 max-w-md overflow-hidden rounded-2xl border border-primary-foreground/20 bg-primary-foreground/5 shadow-sm">
-              {contactFormId ? (
+              {contactFormSlug ? (
                 <iframe
-                  src={urls.form(contactFormId)}
+                  src={urls.form(contactFormSlug)}
                   title={content.ctaSectionFormTitle}
                   loading="lazy"
                   allow="microphone"

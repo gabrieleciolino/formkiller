@@ -2,7 +2,7 @@ import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
 export const metadata = getHomeMetadata("en");
-const contactFormId = (process.env.CONTACT_FORM_ID ?? "").trim();
+const contactFormSlug = (process.env.CONTACT_FORM_SLUG ?? "").trim();
 
 const content: LandingContent = {
   nav: {
@@ -132,7 +132,7 @@ const content: LandingContent = {
     "Tell us your goal and we'll help you design the right conversational flow.",
   ctaSectionFormTitle: "FormKiller contact form",
   ctaSectionFormUnavailable:
-    "Set CONTACT_FORM_ID to display the embedded contact form.",
+    "Set CONTACT_FORM_SLUG to display the embedded contact form.",
   cookieBanner: {
     title: "This site uses cookies",
     description:
@@ -151,5 +151,5 @@ const content: LandingContent = {
 };
 
 export default function HomePage() {
-  return <LandingPage content={content} contactFormId={contactFormId} />;
+  return <LandingPage content={content} contactFormSlug={contactFormSlug} />;
 }

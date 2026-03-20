@@ -1,6 +1,10 @@
 import DashboardWrapper from "@/app/dashboard/__components/wrapper";
 import { Separator } from "@/components/ui/separator";
+import { canUseProFeatures } from "@/lib/account";
+import ChangeFormVoiceSheet from "@/features/forms/components/change-form-voice-sheet";
+import EditFormSheet from "@/features/forms/components/edit-form-sheet";
 import EditQuestionsForm from "@/features/forms/components/edit-questions-form";
+import GenerateAnalysisSheet from "@/features/forms/components/generate-analysis-sheet";
 import { getUserFormByIdQuery } from "@/features/forms/queries";
 import { EditQuestionsType } from "@/features/forms/schema";
 import { authenticatedQuery } from "@/lib/queries";
@@ -15,12 +19,18 @@ export default async function FormsDetailPage({
 }) {
   const { formId } = await params;
 
-  const [form, t] = await Promise.all([
-    authenticatedQuery(async ({ supabase, userId }) =>
-      getUserFormByIdQuery({ formId, userId, supabase }),
-    ),
+  const [result, t] = await Promise.all([
+    authenticatedQuery(async ({ supabase, userId, userRole, userTier }) => {
+      const form = await getUserFormByIdQuery({ formId, userId, supabase });
+      return {
+        form,
+        isProEnabled: canUseProFeatures({ role: userRole, tier: userTier }),
+      };
+    }),
     getTranslations(),
   ]);
+
+  const { form, isProEnabled } = result;
 
   if (!form) notFound();
 
@@ -35,8 +45,41 @@ export default async function FormsDetailPage({
     ]),
   );
 
+  const backgroundImageUrl = form.background_image_key
+    ? getFileUrl(form.background_image_key)
+    : null;
+  const backgroundMusicUrl = form.background_music_key
+    ? getFileUrl(form.background_music_key)
+    : null;
+
   return (
-    <DashboardWrapper title={form.name}>
+    <DashboardWrapper
+      title={form.name}
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          {isProEnabled && (
+            <>
+              <ChangeFormVoiceSheet
+                formId={form.id}
+                initialVoiceId={form.voice_id}
+                initialVoiceSpeed={form.voice_speed}
+              />
+              <GenerateAnalysisSheet
+                formId={form.id}
+                initialAnalysisInstructions={form.analysis_instructions}
+              />
+            </>
+          )}
+          <EditFormSheet
+            formData={form}
+            backgroundImageUrl={backgroundImageUrl}
+            backgroundMusicUrl={backgroundMusicUrl}
+            allowProFeatures={isProEnabled}
+            showAssetControls={false}
+          />
+        </div>
+      }
+    >
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="space-y-1">
           <p className="text-sm font-medium">
@@ -67,7 +110,7 @@ export default async function FormsDetailPage({
         formId={formId}
         language={form.language}
         initialFileUrls={initialFileUrls}
-        readOnly
+        allowVoiceControls={isProEnabled}
       />
     </DashboardWrapper>
   );

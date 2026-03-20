@@ -1,4 +1,7 @@
-import { createFormSchema } from "@/features/forms/schema";
+import {
+  createFormSchema,
+  FORM_VOICE_SPEED_DEFAULT,
+} from "@/features/forms/schema";
 import { generateForm } from "@/lib/ai/functions";
 import { deleteFile } from "@/lib/r2/functions";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -11,6 +14,9 @@ import { z } from "zod";
 
 const formCreatePayloadSchema = createFormSchema.extend({
   userId: z.string().uuid(),
+  allowAiAndVoice: z.boolean(),
+  slug: z.string().trim().min(1),
+  isPublished: z.boolean(),
 });
 
 type FormCreatePayload = z.infer<typeof formCreatePayloadSchema>;
@@ -24,12 +30,23 @@ export const formCreateTask = task({
   id: "form-create",
   run: async (payload: FormCreatePayload) => {
     const parsedPayload = formCreatePayloadSchema.parse(payload);
-    const { userId, name, instructions, type, language, voiceId, questions = [] } =
-      parsedPayload;
-    const normalizedInstructions = instructions.trim();
-    const normalizedVoiceId = voiceId?.trim() || null;
+    const {
+      userId,
+      name,
+      instructions,
+      type,
+      language,
+      voiceId,
+      questions = [],
+      allowAiAndVoice,
+      slug,
+      isPublished,
+    } = parsedPayload;
+    const normalizedInstructions = allowAiAndVoice ? instructions.trim() : "";
+    const normalizedVoiceId = allowAiAndVoice ? voiceId?.trim() || null : null;
     const fallbackVoiceId = getDefaultElevenLabsVoiceId();
     const resolvedVoiceId = normalizedVoiceId ?? fallbackVoiceId;
+    const resolvedVoiceSpeed = FORM_VOICE_SPEED_DEFAULT;
     const generatedTtsKeys: string[] = [];
     let createdFormId: string | null = null;
 
@@ -60,6 +77,10 @@ export const formCreateTask = task({
         : [];
 
       if (!hasManualQuestions) {
+        if (!allowAiAndVoice) {
+          throw new Error("Manual questions are required on free tier");
+        }
+
         const output = await generateForm({
           instructions: normalizedInstructions,
           language,
@@ -82,8 +103,11 @@ export const formCreateTask = task({
           name,
           instructions: normalizedInstructions,
           type,
+          slug,
+          is_published: isPublished,
           language,
-          voice_id: resolvedVoiceId,
+          voice_id: allowAiAndVoice ? resolvedVoiceId : null,
+          voice_speed: resolvedVoiceSpeed,
           user_id: userId,
           intro_title: introTitle,
           intro_message: introMessage,
@@ -121,31 +145,34 @@ export const formCreateTask = task({
         }),
       );
 
-      const ttsResults = await Promise.all(
-        insertedQuestions.map((question) =>
-          generateTTS({
-            text: question.question,
-            formId: form.id,
-            language,
-            voiceId: resolvedVoiceId,
-          }),
-        ),
-      );
-      generatedTtsKeys.push(...ttsResults.map((result) => result.key));
+      if (allowAiAndVoice && type !== "default-only") {
+        const ttsResults = await Promise.all(
+          insertedQuestions.map((question) =>
+            generateTTS({
+              text: question.question,
+              formId: form.id,
+              language,
+              voiceId: resolvedVoiceId,
+              voiceSpeed: resolvedVoiceSpeed,
+            }),
+          ),
+        );
+        generatedTtsKeys.push(...ttsResults.map((result) => result.key));
 
-      await Promise.all(
-        insertedQuestions.map((question, index) =>
-          supabaseAdmin
-            .from("question")
-            .update({
-              file_key: ttsResults[index].key,
-              file_generated_at: new Date().toUTCString(),
-            })
-            .eq("id", question.id)
-            .eq("form_id", form.id)
-            .throwOnError(),
-        ),
-      );
+        await Promise.all(
+          insertedQuestions.map((question, index) =>
+            supabaseAdmin
+              .from("question")
+              .update({
+                file_key: ttsResults[index].key,
+                file_generated_at: new Date().toUTCString(),
+              })
+              .eq("id", question.id)
+              .eq("form_id", form.id)
+              .throwOnError(),
+          ),
+        );
+      }
 
       logger.log("Completed form create task", {
         userId,

@@ -9,6 +9,7 @@ import {
   pgPolicy,
   pgSchema,
   pgTable,
+  real,
   text,
   timestamp,
   unique,
@@ -34,6 +35,7 @@ const authUserTable = pgSchema("auth").table("users", {
 });
 
 export const accountRoleEnum = pgEnum("account_role", ["admin", "user"]);
+export const accountTierEnum = pgEnum("account_tier", ["free", "pro"]);
 
 const isAdminExpr = sql`
   exists (
@@ -59,6 +61,15 @@ const ownsFormExpr = (formIdCol: AnyPgColumn): SQL => sql`
   )
 `;
 
+const isPublishedFormExpr = (formIdCol: AnyPgColumn): SQL => sql`
+  exists (
+    select 1
+    from "form" f
+    where f.id = ${formIdCol}
+      and f.is_published = true
+  )
+`;
+
 const isPublishedTestExpr = (testIdCol: AnyPgColumn): SQL => sql`
   exists (
     select 1
@@ -79,6 +90,7 @@ export const accountTable = pgTable(
       .primaryKey(),
 
     role: accountRoleEnum("role").notNull().default("user"),
+    tier: accountTierEnum("tier").notNull().default("free"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
@@ -92,7 +104,7 @@ export const accountTable = pgTable(
     pgPolicy("account_insert_own_user", {
       for: "insert",
       to: authenticatedRole,
-      withCheck: sql`${isOwnerExpr(t.userId)} and ${t.role} = 'user'`,
+      withCheck: sql`${isOwnerExpr(t.userId)} and ${t.role} = 'user' and ${t.tier} = 'free'`,
     }),
   ],
 ).enableRLS();
@@ -170,10 +182,13 @@ export const formTable = pgTable(
       .references(() => authUserTable.id, { onDelete: "cascade" }),
 
     name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    isPublished: boolean("is_published").notNull().default(false),
     instructions: text("instructions").notNull(),
     type: formTypeEnum("type").notNull().default("mixed"),
     language: formLanguageEnum("language").notNull().default("en"),
     voiceId: text("voice_id"),
+    voiceSpeed: real("voice_speed").notNull().default(1),
 
     backgroundImageKey: text("background_image_key"),
     backgroundMusicKey: text("background_music_key"),
@@ -188,10 +203,16 @@ export const formTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [
+    unique("form_slug_unique").on(t.slug),
     pgPolicy("form_select_public", {
       for: "select",
       to: "public",
-      using: sql`true`,
+      using: sql`${t.isPublished} = true`,
+    }),
+    pgPolicy("form_select_owner_or_admin", {
+      for: "select",
+      to: authenticatedRole,
+      using: isOwnerOrAdminExpr(t.userId),
     }),
     pgPolicy("form_insert_owner_or_admin", {
       for: "insert",
@@ -285,7 +306,18 @@ export const questionTable = pgTable(
     pgPolicy("question_select_public", {
       for: "select",
       to: "public",
-      using: sql`exists (select 1 from "form" f where f.id = ${t.formId})`,
+      using: isPublishedFormExpr(t.formId),
+    }),
+    pgPolicy("question_select_owner_or_admin", {
+      for: "select",
+      to: authenticatedRole,
+      using: sql`
+        ${isAdminExpr}
+        or (
+          ${isOwnerExpr(t.userId)}
+          and ${ownsFormExpr(t.formId)}
+        )
+      `,
     }),
     pgPolicy("question_insert_owner_or_admin", {
       for: "insert",

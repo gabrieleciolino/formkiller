@@ -43,18 +43,21 @@ export type Database = {
         Row: {
           created_at: string | null
           role: Database["public"]["Enums"]["account_role"]
+          tier: Database["public"]["Enums"]["account_tier"]
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           role?: Database["public"]["Enums"]["account_role"]
+          tier?: Database["public"]["Enums"]["account_tier"]
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           role?: Database["public"]["Enums"]["account_role"]
+          tier?: Database["public"]["Enums"]["account_tier"]
           updated_at?: string | null
           user_id?: string
         }
@@ -172,13 +175,16 @@ export type Database = {
           instructions: string
           intro_message: string | null
           intro_title: string | null
+          is_published: boolean
           language: Database["public"]["Enums"]["form_language"]
           name: string
+          slug: string
           theme: Database["public"]["Enums"]["form_theme"]
           type: Database["public"]["Enums"]["form_type"]
           updated_at: string | null
           user_id: string
           voice_id: string | null
+          voice_speed: number
         }
         Insert: {
           analysis_instructions?: string | null
@@ -191,13 +197,16 @@ export type Database = {
           instructions: string
           intro_message?: string | null
           intro_title?: string | null
+          is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name: string
+          slug: string
           theme?: Database["public"]["Enums"]["form_theme"]
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id: string
           voice_id?: string | null
+          voice_speed?: number
         }
         Update: {
           analysis_instructions?: string | null
@@ -210,13 +219,16 @@ export type Database = {
           instructions?: string
           intro_message?: string | null
           intro_title?: string | null
+          is_published?: boolean
           language?: Database["public"]["Enums"]["form_language"]
           name?: string
+          slug?: string
           theme?: Database["public"]["Enums"]["form_theme"]
           type?: Database["public"]["Enums"]["form_type"]
           updated_at?: string | null
           user_id?: string
           voice_id?: string | null
+          voice_speed?: number
         }
         Relationships: []
       }
@@ -616,6 +628,7 @@ export type Database = {
     }
     Enums: {
       account_role: "admin" | "user"
+      account_tier: "free" | "pro"
       asset_type: "image" | "video" | "audio"
       form_language: "en" | "it" | "es"
       form_session_status: "pending" | "in_progress" | "completed"
@@ -755,6 +768,7 @@ export const Constants = {
   public: {
     Enums: {
       account_role: ["admin", "user"],
+      account_tier: ["free", "pro"],
       asset_type: ["image", "video", "audio"],
       form_language: ["en", "it", "es"],
       form_session_status: ["pending", "in_progress", "completed"],
