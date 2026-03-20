@@ -1,7 +1,6 @@
 import FormViewer from "@/features/forms/components/form-viewer";
-import { getPublishedFormViewerBySlugQuery } from "@/features/forms/queries";
+import { getPublishedFormViewerByUsernameAndSlugQuery } from "@/features/forms/queries";
 import type { ViewerFormData, ViewerQuestion } from "@/features/forms/types";
-import { publicQuery } from "@/lib/queries";
 import { getFileUrl } from "@/lib/r2/functions";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
@@ -9,13 +8,14 @@ import { notFound } from "next/navigation";
 export default async function PublicFormPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ username: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { username, slug } = await params;
 
-  const form = await publicQuery(async ({ supabase }) =>
-    getPublishedFormViewerBySlugQuery({ slug, supabase }),
-  );
+  const form = await getPublishedFormViewerByUsernameAndSlugQuery({
+    username,
+    slug,
+  });
 
   if (!form) {
     notFound();
@@ -31,6 +31,7 @@ export default async function PublicFormPage({
 
   const viewerForm: ViewerFormData = {
     id: form.id,
+    username: form.owner_username,
     slug,
     name: form.name,
     userId: form.user_id,
@@ -63,3 +64,4 @@ export default async function PublicFormPage({
     </NextIntlClientProvider>
   );
 }
+

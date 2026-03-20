@@ -2,6 +2,7 @@ import LandingPage, { LandingContent } from "@/app/_components/landing-page";
 import { getHomeMetadata } from "@/lib/seo/home-metadata";
 
 export const metadata = getHomeMetadata("it");
+const contactFormUsername = (process.env.CONTACT_FORM_USERNAME ?? "").trim();
 const contactFormSlug = (process.env.CONTACT_FORM_SLUG ?? "").trim();
 
 const content: LandingContent = {
@@ -140,7 +141,7 @@ const content: LandingContent = {
     "Raccontaci il tuo obiettivo e ti aiutiamo a disegnare il flusso conversazionale giusto.",
   ctaSectionFormTitle: "Form di contatto FormKiller",
   ctaSectionFormUnavailable:
-    "Imposta CONTACT_FORM_SLUG per mostrare il form di contatto incorporato.",
+    "Imposta CONTACT_FORM_USERNAME e CONTACT_FORM_SLUG per mostrare il form di contatto incorporato.",
   cookieBanner: {
     title: "Questo sito utilizza cookie",
     description:
@@ -159,5 +160,11 @@ const content: LandingContent = {
 };
 
 export default function HomePageIT() {
-  return <LandingPage content={content} contactFormSlug={contactFormSlug} />;
+  return (
+    <LandingPage
+      content={content}
+      contactFormUsername={contactFormUsername}
+      contactFormSlug={contactFormSlug}
+    />
+  );
 }

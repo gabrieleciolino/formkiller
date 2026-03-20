@@ -89,6 +89,7 @@ export const accountTable = pgTable(
       })
       .primaryKey(),
 
+    username: text("username").notNull(),
     role: accountRoleEnum("role").notNull().default("user"),
     tier: accountTierEnum("tier").notNull().default("free"),
 
@@ -96,6 +97,7 @@ export const accountTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [
+    unique("account_username_unique").on(t.username),
     pgPolicy("account_select_own", {
       for: "select",
       to: authenticatedRole,

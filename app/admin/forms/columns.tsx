@@ -84,6 +84,7 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
       cell: ({ row }) => {
         const isPublished = row.original.is_published;
         const formSlug = row.original.slug;
+        const formUsername = row.original.owner_username;
 
         return (
           <div className="flex items-center gap-2">
@@ -92,9 +93,9 @@ export function useAdminFormsColumns(): ColumnDef<AdminForm>[] {
                 {t("dashboard.forms.columns.view")}
               </Link>
             </Button>
-            {isPublished && formSlug ? (
+            {isPublished && formSlug && formUsername ? (
               <Button asChild size="sm" variant="outline">
-                <Link href={urls.form(formSlug)} target="_blank">
+                <Link href={urls.form(formUsername, formSlug)} target="_blank">
                   {t("dashboard.forms.columns.open")}
                 </Link>
               </Button>

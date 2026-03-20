@@ -76,6 +76,7 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
       header: t("dashboard.forms.columns.actions"),
       cell: ({ row }) => {
         const formSlug = row.original.slug;
+        const formUsername = row.original.owner_username;
         const isPublished = row.original.is_published;
 
         return (
@@ -85,9 +86,9 @@ export function useFormsColumns(): ColumnDef<DashboardForm>[] {
                 {t("dashboard.forms.columns.view")}
               </Link>
             </Button>
-            {isPublished && formSlug ? (
+            {isPublished && formSlug && formUsername ? (
               <Button asChild size="sm" variant="outline">
-                <Link href={urls.form(formSlug)} target="_blank">
+                <Link href={urls.form(formUsername, formSlug)} target="_blank">
                   {t("dashboard.forms.columns.open")}
                 </Link>
               </Button>

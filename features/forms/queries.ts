@@ -1,4 +1,5 @@
 import { TypedSupabaseClient } from "@/lib/supabase/types";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
   endAdminTrace,
   startAdminTrace,
@@ -16,6 +17,7 @@ type PublicViewerQuestionRow = {
 type PublicViewerFormRow = {
   id: string;
   slug: string | null;
+  owner_username: string;
   name: string;
   type: string | null;
   theme: string | null;
@@ -33,6 +35,29 @@ type PublicViewerFormRow = {
 
 export type PublicViewerForm = PublicViewerFormRow;
 
+async function getUsernamesByUserId(userIds: string[]) {
+  const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+  if (uniqueUserIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data: accounts, error } = await supabaseAdmin
+    .from("account")
+    .select("user_id, username")
+    .in("user_id", uniqueUserIds);
+
+  if (error) throw error;
+
+  return new Map(
+    (accounts ?? []).map((account) => [account.user_id, account.username]),
+  );
+}
+
+async function getUsernameByUserId(userId: string) {
+  const usernamesByUserId = await getUsernamesByUserId([userId]);
+  return usernamesByUserId.get(userId) ?? null;
+}
+
 export const getUserFormsQuery = async ({
   userId,
   supabase,
@@ -48,7 +73,15 @@ export const getUserFormsQuery = async ({
 
   if (error) throw error;
 
-  return data;
+  const forms = data ?? [];
+  const usernamesByUserId = await getUsernamesByUserId(
+    forms.map((form) => form.user_id),
+  );
+
+  return forms.map((form) => ({
+    ...form,
+    owner_username: usernamesByUserId.get(form.user_id) ?? null,
+  }));
 };
 
 export const getFormsQuery = getUserFormsQuery;
@@ -75,8 +108,16 @@ export const getAdminFormsQuery = async ({
       throw error;
     }
 
-    rowCount = data?.length ?? 0;
-    return data;
+    const forms = data ?? [];
+    rowCount = forms.length;
+    const usernamesByUserId = await traceAdminStep(trace, "db.account.usernames", () =>
+      getUsernamesByUserId(forms.map((form) => form.user_id)),
+    );
+
+    return forms.map((form) => ({
+      ...form,
+      owner_username: usernamesByUserId.get(form.user_id) ?? null,
+    }));
   } finally {
     endAdminTrace(trace, { status, rowCount });
   }
@@ -97,7 +138,12 @@ export const getFormByIdQuery = async ({
     .single()
     .throwOnError();
 
-  return data;
+  const ownerUsername = await getUsernameByUserId(data.user_id);
+
+  return {
+    ...data,
+    owner_username: ownerUsername,
+  };
 };
 
 export const getUserFormByIdQuery = async ({
@@ -118,22 +164,46 @@ export const getUserFormByIdQuery = async ({
     .maybeSingle();
 
   if (error) throw error;
-  return data;
+  if (!data) return null;
+
+  const ownerUsername = await getUsernameByUserId(data.user_id);
+
+  return {
+    ...data,
+    owner_username: ownerUsername,
+  };
 };
 
-export const getPublishedFormViewerBySlugQuery = async ({
+export const getPublishedFormViewerByUsernameAndSlugQuery = async ({
+  username,
   slug,
-  supabase,
 }: {
+  username: string;
   slug: string;
-  supabase: TypedSupabaseClient;
 }) => {
-  const { data, error } = await supabase
+  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedSlug = slug.trim();
+
+  if (!normalizedUsername || !normalizedSlug) {
+    return null;
+  }
+
+  const { data: account, error: accountError } = await supabaseAdmin
+    .from("account")
+    .select("user_id, username")
+    .eq("username", normalizedUsername)
+    .maybeSingle();
+
+  if (accountError) throw accountError;
+  if (!account) return null;
+
+  const { data, error } = await supabaseAdmin
     .from("form")
     .select(
       "id, slug, name, type, theme, language, user_id, background_image_key, background_music_key, intro_title, intro_message, end_title, end_message, is_published, questions:question(id, question, order, file_key, default_answers)",
     )
-    .eq("slug", slug)
+    .eq("user_id", account.user_id)
+    .eq("slug", normalizedSlug)
     .eq("is_published", true)
     .order("order", { referencedTable: "question", ascending: true })
     .maybeSingle();
@@ -145,6 +215,7 @@ export const getPublishedFormViewerBySlugQuery = async ({
 
   return {
     ...row,
+    owner_username: account.username,
     questions: [...(row.questions ?? [])].sort((left, right) => left.order - right.order),
   } satisfies PublicViewerForm;
 };

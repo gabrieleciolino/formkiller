@@ -45,6 +45,7 @@ export default function CreateUserSheet() {
   const form = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
       role: "user",
@@ -64,7 +65,9 @@ export default function CreateUserSheet() {
 
         toast(t("dashboard.users.create.success"));
         form.reset({
+          username: "",
           email: "",
+          password: "",
           role: "user",
           tier: "free",
         });
@@ -92,6 +95,29 @@ export default function CreateUserSheet() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="mt-6 space-y-4 px-4"
         >
+          <Controller
+            name="username"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>
+                  {t("dashboard.users.create.username")}
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  type="text"
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                  placeholder={t("dashboard.users.create.usernamePlaceholder")}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
           <Controller
             name="email"
             control={form.control}

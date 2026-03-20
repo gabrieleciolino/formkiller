@@ -19,6 +19,7 @@
     "register": {
       "title": "Create account",
       "description": "Start with a free plan in seconds.",
+      "username": "Username",
       "email": "Email",
       "password": "Password",
       "submit": "Create account",
@@ -170,6 +171,8 @@
       "create": {
         "trigger": "New user",
         "title": "Create user",
+        "username": "Username",
+        "usernamePlaceholder": "username",
         "email": "Email",
         "emailPlaceholder": "user@email.com",
         "password": "Password",

@@ -96,11 +96,34 @@ async function submitPublicFormAnswerRpc({
   return submitAnswerRpcResultSchema.parse(data);
 }
 
-async function getPublishedFormBySlugOrThrow(formSlug: string) {
+async function getPublishedFormByUsernameAndSlugOrThrow({
+  username,
+  slug,
+}: {
+  username: string;
+  slug: string;
+}) {
+  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedSlug = slug.trim();
+
+  if (!normalizedUsername || !normalizedSlug) {
+    throw new Error("Invalid public form path");
+  }
+
+  const { data: account, error: accountError } = await supabaseAdmin
+    .from("account")
+    .select("user_id, username")
+    .eq("username", normalizedUsername)
+    .maybeSingle();
+
+  if (accountError) throw accountError;
+  if (!account) throw new Error("Account not found");
+
   const { data: form, error } = await supabaseAdmin
     .from("form")
     .select("id, slug, user_id, is_published")
-    .eq("slug", formSlug)
+    .eq("user_id", account.user_id)
+    .eq("slug", normalizedSlug)
     .eq("is_published", true)
     .maybeSingle();
 
@@ -182,6 +205,7 @@ async function getSessionCompletionAnalysisOrThrow(
 export const startFormSessionAction = publicViewerClient
   .inputSchema(
     z.object({
+      formUsername: z.string().trim().min(1),
       formSlug: z.string().trim().min(1),
       turnstileToken: turnstileTokenSchema,
     }),
@@ -197,7 +221,10 @@ export const startFormSessionAction = publicViewerClient
     const turnstileVerifyMs = Date.now() - turnstileVerifyStartAt;
 
     const formLookupStartAt = Date.now();
-    const form = await getPublishedFormBySlugOrThrow(parsedInput.formSlug);
+    const form = await getPublishedFormByUsernameAndSlugOrThrow({
+      username: parsedInput.formUsername,
+      slug: parsedInput.formSlug,
+    });
     const formLookupMs = Date.now() - formLookupStartAt;
     const formId = form.id;
     const userId = form.user_id;

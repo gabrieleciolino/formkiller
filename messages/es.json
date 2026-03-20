@@ -19,6 +19,7 @@
     "register": {
       "title": "Crear cuenta",
       "description": "Empieza gratis en segundos.",
+      "username": "Usuario",
       "email": "Email",
       "password": "Contraseña",
       "submit": "Crear cuenta",
@@ -170,6 +171,8 @@
       "create": {
         "trigger": "Nuevo usuario",
         "title": "Crear usuario",
+        "username": "Usuario",
+        "usernamePlaceholder": "nombreusuario",
         "email": "Email",
         "emailPlaceholder": "usuario@email.com",
         "password": "Password",

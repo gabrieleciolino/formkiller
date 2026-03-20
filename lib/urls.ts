@@ -43,5 +43,5 @@ export const urls = {
       index: "/dashboard/library",
     },
   },
-  form: (slug: string) => `/form/${slug}`,
+  form: (username: string, slug: string) => `/form/${username}/${slug}`,
 };

@@ -24,6 +24,7 @@ import {
   getElevenLabsVoices,
 } from "@/lib/elevenlabs/functions";
 import type { TypedSupabaseClient } from "@/lib/supabase/types";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { formCreateTask } from "@/trigger/form-create";
 import { urls } from "@/lib/urls";
 import { revalidatePath } from "next/cache";
@@ -110,19 +111,35 @@ function requireProFeatures(params: { userRole: "admin" | "user"; userTier: "fre
   }
 }
 
+async function getUsernameByUserId(userId: string) {
+  const { data: account, error } = await supabaseAdmin
+    .from("account")
+    .select("username")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return account?.username ?? null;
+}
+
 async function revalidateFormPaths({
   formId,
   formSlug,
+  formUserId,
 }: {
   formId: string;
   formSlug?: string | null;
+  formUserId?: string | null;
 }) {
   revalidatePath(urls.dashboard.forms.index);
   revalidatePath(urls.dashboard.forms.detail(formId));
   revalidatePath(urls.admin.forms.index);
   revalidatePath(urls.admin.forms.detail(formId));
-  if (formSlug) {
-    revalidatePath(urls.form(formSlug));
+  if (formSlug && formUserId) {
+    const formOwnerUsername = await getUsernameByUserId(formUserId);
+    if (formOwnerUsername) {
+      revalidatePath(urls.form(formOwnerUsername, formSlug));
+    }
   }
 }
 
@@ -199,6 +216,7 @@ export const createFormAction = authenticatedActionClient
       await revalidateFormPaths({
         formId: form.id,
         formSlug: form.slug,
+        formUserId: userId,
       });
 
       return createFormStartResultSchema.parse({
@@ -253,7 +271,17 @@ export const getCreateFormStatusAction = authenticatedActionClient
           | undefined;
 
         if (output?.status === "completed" && typeof output.formId === "string") {
-          await revalidateFormPaths({ formId: output.formId });
+          const { data: form } = await supabaseAdmin
+            .from("form")
+            .select("id, slug, user_id")
+            .eq("id", output.formId)
+            .maybeSingle();
+
+          await revalidateFormPaths({
+            formId: output.formId,
+            formSlug: form?.slug ?? null,
+            formUserId: form?.user_id ?? null,
+          });
 
           return createFormStatusResultSchema.parse({
             status: "completed",
@@ -323,7 +351,7 @@ export const editFormAction = authenticatedActionClient
 
     const { data: currentForm } = await supabase
       .from("form")
-      .select("id, slug")
+      .select("id, slug, user_id")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -363,6 +391,7 @@ export const editFormAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: nextSlug,
+      formUserId: currentForm.user_id,
     });
 
     return form;
@@ -385,13 +414,14 @@ export const updateFormVoiceAction = authenticatedActionClient
         voice_speed: normalizedVoiceSpeed,
       })
       .eq("id", formId)
-      .select("id, slug")
+      .select("id, slug, user_id")
       .single()
       .throwOnError();
 
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
 
     return {
@@ -410,7 +440,9 @@ export const regenerateFormQuestionsTTSAction = authenticatedActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("language, type, slug, voice_id, voice_speed, questions:question(id, question)")
+      .select(
+        "user_id, language, type, slug, voice_id, voice_speed, questions:question(id, question)",
+      )
       .eq("id", formId)
       .order("order", { referencedTable: "question", ascending: true })
       .single()
@@ -454,6 +486,7 @@ export const regenerateFormQuestionsTTSAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
 
     return {
@@ -487,7 +520,7 @@ export const editQuestionsAction = authenticatedActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("slug, type, voice_id, voice_speed")
+      .select("user_id, slug, type, voice_id, voice_speed")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -537,6 +570,7 @@ export const editQuestionsAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
 
     return questions;
@@ -583,6 +617,7 @@ export const addQuestionAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
   });
 
@@ -594,7 +629,7 @@ export const deleteQuestionAction = authenticatedActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("slug")
+      .select("user_id, slug")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -610,6 +645,7 @@ export const deleteQuestionAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
   });
 
@@ -647,7 +683,7 @@ export const generateQuestionTTSAction = authenticatedActionClient
 
     const { data: form } = await supabase
       .from("form")
-      .select("slug, voice_id, voice_speed")
+      .select("user_id, slug, voice_id, voice_speed")
       .eq("id", formId)
       .single()
       .throwOnError();
@@ -673,6 +709,7 @@ export const generateQuestionTTSAction = authenticatedActionClient
     await revalidateFormPaths({
       formId,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
 
     return { url };
@@ -739,13 +776,14 @@ export const saveFormAnalysisInstructionsAction = authenticatedActionClient
         analysis_instructions: trimmed.length > 0 ? trimmed : null,
       })
       .eq("id", formId)
-      .select("id, slug")
+      .select("id, user_id, slug")
       .single()
       .throwOnError();
 
     await revalidateFormPaths({
       formId: form.id,
       formSlug: form.slug,
+      formUserId: form.user_id,
     });
 
     return { analysisInstructions: trimmed.length > 0 ? trimmed : null };

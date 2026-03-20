@@ -11,6 +11,21 @@ export const createUserAction = adminActionClient
   .action(async ({ parsedInput }) => {
     const supabase = supabaseAdmin;
     const { email, password } = parsedInput;
+    const username = parsedInput.username.trim().toLowerCase();
+
+    const { data: existingUsername, error: usernameCheckError } = await supabase
+      .from("account")
+      .select("user_id")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (usernameCheckError) {
+      throw usernameCheckError;
+    }
+
+    if (existingUsername) {
+      throw new Error("Username already in use");
+    }
 
     const { data, error } = await supabase.auth.admin.createUser({
       email,
@@ -27,6 +42,7 @@ export const createUserAction = adminActionClient
         .from("account")
         .insert({
           user_id: data.user.id,
+          username,
           role: parsedInput.role,
           tier: parsedInput.tier,
         })

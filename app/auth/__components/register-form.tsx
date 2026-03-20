@@ -24,6 +24,7 @@ export default function RegisterForm() {
   const form = useForm<RegisterFormType>({
     resolver: zodResolver(registerFormSchema),
     values: {
+      username: "",
       email: "",
       password: "",
     },
@@ -48,6 +49,23 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Controller
+        name="username"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>{t("auth.register.username")}</FieldLabel>
+            <Input
+              {...field}
+              id={field.name}
+              aria-invalid={fieldState.invalid}
+              placeholder={t("auth.register.username")}
+              autoComplete="off"
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
       <Controller
         name="email"
         control={form.control}

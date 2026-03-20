@@ -49,9 +49,13 @@ export default async function AdminFormDetailPage({
         <h2 className="text-lg font-medium text-foreground">{form.name}</h2>
         <div className="flex flex-wrap items-center gap-2">
           {form.is_published ? (
-            form.slug ? (
+            form.slug && form.owner_username ? (
               <Button asChild variant="outline">
-                <Link href={urls.form(form.slug)} target="_blank" rel="noreferrer">
+                <Link
+                  href={urls.form(form.owner_username, form.slug)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {t("dashboard.forms.columns.open")}
                 </Link>
               </Button>

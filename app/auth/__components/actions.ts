@@ -29,6 +29,22 @@ export const registerAction = publicActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { supabase } = ctx;
     const { email, password } = parsedInput;
+    const username = parsedInput.username.trim().toLowerCase();
+
+    const { data: existingUsername, error: usernameCheckError } = await supabaseAdmin
+      .from("account")
+      .select("user_id")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (usernameCheckError) {
+      console.log("[register_username_check_error]", usernameCheckError);
+      throw usernameCheckError;
+    }
+
+    if (existingUsername) {
+      throw new Error("Username already in use");
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -49,6 +65,7 @@ export const registerAction = publicActionClient
         .upsert(
           {
             user_id: data.user.id,
+            username,
             role: DEFAULT_ACCOUNT_ROLE,
             tier: DEFAULT_ACCOUNT_TIER,
           },
